@@ -1,0 +1,20 @@
+# macOS / editor leftovers
+.DS_Store
+*.swp
+*.swo
+# Local secrets
+.env
+.env.*
+!.env.example
+# Generated builds and tool caches
+/build/
+.rojo/
+/sourcemap.json
+/Packages/
+/ServerPackages/
+# Studio transient files (keep authored places/models trackable)
+*.rbxl.lock
+*.rbxlx.lock
+*.rbxm.lock
+*.rbxmx.lock
+*.autosave
