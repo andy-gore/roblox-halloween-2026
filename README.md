@@ -1,16 +1,20 @@
-# roblox-halloween-2026
+# The Chuggernaught: Last Orders
 
-## The Chuggernaught: Last Orders
+Local Halloween 2026 prototype. Original narrative and artwork remain unchanged.
 
-Minimal local scaffold for Halloween 2026. No finished gameplay is implemented.
+Build the separate playable greybox:
 
-- [Setup and prerequisites](docs/SETUP.md)
-- [Existing canonical narrative](docs/narrative.md)
-- [Deadline scope](docs/SCOPE.md)
-- [Local checks](tests/README.md)
+```sh
+rojo build prototype.project.json -o build/LastOrdersPrototype.rbxlx
+```
 
-Open `places/Halloween2026.rbxlx` as the new local Studio project. It contains only a baseplate and spawn. Install Rojo and sync `default.project.json` to add the code scaffold. Keep PumpkinTest.rbxl separate.
+Open `build/LastOrdersPrototype.rbxlx` separately in Studio and press Play. Read the warning, restore power, find the key, ring the distraction bell, steal the tankard and use the emergency exit. Getting caught resets the run; Roblox Reset Character also restarts. Use the standard proximity prompts with keyboard, controller or touch.
 
-`src/server` maps to ServerScriptService/HalloweenServer; `src/client` to StarterPlayerScripts/HalloweenClient; `src/shared` to ReplicatedStorage/HalloweenShared. `assets/concepts` holds original approved art when supplied; `tools` documents development tools.
+The monster is a coloured block with a simple direct chase; the cellar fuse box and office key are markers in one room. This is a mechanics prototype, not the finished pub, character art or narrative presentation. The bell distraction and reset on capture are provisional gameplay decisions.
 
-The narrative is present at its original lowercase path. Chuggernaught artwork is missing. Nothing here publishes or uploads to Roblox.
+`places/Halloween2026.rbxlx` remains the authored starter. `default.project.json` syncs code only and does not enable the runtime greybox. The separate `prototype.project.json` enables it with a Workspace attribute. Never replace the authored place with generated build output.
+
+- [Setup](docs/SETUP.md)
+- [Canonical narrative](docs/narrative.md)
+- [Scope](docs/SCOPE.md)
+- [Checks and remaining playtest](tests/README.md)

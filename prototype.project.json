@@ -1,0 +1,33 @@
+{
+  "name": "LastOrdersPrototype",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "HalloweenServer": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "HalloweenClient": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "HalloweenShared": {
+        "$path": "src/shared"
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "$attributes": {
+        "LastOrdersGreybox": true
+      }
+    }
+  }
+}
