@@ -24,6 +24,11 @@ local ok, err = pcall(function()
         {"bar to snug", Vector3.new(6, 1, 24), Vector3.new(-25, 1, -5)},
         {"hall to kitchen", Vector3.new(-8, 1, -28), Vector3.new(10, 1, -28)},
     }
+    for _, side in {-1,1} do
+        for _, z in {-30,-10,10,30} do
+            table.insert(routes, {"bar to bedroom", Vector3.new(6,1,24), Vector3.new(side*26,17,z)})
+        end
+    end
     for _, route in routes do
         path:ComputeAsync((route[2] :: Vector3) + offset, (route[3] :: Vector3) + offset)
         assert(path.Status == Enum.PathStatus.Success, tostring(route[1]) .. " must have a walking route")

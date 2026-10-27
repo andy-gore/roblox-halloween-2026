@@ -69,3 +69,27 @@ Screen capture and native-app preview timed out. Final rendered appearance, smal
 Moved the warning from the bar top onto the customer-facing bar panel, clear of both the counter and decorative top. The note now has printed text and a labelled Read note prompt. Camera line-of-sight is disabled for this prompt only; server eye-level visibility, proximity, player identity and health checks remain. Rereading displays the warning without advancing objectives again.
 
 Studio Play verified first read and reread through the normal client prompt API, with server and client stage/message assertions. Allow character replication to settle after teleporting before triggering the prompt; an immediate first test raced that replication. Sight rays at three avatar heights reached the note, and a wall still blocked a through-wall ray. Both Rojo builds and whitespace checks passed. Test Play sessions were stopped; source changes are synced to the connected local Studio project. Keyboard/touch manual input and final text appearance remain user checks.
+
+## Eight-bedroom expansion — 27 October 2026
+
+Approved scope: a larger downstairs entrance lounge, one upper corridor with four guest bedrooms on each side, and a single key chosen from the eight bedrooms or office per run. KeyPlacement chooses only on run reset; restoring power reveals the existing choice. The key and prompt remain hidden/disabled before power and after pickup/reset. The HUD now asks players to search the bedrooms and office.
+
+The new flight has seventeen broad treads, solid stair/landing guards, a clear first-floor opening and a raised roof. Bedroom furniture uses local Parts; existing Blender/GLB artwork is unchanged. Both the original cellar and exit remain in place. Backups are under ignored build/backups/; places/Halloween2026.rbxlx was not replaced. Runtime map changes are confined to the enabled greybox.
+
+Checks passed:
+- Both Rojo configurations build; git diff --check is clean.
+- ExpandedPub.spec.luau verified eight furnished bedrooms, all nine distinct key spots, hidden state while choosing, every navigation edge's body clearance, and actual monster traversal through all eight bedrooms, downstairs office, emergency exit and back into the cellar without wall/partition overlaps.
+- PubLayout.spec.luau now also checks walking paths to all eight rooms, with jumping disabled; all ground-floor and bedroom paths passed in Studio.
+- Studio Play client prompt checks passed for reading the warning, restoring power, collecting an upstairs key, escaping and character reset. Assertions verified the key remained at its initial chosen position through warning/power, appeared only after power, granted inventory, unlocked the exit and became hidden with cleared inventory after reset.
+- The staircase approach was routed around the existing table, guard ends shortened to clear the landing, and free corner-cutting removed from pursuit. Upper-body floor casts prevent shortcuts through stairs or between storeys.
+
+Temporary test fixtures were removed and the local Play session stopped. Still required: full keyboard/touch walking playthrough of the larger layout, visual checks of upstairs signs/lighting and landing camera clearance, capture on the guest stairs/in a bedroom, and search/chase pacing across multiple random-key runs. The placeholder monster remains unanimated. Do not rerun the older initial warning-atop-counter geometry regression: the note is now customer-facing.
+
+
+## Bedroom furniture collision and surface cleanup — 27 October 2026
+
+User identified walking through upstairs furniture. Expanded the bed collider to cover the mattress/blanket height, made the headboard a solid navigation obstacle and set CanCollide explicitly on structural furniture. All eight beds, headboards, dressers and wardrobes were checked anchored and collidable; every monster route edge retained clearance. ExpandedPub.spec.luau now checks one solid piece of each furniture type per room.
+
+In a local Studio Play session, disabled default input temporarily and used the actual player Humanoid MoveTo against a room-1 wardrobe, dresser, headboard and bed. The avatar stopped outside each piece rather than reaching the far side. Controls were restored and Play stopped afterwards. Other bedrooms use the same furniture construction. Repeat manually at any additional reported locations.
+
+Also removed duplicate end treads over the ground floor/upper landing, trimmed the lounge roof back to the main roof seam, and lowered bottle shelves clear of the pub sign. Navigation nodes and key locations are unchanged. Both Rojo builds and git diff --check pass. Screenshot/render verification of those surface overlaps remains unavailable; a manual visual check is still required.

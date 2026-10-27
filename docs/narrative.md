@@ -18,6 +18,8 @@ This revision takes precedence over the original tankard-theft sequence below. T
 - Restoring the pub's lights wakes The Chuggernaught; power is not required to unlock the emergency exit.
 - The emergency exit key is found in a pub room, independent of the monster. It only becomes visible and available to collect after the lights have been restored.
 - The Chuggernaught hunts the player while they search for the key and make their way to the exit.
+- The expanded pub has eight upstairs guest bedrooms: four on each side of one central corridor. A larger downstairs lounge contains the guest staircase.
+- The server chooses the exit key’s location once per run from the eight guest bedrooms or downstairs office. It stays in that room until the run ends; capture/reset may choose a different room. Restoring the lights reveals the key without moving it.
 - The service bell is an optional distraction that draws him towards the bar and buys time to search or pass him.
 - The key alone unlocks the emergency exit. Tankard theft is no longer required; the original theft dialogue and stolen-tankard epilogue are not part of the current prototype. A replacement epilogue remains to be designed.
 - Current route: read the warning → restore lights → search for the key while hunted → unlock the emergency exit and escape. Capture/reset hides the key and restarts this sequence.

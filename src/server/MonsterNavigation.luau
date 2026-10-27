@@ -33,6 +33,7 @@ for step = 1, 15 do
     previous = current
 end
 table.insert(edges, {previous, 15})
+require(script.Parent.PubExpansion).addRoutes(positions, edges)
 function Navigation.new(monster: BasePart)
     local map = monster.Parent :: Folder
     local offset = monster.Position - Vector3.new(36, -11.5, -35)
@@ -42,18 +43,27 @@ function Navigation.new(monster: BasePart)
         nodes[i], neighbours[i] = position + offset, {}
     end
     local blockers: {Instance} = {}
+    local floors: {Instance} = {}
     for _, object in map:GetChildren() do
-        if object:IsA("BasePart") and (string.find(object.Name, "Wall") or string.find(object.Name, "Partition")
+        if object:IsA("BasePart") and (object:GetAttribute("BlocksNavigation") == true or string.find(object.Name, "Wall") or string.find(object.Name, "Partition")
             or object.Name == "Bar" or object.Name == "OfficeDesk" or object.Name == "SnugTable"
             or object.Name == "KitchenCounter" or object.Name == "PubTable" or object.Name == "ExitDoor") then
             table.insert(blockers, object)
+        elseif object:IsA("BasePart") and object.CanCollide and (string.find(object.Name, "Floor") or string.find(object.Name, "Step")) then
+            table.insert(floors, object)
         end
     end
     local cast = RaycastParams.new()
     cast.FilterType, cast.FilterDescendantsInstances, cast.RespectCanCollide = Enum.RaycastFilterType.Include, blockers, true
+    local floorCast = RaycastParams.new()
+    floorCast.FilterType, floorCast.FilterDescendantsInstances = Enum.RaycastFilterType.Include, floors
     local function clear(a: Vector3, b: Vector3): boolean
         local delta = b - a
-        return delta.Magnitude < 0.01 or workspace:Blockcast(CFrame.new(a), Vector3.new(4.2, 7.8, 4.2), delta, cast) == nil
+        if delta.Magnitude < 0.01 then return true end
+        if workspace:Blockcast(CFrame.new(a), Vector3.new(4.2, 7.8, 4.2), delta, cast) then return false end
+        -- Check upper-body clearance too, so routes cannot shortcut through floors or stairs.
+        -- The lower two studs allow normal one-stud step climbing.
+        return workspace:Blockcast(CFrame.new(a + Vector3.new(0,1,0)), Vector3.new(4.2,5.6,4.2), delta, floorCast) == nil
     end
     for _, edge in edges do
         if clear(nodes[edge[1]], nodes[edge[2]]) then
@@ -76,6 +86,11 @@ function Navigation.new(monster: BasePart)
     local nextPlan = 0
     local lastTarget: Vector3? = nil
     local controller = {}
+    function controller.validate()
+        for _,edge in edges do
+            assert(table.find(neighbours[edge[1]],edge[2]), "Blocked pub route: "..tostring(nodes[edge[1]]).." -> "..tostring(nodes[edge[2]]))
+        end
+    end
     function controller.reset()
         route, nextPlan, lastTarget = {}, 0, nil
     end
@@ -114,14 +129,21 @@ function Navigation.new(monster: BasePart)
         end
         local waypoint = route[1]
         if not waypoint then return end
-        -- Skip intermediate nodes only where the whole body can safely take the shortcut.
-        while route[2] and math.abs(route[2].Y - monster.Position.Y) < 1
-            and clear(monster.Position, route[2]) do
-            table.remove(route, 1)
-            waypoint = route[1]
+        -- Continue along an existing edge after replanning, but never cut room corners.
+        local following = route[2]
+        if following then
+            local edge = following - waypoint
+            if edge.Magnitude > 0.01 then
+                local progress = (monster.Position - waypoint):Dot(edge) / edge:Dot(edge)
+                if progress >= 0 and progress <= 1
+                    and (waypoint + edge * progress - monster.Position).Magnitude < 0.05 then
+                    table.remove(route, 1)
+                    waypoint = route[1]
+                end
+            end
         end
         local delta = waypoint - monster.Position
-        if delta.Magnitude < 0.1 then table.remove(route, 1) return end
+        if delta.Magnitude < 0.02 then table.remove(route, 1) return end
         local movement = delta.Unit * math.min(delta.Magnitude, speed * math.min(dt, 0.1))
         if clear(monster.Position, monster.Position + movement) then monster.Position += movement end
     end

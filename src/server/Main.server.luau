@@ -21,6 +21,7 @@ local map = require(script.Parent.PrototypeMap).build()
 local monster = map:WaitForChild("ChuggernaughtPlaceholder") :: Part
 local key = map:WaitForChild("OfficeKey") :: Part
 local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
+local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local exitDoor = map:WaitForChild("ExitDoor") :: Part
@@ -39,6 +40,7 @@ local graceUntil = 0
 local function update(message: string?)
     key.Transparency = if state.stage == 3 then 0 else 1
     keyPrompt.Enabled = state.stage == 3
+    key.CanQuery = state.stage == 3
     for _, light in lights do
         light.Brightness = if state.stage >= 3 then 2 else 0.35
     end
@@ -55,6 +57,7 @@ local function reset(message: string?)
     state = RunState.new()
     distractedUntil = 0
     graceUntil = os.clock() + 3
+    keyPlacement.choose()
     navigation.reset()
     monster.CFrame = home
     update(message)

@@ -131,6 +131,8 @@ function Map.build(): Folder
     station("CellarFuseBox", Vector3.new(44, -12, -34), "Restore lights", Color3.fromRGB(95, 135, 160))
     local key = station("OfficeKey", Vector3.new(-37, 4, -33), "Take exit key", Color3.fromRGB(240, 195, 65))
     key.Size = Vector3.new(1.5, 0.3, 0.7)
+    local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
+    keyPrompt.ObjectText = "Emergency exit key"
     station("EmergencyExit", Vector3.new(-36, 5, 38), "Unlock and escape", Color3.fromRGB(65, 160, 90))
     local monster = part("ChuggernaughtPlaceholder", Vector3.new(4, 8, 4), Vector3.new(36, -11.5, -35), Color3.fromRGB(145, 70, 80))
     monster.CanCollide = false
@@ -150,6 +152,7 @@ function Map.build(): Folder
     spawn.Name, spawn.Size, spawn.Position = "PrototypeSpawn", Vector3.new(6, 1, 6), Vector3.new(6, 1, 30)
     spawn.Anchored, spawn.Neutral, spawn.Transparency = true, true, 1
     spawn.Parent = folder
+    require(script.Parent.PubExpansion).build(folder)
     require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
     return folder

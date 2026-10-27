@@ -6,4 +6,4 @@ Target: one short single-player escape through The Crooked Tankard. Implement a 
 
 Defer cooperative play, monetisation, saving, complex AI and extra levels. Open gameplay questions in the narrative remain unresolved; this scaffold does not decide them.
 
-A mechanics greybox now implements server objectives, pursuit, an optional bell distraction, capture/reset and key-based escape. The first compact pub layout now has rooms, a real cellar and pursuit along fixed walking routes. Next steps: playtest room search and chase pacing, then add narrative presentation, atmosphere and the ending.
+A mechanics greybox now implements server objectives, pursuit, an optional bell distraction, capture/reset and key-based escape. The expanded pub now has a larger entrance lounge, a real cellar, eight upstairs guest bedrooms (four per side of a central corridor), and pursuit along fixed walking routes. The key uses one of nine handcrafted room locations per run. Next steps: playtest room search and chase pacing, then add narrative presentation, atmosphere and the ending.

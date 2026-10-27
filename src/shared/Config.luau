@@ -4,7 +4,7 @@ return table.freeze({
     Objectives = table.freeze({
         "Read the warning at the bar.",
         "Restore the pub's lights at the cellar fuse box.",
-        "Find the emergency exit key in the office.",
+        "Search the eight guest rooms and office for the exit key.",
         "Unlock the emergency exit with the key.",
         "YOU SURVIVED LAST ORDERS!",
     }),

@@ -49,7 +49,7 @@ function Dressing.build(map: Folder)
         p("BarPanel", Vector3.new(2.9, 2.7, 0.15), Vector3.new(x, 2.6, 19.1), Color3.fromRGB(77, 38, 28))
         p("BarPanelInlay", Vector3.new(2.3, 0.08, 0.08), Vector3.new(x, 3.65, 19.22), brass, Enum.Material.Metal)
     end
-    for _, y in {5.8, 8.3} do
+    for _, y in {5.3, 7.5} do
         p("BackBarShelf", Vector3.new(15, 0.25, 1.4), Vector3.new(-28, y, 9.2), timber)
         for i = 0, 6 do
             local bottle = p("DustyBottle", Vector3.new(0.5, 1.3, 0.5), Vector3.new(-34 + i * 2, y + 0.8, 9.2), Color3.fromRGB(46, 67 + i * 3, 54), Enum.Material.Glass)
@@ -67,14 +67,14 @@ function Dressing.build(map: Folder)
         for _, x in {-46, -16, 22, 46} do p("OakPost", Vector3.new(0.8, 14, 0.7), Vector3.new(x, 7, z), timber) end
     end
     for _, z in {-34, -8, 18, 36} do
-        beam(Vector3.new(-48, 13.7, z), Vector3.new(0, 25.7, z), 0.85, timber)
-        beam(Vector3.new(0, 25.7, z), Vector3.new(48, 13.7, z), 0.85, timber)
+        beam(Vector3.new(-48, 29.7, z), Vector3.new(0, 41.7, z), 0.85, timber)
+        beam(Vector3.new(0, 41.7, z), Vector3.new(48, 29.7, z), 0.85, timber)
         beam(Vector3.new(-48, 13.2, z), Vector3.new(48, 13.2, z), 0.7, timber)
     end
     -- A vaulted slate roof closes the daylight opening without changing walking collision.
     local angle = math.atan(12 / 48)
     for _, side in {-1, 1} do
-        local roof = p("SlateRoof", Vector3.new(math.sqrt(48 * 48 + 12 * 12) + 1, 0.8, 82), Vector3.new(side * 24, 20, 0), Color3.fromRGB(34, 33, 47), Enum.Material.Slate)
+        local roof = p("SlateRoof", Vector3.new(math.sqrt(48 * 48 + 12 * 12) + 1, 0.8, 82), Vector3.new(side * 24, 36, 0), Color3.fromRGB(34, 33, 47), Enum.Material.Slate)
         roof.CFrame *= CFrame.Angles(0, 0, -side * angle)
         roof.CanQuery = true -- lets the third-person camera avoid the roof
     end
