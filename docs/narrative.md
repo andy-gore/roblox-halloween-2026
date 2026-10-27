@@ -11,6 +11,17 @@
 
 ---
 
+## Approved gameplay revision — 27 October 2026
+
+This revision takes precedence over the original tankard-theft sequence below. The original narrative remains as a creative reference.
+
+- Restoring the pub's lights wakes The Chuggernaught; power is not required to unlock the emergency exit.
+- The emergency exit key is found in a pub room, independent of the monster. It only becomes visible and available to collect after the lights have been restored.
+- The Chuggernaught hunts the player while they search for the key and make their way to the exit.
+- The service bell is an optional distraction that draws him towards the bar and buys time to search or pass him.
+- The key alone unlocks the emergency exit. Tankard theft is no longer required; the original theft dialogue and stolen-tankard epilogue are not part of the current prototype. A replacement epilogue remains to be designed.
+- Current route: read the warning → restore lights → search for the key while hunted → unlock the emergency exit and escape. Capture/reset hides the key and restarts this sequence.
+
 # 1. Narrative Vision
 
 **DRINK. DESTROY. REPEAT.**
@@ -227,7 +238,7 @@ Something is moving below the pub.
 
 The player attempts to leave but discovers the entrance is jammed shut.
 
-An alternative emergency exit exists, but it cannot currently be opened.
+An alternative emergency exit exists, but it is locked and requires a key.
 
 ### Intended emotion
 
@@ -257,11 +268,11 @@ Several clues suggest something supernatural happened in the cellar.
 
 The precise cause remains unknown.
 
-The player also discovers that the emergency exit requires power to be restored.
+The pub's lights fail, leaving the player struggling to explore in the dark.
 
 The old electrical equipment is located beneath the pub.
 
-To escape, they must enter the cellar.
+To restore the lights, they must enter the cellar. The emergency exit is unlocked with its key; it does not require power.
 
 ### Intended emotion
 
@@ -287,7 +298,7 @@ Water drips from the ceiling.
 
 The lighting is poor, and strange noises echo through the room.
 
-The player locates the electrical equipment and restores power.
+The player locates the electrical equipment and restores power to the pub's lights.
 
 The lights flicker.
 

@@ -1,0 +1,29 @@
+{
+  "PubTable": {
+    "blender_xyz_studs": [
+      7.0,
+      5.97,
+      3.0
+    ],
+    "triangles": 704,
+    "mesh_objects": 16
+  },
+  "PubChair": {
+    "blender_xyz_studs": [
+      2.5,
+      2.37,
+      4.4
+    ],
+    "triangles": 704,
+    "mesh_objects": 16
+  },
+  "CellarBarrel": {
+    "blender_xyz_studs": [
+      4.0,
+      4.0,
+      4.0
+    ],
+    "triangles": 1464,
+    "mesh_objects": 22
+  }
+}

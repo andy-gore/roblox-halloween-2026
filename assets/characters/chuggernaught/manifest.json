@@ -1,0 +1,20 @@
+{
+  "Chuggernaught_FirstPass": {
+    "dimensions_xyz": [
+      5.12,
+      2.11,
+      8.0
+    ],
+    "triangles": 3581,
+    "mesh_objects": 91
+  },
+  "Tankard_FirstPass": {
+    "dimensions_xyz": [
+      2.47,
+      1.94,
+      2.412
+    ],
+    "triangles": 2868,
+    "mesh_objects": 54
+  }
+}
