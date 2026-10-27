@@ -93,3 +93,27 @@ User identified walking through upstairs furniture. Expanded the bed collider to
 In a local Studio Play session, disabled default input temporarily and used the actual player Humanoid MoveTo against a room-1 wardrobe, dresser, headboard and bed. The avatar stopped outside each piece rather than reaching the far side. Controls were restored and Play stopped afterwards. Other bedrooms use the same furniture construction. Repeat manually at any additional reported locations.
 
 Also removed duplicate end treads over the ground floor/upper landing, trimmed the lounge roof back to the main roof seam, and lowered bottle shelves clear of the pub sign. Navigation nodes and key locations are unchanged. Both Rojo builds and git diff --check pass. Screenshot/render verification of those surface overlaps remains unavailable; a manual visual check is still required.
+
+
+## Chuggernaught runtime rig and encounter — 27 October 2026
+
+Original GLB/Blender files and artwork are unchanged. tools/export_chuggernaught.py converts the full original 6,449 triangles, vertex normals and flat colours into shared mesh data, with source checksums. The client creates one skinned EditableMesh with nine rigid-weight bones. Separate meshes per limb exceeded the tested client budget; the single-mesh version passed in local Play. If mesh creation fails, a simple Part-based rig remains available and the client model records MeshError. No meshes, animations or audio were uploaded.
+
+The unchanged anchored 4×8×4 server proxy owns navigation and capture. Presentation follows it with interpolation and local joint poses; visual geometry has no collision/query participation. Server MonsterEncounter controls dormant/reveal/hunt/chug/distracted/stopped modes. Power triggers a 3.5-second reveal before pursuit; drinks pause him for 2.8 seconds at 12-second hunt intervals and add 0.5 speed per completed drink, capped at three boosts. The bell interrupts drinking. Capture/reset clears progression. The key's random room/reveal rules are unchanged.
+
+Checks passed:
+- Both Rojo configurations build and git diff --check passes.
+- MonsterEncounter.spec.luau verifies reveal timing, pursuit, drinking pauses, bell interruption, stopped state, speed cap and reset using controlled time.
+- ExpandedPub.spec.luau passed all eight bedrooms, office, exit and cellar with the transparent server proxy, including collision and key-location assertions.
+- Local Studio Play loaded the actual single MeshPart with nine bones and all 6,449 triangles; ChuggernaughtRig.spec.luau verified collision/query isolation, finite poses and tankard-handle contact through a full chug cycle. Dormant presentation was hidden.
+- Client prompt interaction restored power; the original mesh became visible during Reveal, then server pursuit started with LAST ORDERS text. Bundled footstep and water/drinking sounds loaded. Capture reset the run to stage 1, Dormant mode and zero drink count.
+- A neutral Blender QA render used actual sampled game pose CFrames and exact exported geometry; idle/hunt/chug poses were visually inspected. The first sandboxed Blender launch failed during Metal device detection; the same local render succeeded outside the sandbox. This image is a pose preview, not an in-game screenshot.
+
+Temporary test fixtures were removed and Play stopped. Manual checks still required: visual appearance inside the pub, animation/foot placement around furniture and both staircases, chase pacing after several drinks, touch/small-screen captions and low-memory clients. LAST ORDERS is captioned, not voiced; glug/footstep cues use bundled Roblox sounds. Published-experience mesh API permissions, final uploaded animation/voice assets and deployment remain outside this local prototype task.
+
+
+## Live skin animation correction — 27 October 2026
+
+The first mesh implementation changed EditableMesh:SetBoneCFrame, which edits bind-pose data rather than animating the rendered skin. This left the character rigid and the tankard at its original position despite valid offline pose maths. The correction creates nine named Bone instances under the MeshPart, matching the embedded mesh bone names. Their bind CFrames stay fixed; Bone.Transform now drives the live skin.
+
+Studio Play verified nine actual Bone instances, the tankard grip beside the right fist, and tankard rotation during the power-triggered reveal. During Hunt, the live leg Transform changed by more than 0.6 radians across sampled frames, while the live tankard/hand grip error stayed below 0.001 studs. These measurements use Bone.TransformedWorldCFrame and Bone.Transform rather than generated pose tables. The client regression spec now requires the live bones and real hand/tankard attachment, which would fail the original implementation. Both Rojo builds and git diff --check passed. Play was stopped afterwards. Manual visual checks of gait and in-pub clipping remain useful.

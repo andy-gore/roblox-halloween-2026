@@ -135,7 +135,7 @@ function Map.build(): Folder
     keyPrompt.ObjectText = "Emergency exit key"
     station("EmergencyExit", Vector3.new(-36, 5, 38), "Unlock and escape", Color3.fromRGB(65, 160, 90))
     local monster = part("ChuggernaughtPlaceholder", Vector3.new(4, 8, 4), Vector3.new(36, -11.5, -35), Color3.fromRGB(145, 70, 80))
-    monster.CanCollide = false
+    monster.CanCollide, monster.CanQuery, monster.Transparency = false, false, 1
     -- Lamps stay dim before power so the route remains readable.
     for _, position in {Vector3.new(-24, 11, 22), Vector3.new(-35, 11, -28), Vector3.new(-35, 11, -5), Vector3.new(-8, 11, -20), Vector3.new(12, 11, -20), Vector3.new(36, 11, 10), Vector3.new(40, -3, -32)} do
         local lamp = part("PubLamp", Vector3.new(1.5, 0.5, 1.5), position, Color3.fromRGB(255, 184, 90), Enum.Material.Neon)

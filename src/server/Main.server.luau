@@ -24,6 +24,7 @@ local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPromp
 local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
+local encounter = require(script.Parent.MonsterEncounter).new(monster)
 local exitDoor = map:WaitForChild("ExitDoor") :: Part
 local spawn = map:WaitForChild("PrototypeSpawn") :: SpawnLocation
 local bell = map:WaitForChild("Bell") :: Part
@@ -59,6 +60,7 @@ local function reset(message: string?)
     graceUntil = os.clock() + 3
     keyPlacement.choose()
     navigation.reset()
+    encounter.reset()
     monster.CFrame = home
     update(message)
 end
@@ -119,9 +121,11 @@ for name, expected in stations do
             return
         end
         RunState.advance(state, expected)
+        if state.stage >= 5 then encounter.stop() end
         if expected == 2 then
-            graceUntil = os.clock() + 3
-            update("LAST ORDERS! The Chuggernaught is awake.")
+            encounter.wake()
+            graceUntil = os.clock() + Config.MonsterRevealSeconds
+            update("GLUG. GLUG. GLUG… Something is waking up.")
         elseif expected == 3 then
             update("You have the exit key. Get to the emergency exit!")
         elseif expected == 1 then
@@ -138,6 +142,9 @@ RunService.Heartbeat:Connect(function(dt: number)
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     if not character or not root or not root:IsA("BasePart") then return end
     local distracted = os.clock() < distractedUntil
+    local canMove, message = encounter.step(distracted)
+    if message then update(message) end
+    if not canMove then return end
     local target = if distracted then bell.Position - Vector3.new(0, 4, -6) else root.Position - Vector3.new(0, 2.5, 0)
     local delta = root.Position - monster.Position
     local sight = RaycastParams.new()
@@ -151,6 +158,6 @@ RunService.Heartbeat:Connect(function(dt: number)
     end
     if os.clock() < graceUntil then return end
     local speed = if state.stage >= 4 then Config.ChaseSpeed else Config.MonsterSpeed
-    navigation.step(target, speed, dt)
+    navigation.step(target, encounter.speed(speed), dt)
 end)
 print("Last Orders prototype ready")
