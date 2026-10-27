@@ -54,3 +54,18 @@ Backed up connected Studio script sources under build/backups/Studio-before-stai
 The waist-height server visibility ray hit the bar when standing close to the warning. Interaction visibility now starts at the character's head (or two studs above the root if no head exists); distance and wall rejection remain server-side. Blocked visibility now supplies feedback instead of silently returning.
 
 Studio Play regression passed: placed the player at the close front of the bar, used the normal client ProximityPrompt InputHoldBegin/InputHoldEnd API, and verified stage 2 plus the canonical warning message. A geometric check reproduced the old Bar obstruction, confirmed eye-level visibility, and confirmed OfficeSnugPartition still blocks a through-wall approach. Rojo synced the change before the guarded manual source update, so that redundant update was skipped. Both builds and git diff --check passed; Play was stopped afterwards. Manually repeat with keyboard E and touch input, then check the bell and office key.
+
+
+## Gothic visual pass — 27 October 2026
+
+The user confirmed the complete layout worked before this pass. Added local Part-based furniture derived from the existing pub-set recipes, dark oak framing, pointed stained-glass panels, a vaulted slate roof, burgundy cushions, candle chandeliers, stair rails and a stone fireplace. Original GLB/Blender assets and moodboard are unchanged; no mesh or texture uploads. The existing furniture blocks remain as invisible collision proxies. Decoration is anchored/non-colliding/non-queryable except the roof, which remains queryable for the camera. Night lighting and post-processing apply only in greybox Play, and Stop restores editor settings.
+
+Both Rojo builds and git diff --check passed. A Studio fixture verified decorative collision/query settings; the layout and six-destination monster traversal specs passed with the visual pass present. Test fixture offsets now include nested decorative parts. Later stair rails use the same non-colliding/non-queryable helper and do not change walking routes. Temporary review geometry and lighting were removed/restored after checks.
+
+Screen capture and native-app preview timed out. Final rendered appearance, small-screen readability, camera behaviour beneath the roof and a player-controlled Play walkthrough remain unverified. Next manual check: view the bar, snug/fireplace, office and cellar before/after restoring power; confirm warning/bell/key prompts, stairs, capture/reset and escape.
+
+## Customer-facing note — 27 October 2026
+
+Moved the warning from the bar top onto the customer-facing bar panel, clear of both the counter and decorative top. The note now has printed text and a labelled Read note prompt. Camera line-of-sight is disabled for this prompt only; server eye-level visibility, proximity, player identity and health checks remain. Rereading displays the warning without advancing objectives again.
+
+Studio Play verified first read and reread through the normal client prompt API, with server and client stage/message assertions. Allow character replication to settle after teleporting before triggering the prompt; an immediate first test raced that replication. Sight rays at three avatar heights reached the note, and a wall still blocked a through-wall ray. Both Rojo builds and whitespace checks passed. Test Play sessions were stopped; source changes are synced to the connected local Studio project. Keyboard/touch manual input and final text appearance remain user checks.

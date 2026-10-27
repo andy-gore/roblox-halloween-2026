@@ -4,7 +4,7 @@ local server = game.ServerScriptService:WaitForChild("HalloweenServer")
 local map = require(server:WaitForChild("PrototypeMap")).build()
 map.Name = "LastOrdersNavigationTest"
 local offset = Vector3.new(2000, 0, 0)
-for _, object in map:GetChildren() do
+for _, object in map:GetDescendants() do
     if object:IsA("BasePart") then object.Position += offset end
 end
 local ok, err = pcall(function()

@@ -16,6 +16,7 @@ if starterPlate and starterPlate:IsA("Part") and starterPlate.Anchored
     and starterPlate.Position == Vector3.new(0, -0.5, 0) then
     starterPlate.CanCollide, starterPlate.CanQuery, starterPlate.Transparency = false, false, 1
 end
+require(script.Parent.PubAtmosphere).apply()
 local map = require(script.Parent.PrototypeMap).build()
 local monster = map:WaitForChild("ChuggernaughtPlaceholder") :: Part
 local key = map:WaitForChild("OfficeKey") :: Part
@@ -98,6 +99,10 @@ for name, expected in stations do
         local obstruction = workspace:Raycast(eye, station.Position - eye, sight)
         if obstruction and obstruction.Instance ~= station then
             update("Move into view of the item to interact.")
+            return
+        end
+        if name == "Warning" and state.stage > 1 then
+            update("NEVER LET HIM FINISH HIS DRINK.")
             return
         end
         if name == "Bell" then

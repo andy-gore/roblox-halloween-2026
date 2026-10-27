@@ -109,7 +109,24 @@ function Map.build(): Folder
         part("PubTable", Vector3.new(7, 3, 6), Vector3.new(x, 2, 29), wood)
     end
     sign("PubName", "THE CROOKED TANKARD", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
-    station("Warning", Vector3.new(-27, 5, 17), "Read warning", Color3.fromRGB(230, 215, 170))
+    -- Put the note on the customer-facing side, clear of the counter and bar top.
+    local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read note", Color3.fromRGB(230, 215, 170))
+    warning.Size, warning.Material = Vector3.new(5, 1.8, 0.12), Enum.Material.SmoothPlastic
+    local warningPrompt = warning:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
+    warningPrompt.ObjectText = "Warning note"
+    -- Server distance and eye-level wall checks still apply; camera occlusion must not hide this prompt.
+    warningPrompt.RequiresLineOfSight = false
+    local paper = Instance.new("SurfaceGui")
+    paper.Face, paper.SizingMode = Enum.NormalId.Back, Enum.SurfaceGuiSizingMode.PixelsPerStud
+    paper.PixelsPerStud, paper.LightInfluence = 80, 0
+    paper.Parent = warning
+    local writing = Instance.new("TextLabel")
+    writing.Size, writing.Position = UDim2.fromScale(0.92, 0.86), UDim2.fromScale(0.04, 0.07)
+    writing.BackgroundTransparency = 1
+    writing.TextColor3 = Color3.fromRGB(35, 22, 24)
+    writing.Font, writing.TextScaled = Enum.Font.GothamBold, true
+    writing.Text = "NEVER LET HIM\nFINISH HIS DRINK."
+    writing.Parent = paper
     station("Bell", Vector3.new(-20, 5, 17), "Ring bell", Color3.fromRGB(210, 160, 65))
     station("CellarFuseBox", Vector3.new(44, -12, -34), "Restore lights", Color3.fromRGB(95, 135, 160))
     local key = station("OfficeKey", Vector3.new(-37, 4, -33), "Take exit key", Color3.fromRGB(240, 195, 65))
@@ -133,6 +150,7 @@ function Map.build(): Folder
     spawn.Name, spawn.Size, spawn.Position = "PrototypeSpawn", Vector3.new(6, 1, 6), Vector3.new(6, 1, 30)
     spawn.Anchored, spawn.Neutral, spawn.Transparency = true, true, 1
     spawn.Parent = folder
+    require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
     return folder
 end
