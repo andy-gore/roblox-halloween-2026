@@ -155,6 +155,7 @@ function Map.build(): Folder
     require(script.Parent.PubExpansion).build(folder)
     require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
+    require(script.Parent.PubExterior).build(folder)
     return folder
 end
 return Map

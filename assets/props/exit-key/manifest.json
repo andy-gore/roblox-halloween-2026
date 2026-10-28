@@ -1,0 +1,15 @@
+{
+  "blender_xyz_studs": [
+    1.995,
+    0.965,
+    0.21
+  ],
+  "roblox_xyz_studs": [
+    1.995,
+    0.21,
+    0.965
+  ],
+  "triangles": 1248,
+  "mesh_objects": 9,
+  "units": "1 Blender unit = 1 Roblox stud"
+}
