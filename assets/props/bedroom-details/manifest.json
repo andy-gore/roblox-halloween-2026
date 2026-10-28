@@ -1,0 +1,170 @@
+{
+  "BedsideLamp": {
+    "blender_xyz_studs": [
+      1.284,
+      1.284,
+      1.825
+    ],
+    "roblox_xyz_studs": [
+      1.284,
+      1.825,
+      1.284
+    ],
+    "triangles": 1388,
+    "mesh_objects": 13
+  },
+  "TravellerSuitcase": {
+    "blender_xyz_studs": [
+      2.6,
+      1.056,
+      1.814
+    ],
+    "roblox_xyz_studs": [
+      2.6,
+      1.814,
+      1.056
+    ],
+    "triangles": 984,
+    "mesh_objects": 22
+  },
+  "BedsideBooks": {
+    "blender_xyz_studs": [
+      1.22,
+      1.0378,
+      0.566
+    ],
+    "roblox_xyz_studs": [
+      1.22,
+      0.566,
+      1.0378
+    ],
+    "triangles": 1100,
+    "mesh_objects": 25
+  },
+  "BedroomCoatRail": {
+    "blender_xyz_studs": [
+      2.8,
+      0.8213,
+      1.16
+    ],
+    "roblox_xyz_studs": [
+      2.8,
+      1.16,
+      0.8213
+    ],
+    "triangles": 780,
+    "mesh_objects": 15
+  },
+  "RoomPlaque_01": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 320,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_02": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 408,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_03": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 460,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_04": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 368,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_05": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 400,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_06": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 432,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_07": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 328,
+    "mesh_objects": 8
+  },
+  "RoomPlaque_08": {
+    "blender_xyz_studs": [
+      1.04,
+      0.197,
+      0.7
+    ],
+    "roblox_xyz_studs": [
+      1.04,
+      0.7,
+      0.197
+    ],
+    "triangles": 504,
+    "mesh_objects": 8
+  }
+}

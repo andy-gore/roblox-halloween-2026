@@ -1,0 +1,114 @@
+{
+  "CellarShelf": {
+    "blender_xyz_studs": [
+      3.6,
+      1.48,
+      4.5
+    ],
+    "roblox_xyz_studs": [
+      3.6,
+      4.5,
+      1.48
+    ],
+    "triangles": 1232,
+    "mesh_objects": 28
+  },
+  "OpenCellarCrate": {
+    "blender_xyz_studs": [
+      2.18,
+      1.649,
+      1.435
+    ],
+    "roblox_xyz_studs": [
+      2.18,
+      1.435,
+      1.649
+    ],
+    "triangles": 1584,
+    "mesh_objects": 36
+  },
+  "ClosedCellarCrate": {
+    "blender_xyz_studs": [
+      2.18,
+      1.649,
+      1.635
+    ],
+    "roblox_xyz_studs": [
+      2.18,
+      1.635,
+      1.649
+    ],
+    "triangles": 1848,
+    "mesh_objects": 42
+  },
+  "KitchenStockpot": {
+    "blender_xyz_studs": [
+      2.1001,
+      1.38,
+      1.07
+    ],
+    "roblox_xyz_studs": [
+      2.1001,
+      1.07,
+      1.38
+    ],
+    "triangles": 1128,
+    "mesh_objects": 8
+  },
+  "KitchenFryingPan": {
+    "blender_xyz_studs": [
+      2.63,
+      1.56,
+      0.3445
+    ],
+    "roblox_xyz_studs": [
+      2.63,
+      0.3445,
+      1.56
+    ],
+    "triangles": 944,
+    "mesh_objects": 6
+  },
+  "KitchenPlateStack": {
+    "blender_xyz_studs": [
+      1.6,
+      1.6,
+      0.535
+    ],
+    "roblox_xyz_studs": [
+      1.6,
+      0.535,
+      1.6
+    ],
+    "triangles": 3072,
+    "mesh_objects": 8
+  },
+  "CellarBucket": {
+    "blender_xyz_studs": [
+      1.14,
+      1.13,
+      1.5
+    ],
+    "roblox_xyz_studs": [
+      1.14,
+      1.5,
+      1.13
+    ],
+    "triangles": 900,
+    "mesh_objects": 6
+  },
+  "CellarBroom": {
+    "blender_xyz_studs": [
+      0.8088,
+      0.349,
+      3.5026
+    ],
+    "roblox_xyz_studs": [
+      0.8088,
+      3.5026,
+      0.349
+    ],
+    "triangles": 660,
+    "mesh_objects": 15
+  }
+}

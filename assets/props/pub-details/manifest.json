@@ -1,0 +1,128 @@
+{
+  "OpenGuestbook": {
+    "blender_xyz_studs": [
+      2.46,
+      1.835,
+      0.3741
+    ],
+    "roblox_xyz_studs": [
+      2.46,
+      0.3741,
+      1.835
+    ],
+    "triangles": 1672,
+    "mesh_objects": 38
+  },
+  "PortraitFrame": {
+    "blender_xyz_studs": [
+      1.55,
+      0.305,
+      2.05
+    ],
+    "roblox_xyz_studs": [
+      1.55,
+      2.05,
+      0.305
+    ],
+    "triangles": 528,
+    "mesh_objects": 12
+  },
+  "LandscapeFrame": {
+    "blender_xyz_studs": [
+      2.2,
+      0.305,
+      1.45
+    ],
+    "roblox_xyz_studs": [
+      2.2,
+      1.45,
+      0.305
+    ],
+    "triangles": 528,
+    "mesh_objects": 12
+  },
+  "GreenBottle": {
+    "blender_xyz_studs": [
+      0.602,
+      0.602,
+      1.51
+    ],
+    "roblox_xyz_studs": [
+      0.602,
+      1.51,
+      0.602
+    ],
+    "triangles": 908,
+    "mesh_objects": 5
+  },
+  "AmberBottle": {
+    "blender_xyz_studs": [
+      0.722,
+      0.722,
+      1.29
+    ],
+    "roblox_xyz_studs": [
+      0.722,
+      1.29,
+      0.722
+    ],
+    "triangles": 908,
+    "mesh_objects": 5
+  },
+  "StonewareMug": {
+    "blender_xyz_studs": [
+      1.1303,
+      0.7,
+      0.77
+    ],
+    "roblox_xyz_studs": [
+      1.1303,
+      0.77,
+      0.7
+    ],
+    "triangles": 840,
+    "mesh_objects": 3
+  },
+  "PubNameSign": {
+    "blender_xyz_studs": [
+      3.5,
+      0.2365,
+      0.67
+    ],
+    "roblox_xyz_studs": [
+      3.5,
+      0.67,
+      0.2365
+    ],
+    "triangles": 1340,
+    "mesh_objects": 7
+  },
+  "RoomsAvailableSign": {
+    "blender_xyz_studs": [
+      2.6,
+      0.2365,
+      0.67
+    ],
+    "roblox_xyz_studs": [
+      2.6,
+      0.67,
+      0.2365
+    ],
+    "triangles": 1152,
+    "mesh_objects": 7
+  },
+  "CellarSign": {
+    "blender_xyz_studs": [
+      1.8,
+      0.2365,
+      0.67
+    ],
+    "roblox_xyz_studs": [
+      1.8,
+      0.67,
+      0.2365
+    ],
+    "triangles": 616,
+    "mesh_objects": 7
+  }
+}

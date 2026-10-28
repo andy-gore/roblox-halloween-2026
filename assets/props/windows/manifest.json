@@ -1,0 +1,178 @@
+{
+  "components": {
+    "BedroomWindowFrame": {
+      "blender_xyz_studs": [
+        4.9,
+        1.1,
+        6.16
+      ],
+      "roblox_xyz_studs": [
+        4.9,
+        6.16,
+        1.1
+      ],
+      "bounds_min_xyz": [
+        -2.450000047683716,
+        -0.75,
+        0.0
+      ],
+      "bounds_max_xyz": [
+        2.450000047683716,
+        0.3500000238418579,
+        6.159999847412109
+      ],
+      "triangles": 976,
+      "mesh_objects": 23
+    },
+    "BedroomWindowGlass": {
+      "blender_xyz_studs": [
+        3.771,
+        0.0365,
+        4.77
+      ],
+      "roblox_xyz_studs": [
+        3.771,
+        4.77,
+        0.0365
+      ],
+      "bounds_min_xyz": [
+        -1.8855000734329224,
+        0.04100000113248825,
+        0.5649999976158142
+      ],
+      "bounds_max_xyz": [
+        1.8855000734329224,
+        0.07750000059604645,
+        5.335000038146973
+      ],
+      "triangles": 360,
+      "mesh_objects": 30
+    },
+    "BedroomCurtainPair": {
+      "blender_xyz_studs": [
+        6.53,
+        0.7618,
+        5.6864
+      ],
+      "roblox_xyz_studs": [
+        6.53,
+        5.6864,
+        0.7618
+      ],
+      "bounds_min_xyz": [
+        -3.265000104904175,
+        -0.7818143367767334,
+        0.30863168835639954
+      ],
+      "bounds_max_xyz": [
+        3.265000104904175,
+        -0.02000001072883606,
+        5.994999885559082
+      ],
+      "triangles": 4604,
+      "mesh_objects": 25
+    },
+    "PubWindowFrame": {
+      "blender_xyz_studs": [
+        7.1,
+        1.1,
+        6.56
+      ],
+      "roblox_xyz_studs": [
+        7.1,
+        6.56,
+        1.1
+      ],
+      "bounds_min_xyz": [
+        -3.549999952316284,
+        -0.75,
+        0.0
+      ],
+      "bounds_max_xyz": [
+        3.549999952316284,
+        0.3500000238418579,
+        6.559999942779541
+      ],
+      "triangles": 1108,
+      "mesh_objects": 26
+    },
+    "PubWindowGlass": {
+      "blender_xyz_studs": [
+        5.971,
+        0.0365,
+        5.17
+      ],
+      "roblox_xyz_studs": [
+        5.971,
+        5.17,
+        0.0365
+      ],
+      "bounds_min_xyz": [
+        -2.9855000972747803,
+        0.04100000113248825,
+        0.5649999976158142
+      ],
+      "bounds_max_xyz": [
+        2.9855000972747803,
+        0.07750000059604645,
+        5.735000133514404
+      ],
+      "triangles": 540,
+      "mesh_objects": 45
+    },
+    "PubCurtainPair": {
+      "blender_xyz_studs": [
+        8.73,
+        0.7618,
+        6.0864
+      ],
+      "roblox_xyz_studs": [
+        8.73,
+        6.0864,
+        0.7618
+      ],
+      "bounds_min_xyz": [
+        -4.365000247955322,
+        -0.7818143367767334,
+        0.30863168835639954
+      ],
+      "bounds_max_xyz": [
+        4.365000247955322,
+        -0.02000001072883606,
+        6.394999980926514
+      ],
+      "triangles": 4604,
+      "mesh_objects": 25
+    }
+  },
+  "mounting": {
+    "Bedroom": {
+      "frame_width": 4.4,
+      "frame_height": 5.4,
+      "opening_width": 3.8400000000000003,
+      "opening_height": 4.84,
+      "opening_bottom_z": 0.53,
+      "opening_top_z": 5.37,
+      "rectangular_wall_cutout_width": 4.4,
+      "rectangular_wall_cutout_height": 5.4,
+      "cutout_bottom_z": 0.25,
+      "rod_width": 6.5,
+      "columns": 2,
+      "rows": 3
+    },
+    "Pub": {
+      "frame_width": 6.6,
+      "frame_height": 5.8,
+      "opening_width": 6.039999999999999,
+      "opening_height": 5.239999999999999,
+      "opening_bottom_z": 0.53,
+      "opening_top_z": 5.77,
+      "rectangular_wall_cutout_width": 6.6,
+      "rectangular_wall_cutout_height": 5.8,
+      "cutout_bottom_z": 0.25,
+      "rod_width": 8.7,
+      "columns": 3,
+      "rows": 3
+    }
+  }
+}

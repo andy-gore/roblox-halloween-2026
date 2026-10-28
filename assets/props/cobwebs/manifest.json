@@ -1,0 +1,128 @@
+{
+  "CornerCobweb": {
+    "blender_xyz_studs": [
+      2.6654,
+      0.0715,
+      2.6769
+    ],
+    "roblox_xyz_studs": [
+      2.6654,
+      2.6769,
+      0.0715
+    ],
+    "bounds_min_xyz": [
+      -0.008999999612569809,
+      -0.03523474931716919,
+      -2.6679422855377197
+    ],
+    "bounds_max_xyz": [
+      2.6563522815704346,
+      0.036258939653635025,
+      0.008999999612569809
+    ],
+    "triangles": 2816,
+    "mesh_objects": 1,
+    "attachment_points_blender_xyz": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        2.65,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -2.65
+      ]
+    ],
+    "placement": "Corner origin. +X right, -Z down; front Blender -Y. Fit anchors to wall/ceiling or frame edges."
+  },
+  "HangingCobweb": {
+    "blender_xyz_studs": [
+      2.0023,
+      0.0645,
+      2.4495
+    ],
+    "roblox_xyz_studs": [
+      2.0023,
+      2.4495,
+      0.0645
+    ],
+    "bounds_min_xyz": [
+      -0.9711222648620605,
+      -0.03387893736362457,
+      -2.4432148933410645
+    ],
+    "bounds_max_xyz": [
+      1.0312023162841797,
+      0.03064638376235962,
+      0.0062736389227211475
+    ],
+    "triangles": 2352,
+    "mesh_objects": 1,
+    "attachment_points_blender_xyz": [
+      [
+        -0.95,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0.95,
+        0,
+        0
+      ]
+    ],
+    "placement": "Three upper suspension anchors. Origin at centre of anchor line; web hangs in local -Z. No spider included."
+  },
+  "ShelfCobweb": {
+    "blender_xyz_studs": [
+      1.1295,
+      0.0547,
+      1.1296
+    ],
+    "roblox_xyz_studs": [
+      1.1295,
+      1.1296,
+      0.0547
+    ],
+    "bounds_min_xyz": [
+      -0.005499999970197678,
+      -0.032115548849105835,
+      -1.1240843534469604
+    ],
+    "bounds_max_xyz": [
+      1.1239562034606934,
+      0.022618189454078674,
+      0.005499999970197678
+    ],
+    "triangles": 1100,
+    "mesh_objects": 1,
+    "attachment_points_blender_xyz": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1.12,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -1.12
+      ]
+    ],
+    "placement": "Corner origin. +X right, -Z down; front Blender -Y. Fit anchors to wall/ceiling or frame edges."
+  }
+}
