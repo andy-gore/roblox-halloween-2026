@@ -71,6 +71,12 @@ function Navigation.new(monster: BasePart)
             table.insert(neighbours[edge[2]], edge[1])
         end
     end
+    local searchStops: {[number]: boolean} = {}
+    for i,position in positions do
+        -- Inspect rooms and landings, rather than stopping halfway up a flight of stairs.
+        searchStops[i] = position.Y==4.5 or position.Y==20.5 or position.Y==-11.5
+    end
+    local graph = require(script.Parent.MonsterRoutes).new(nodes, neighbours, searchStops)
     local function nearest(position: Vector3): number?
         local best: number? = nil
         local distance = math.huge
@@ -94,8 +100,30 @@ function Navigation.new(monster: BasePart)
     function controller.reset()
         route, nextPlan, lastTarget = {}, 0, nil
     end
+    function controller.searchTargets(position: Vector3, direction: Vector3): {Vector3}
+        local first=nearest(position+Vector3.new(0,4,0))
+        local result: {Vector3}={}
+        if first then
+            for _,node in graph.search(first,direction) do
+                table.insert(result,nodes[node]-Vector3.new(0,4,0))
+            end
+        end
+        return result
+    end
     function controller.step(target: Vector3, speed: number, dt: number)
         local destination = target + Vector3.new(0, 4, 0)
+        -- In clear space, pursue directly instead of returning to a graph node behind him.
+        if math.abs(destination.Y-monster.Position.Y)<0.75 and clear(monster.Position,destination) then
+            local delta=destination-monster.Position
+            if delta.Magnitude>0.02 then
+                local movement=delta.Unit*math.min(delta.Magnitude,speed*math.min(dt,0.1))
+                local position=monster.Position+movement
+                local flat=Vector3.new(movement.X,0,movement.Z)
+                monster.CFrame=if flat.Magnitude>0.001 then CFrame.lookAt(position,position+flat.Unit) else CFrame.new(position)*monster.CFrame.Rotation
+            end
+            route,nextPlan,lastTarget={},0,nil
+            return
+        end
         local previousTarget = lastTarget
         if os.clock() >= nextPlan and (not previousTarget or (target - previousTarget).Magnitude > 3 or #route == 0) then
             lastTarget = target
@@ -103,25 +131,9 @@ function Navigation.new(monster: BasePart)
             route = {}
             local first, last = nearest(monster.Position), nearest(destination)
             if first and last then
-                local queue = {first}
-                local parents: {[number]: number} = {[first] = 0}
-                local cursor = 1
-                while cursor <= #queue and parents[last] == nil do
-                    local current = queue[cursor]
-                    cursor += 1
-                    for _, neighbour in neighbours[current] do
-                        if parents[neighbour] == nil then
-                            parents[neighbour] = current
-                            table.insert(queue, neighbour)
-                        end
-                    end
-                end
-                if parents[last] ~= nil then
-                    local node = last
-                    while node ~= 0 do
-                        table.insert(route, 1, nodes[node])
-                        node = parents[node]
-                    end
+                local path=graph.path(first,last)
+                if #path>0 then
+                    for _,node in path do table.insert(route,nodes[node]) end
                     -- Only take a final approach if it has room for the full placeholder.
                     if clear(nodes[last], destination) then table.insert(route, destination) end
                 end
@@ -145,7 +157,11 @@ function Navigation.new(monster: BasePart)
         local delta = waypoint - monster.Position
         if delta.Magnitude < 0.02 then table.remove(route, 1) return end
         local movement = delta.Unit * math.min(delta.Magnitude, speed * math.min(dt, 0.1))
-        if clear(monster.Position, monster.Position + movement) then monster.Position += movement end
+        if clear(monster.Position, monster.Position + movement) then
+            local position = monster.Position + movement
+            local flat = Vector3.new(movement.X, 0, movement.Z)
+            monster.CFrame = if flat.Magnitude > 0.001 then CFrame.lookAt(position, position + flat.Unit) else CFrame.new(position) * monster.CFrame.Rotation
+        end
     end
     return controller
 end

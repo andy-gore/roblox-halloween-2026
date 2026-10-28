@@ -128,3 +128,47 @@ Storm.client and StormRain provide a bounded local rain pool (100 desktop/64 tou
 Checks passed: both Rojo builds and git diff --check; PubExterior.spec.luau verified car collision, hidden key/nine locations, original spawn, open cellar stairs, queryable roofs, unchanged monster route clearance, and walking routes exit→car→frontage without jumping. Studio Play verified 100 non-colliding rain streaks staying above roof/ground stops, moving rain, sign sway, loaded rain/thunder clips and unchanged stage 1 while inspecting the exterior. Play stopped afterwards.
 
 The user's modified places/Halloween2026.rbxlx was backed up under build/backups/ before this work and preserved byte-for-byte. Temporary test/render scenes were removed after use. A neutral night preview of exported Studio geometry was rendered and visually checked; it is not an in-game screenshot. Manual checks remain: exterior lighting/readability in game, thunder timing/volume, touch performance, door/path transitions and the saved authored place after the next normal sync. No live experience was modified.
+
+## Hunt and escape routes — 28 October 2026
+
+Approved scope is the hunt and layout refinement only. Objectives, all nine random key spots, power-triggered key visibility and key-only exit remain unchanged. No breaker puzzle, second antagonist or exterior finale was added. Saved authored place and original artwork are preserved; backups are in ignored build/backups/hunt-review-20261028/.
+
+Server MonsterHunt uses bounded sight, fixed bell sounds and last-seen memory for Patrol, Investigate, Chase and Search. MonsterSenses uses real collidable geometry to block sight and reach through walls/floors. MonsterGrab provides a 0.5-second visible windup and 0.9-second recovery after a miss. Walking through the monster's central body during a grab commits capture; dodging around him works. Capture remains active during drinking and investigation. The bell has an 18-second server cooldown with a client countdown; a visible player overrides its sound. Chase starts at 17.5 studs/sec versus default player speed 16; patrol is 9.5, investigation 12 and search 10.5. Drinks now occur at 20-second intervals and retain the existing bounded boosts. These are initial playtest values.
+
+StaffStairs adds an enclosed rear stair and ground-level return passage between the north end of the upper corridor and kitchen. Both floors have labelled entrances. Rooms 1 and 2 share one open adjoining doorway; the remaining six keep single entrances. Native geometry, collision, rails, roof, lanterns and monster route graph are included. No Studio-authored Workspace geometry was replaced.
+
+Passed in local Studio:
+
+- MonsterEncounter.spec.luau: reveal, drinks, interruption, bounded speed, stop/reset with controlled time.
+- MonsterHunt.spec.luau: unseen-player isolation, last-seen search/expiry, patrol, bell priority/cooldown/reuse/reset, grab windup/dodge/recovery/capture, central-body bypass rejection and drink interruption.
+- MonsterSenses.spec.luau: actual frontal/peripheral rays, reach/contact, rear approach, walls, storey separation and sight range.
+- EscapeRoutes.spec.luau: player walking paths and actual monster traversal through the staff stair in both directions with the main stair blocked; adjoining bedroom traversal in both directions with corridor doors blocked; every normal route edge clear and annex roof queryable. Fixtures removed. For repeat tests after editing modules, use fresh module clones or a new Play session to avoid Studio's require cache.
+- Existing RunState, PubLayout (all eight bedrooms), ExpandedPub (furniture, nine key locations and actual pursuit) and PubExterior specs.
+- Actual player avatar walked from kitchen to the upper corridor and back through the staff stairs without jumping or getting stuck. Controls were restored.
+- Normal client prompt interactions advanced warning/power, revealed the key, and exercised a repeated bell ring without refreshing ReadyAt. An unseen upstairs player produced Patrol; a visible player overrode bell investigation with Chase; moving behind a bedroom wall produced Search.
+- A natural drinking pause was interrupted by a live grab/capture, resetting objectives, inventory, drink count and bell cooldown. A separate live side dodge produced Recover without capture. The player then collected the actual random key and escaped, reaching stage 5 and Stopped without another requirement.
+- ChuggernaughtRig.spec.luau passed in Play with the original mesh. The actual grab rotated the live left upper-arm bone by 1.45 radians, displayed its warning caption and kept tankard/hand grip error below 0.001 studs.
+
+Both Rojo builds and git diff --check pass. Temporary fixtures and Play sessions were removed/stopped. Script Analysis CLI is not installed; no standalone static Luau analysis was run. Existing asset-type errors for unrelated asset 203785492 remain in Studio Output; no new gameplay script errors appeared during these checks.
+
+Review manually with keyboard and touch: grab reaction time, whether sight breaks feel fair, whether straight chases close the gap sufficiently, signs/camera/head clearance on the staff stair, and escapes through rooms 1/2 with the monster following. A full unassisted playthrough and difficulty tuning remain human playtest checks; scripted movement does not establish that the game feels balanced.
+
+## Pursuit intelligence — 28 October 2026
+
+Playtest feedback: a quick corner or circuit of the new loop lost him too easily. The refinement keeps chase speed for 1.25 seconds after losing sight and then searches for up to 18 seconds at 14.5 studs/sec. Search plans follow the last witnessed movement direction and inspect up to three distinct nearby escape branches. He checks rooms and landings instead of pausing mid-stair. Observed direction is sampled across replicated position bursts, so network cadence does not erase his heading estimate. An alert monster has wider vision and a 14-stud peripheral range; actual walls and floors still occlude it.
+
+Fast grounded footsteps (at least 10 studs/sec) provide sampled sound positions: up to 28 studs in open space, reduced to 12 through an interior wall, within the same floor level. Standing still supplies no new sound trail. The server samples sounds at most every 0.9 seconds. Footsteps can redirect investigation/search; a visible player still takes priority over the bell. The reveal hint and sound feedback explain keeping quiet. No new control, enemy, objective or speed boost was added.
+
+MonsterRoutes replaces edge-count routing with actual walking-distance costs, making existing shorter connections useful. MonsterNavigation pursues directly when full-body and floor casts confirm a clear same-level approach; it no longer walks back to a graph marker behind itself before chasing through clear space. Hidden player positions are not inputs to route prediction: plans use remembered sightings, witnessed heading and the fixed pub graph, refreshed only by valid new sights or sounds.
+
+Checks passed:
+
+- Extended MonsterHunt.spec.luau: corner memory, directional branch searches, alternate-exit inspection, finite alert expiry/reset, sampled sound retargeting, silent unseen-position isolation and heading preservation with bursty replicated movement. Existing bell/grab/drinking checks retained.
+- Extended MonsterSenses.spec.luau: alert rear reacquisition, wall/floor occlusion, real grounded fast/quiet motion, distance limits and wall-muffled footsteps.
+- MonsterRoutes.spec.luau: shorter physical walk versus fewer graph edges, reversed paths, distinct direction-ranked exits and disconnected nodes.
+- MonsterIntelligence.spec.luau: direct pursuit/reversal in real geometry, alternative corridor search exits and a search down the full guest stairs to a landing.
+- EscapeRoutes.spec.luau and ExpandedPub.spec.luau: both new connections and the existing full furnished pub remain traversable by the monster, with no tested wall/furniture overlaps.
+- Live Play: retained Chase behind a verified bedroom obstruction, transitioned to Search and continued to approximately z=27 after the last sighting at z=15; reacquired a player looping ten studs behind. A separate actual avatar MoveTo at 16 studs/sec behind him, initially outside his sight, made him turn and resume Chase from the sound trail. Silent stationary/out-of-range player positions did not supply a new target in the isolated checks.
+- Normal client key pickup and emergency-exit interaction still completed stage 5 with the monster Stopped. Local Play ended and controls/fixtures were restored.
+
+Both Rojo configurations and whitespace checks pass. Standalone Luau Script Analysis remains unavailable. Human review still needs to establish chase fairness, whether players understand the footstep cue, quiet hiding opportunities and difficulty on keyboard/touch. This was a local refinement; the saved authored place and original artwork were preserved and no live experience was modified.

@@ -57,11 +57,16 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
             local look=playerRoot.Position-root.Position local flat=Vector3.new(look.X,0,look.Z)
             if flat.Magnitude>0.1 then facing=facing:Lerp(flat.Unit,math.clamp(dt*4,0,1)) end
         end
+    else
+        local look=root.CFrame.LookVector
+        facing=facing:Lerp(Vector3.new(look.X,0,look.Z),math.clamp(dt*12,0,1))
     end
     if facing.Magnitude<0.01 then facing=Vector3.zAxis end
     local feet=displayed-Vector3.new(0,4,0)
     local basis=CFrame.lookAt(feet,feet+facing.Unit)
-    local duration=if mode=="Reveal" then Config.MonsterRevealSeconds else Config.MonsterChugSeconds
+    local duration=if mode=="Reveal" then Config.MonsterRevealSeconds
+        elseif mode=="Grab" then Config.GrabWindupSeconds
+        elseif mode=="Recover" then Config.GrabRecoverySeconds else Config.MonsterChugSeconds
     local alpha=if mode=="Dormant" then 1 elseif mode=="Reveal" then 1-math.clamp(elapsed/0.35,0,1) else 0
     rig.pose(Pose.frames(basis,phase,moving,mode,elapsed,duration),alpha,basis)
     local beat=math.floor(phase/math.pi)
@@ -71,6 +76,8 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
         local glug=math.floor((elapsed-0.85)/0.5)
         if glug>=0 and glug<3 and glug~=lastGlug then drinkSound:Play() lastGlug=glug end
     end
-    text.Text=if mode=="Reveal" then "GLUG. GLUG. GLUG." elseif mode=="Hunt" and elapsed<2 then "LAST ORDERS!" else ""
+    text.Text=if mode=="Reveal" then "GLUG. GLUG. GLUG." elseif mode=="Grab" then "!"
+        elseif mode=="Search" and elapsed<1.5 then "?"
+        elseif mode=="Chase" and elapsed<1.5 then "LAST ORDERS!" else ""
     caption.Enabled=text.Text~=""
 end)

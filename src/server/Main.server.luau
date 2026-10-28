@@ -25,6 +25,14 @@ local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local encounter = require(script.Parent.MonsterEncounter).new(monster)
+local senses = require(script.Parent.MonsterSenses).new(monster)
+local grab = require(script.Parent.MonsterGrab).new()
+local hunt = require(script.Parent.MonsterHunt).new({
+    Vector3.new(36, 0.5, 23), Vector3.new(-8, 0.5, 23),
+    Vector3.new(-29, 0.5, -29), Vector3.new(9, 0.5, -29),
+    Vector3.new(0, 16.5, -30), Vector3.new(0, 16.5, 30),
+    Vector3.new(28, 0.5, 84), Vector3.new(-36, 0.5, 23),
+}, nil, navigation.searchTargets)
 local exitDoor = map:WaitForChild("ExitDoor") :: Part
 local spawn = map:WaitForChild("PrototypeSpawn") :: SpawnLocation
 local bell = map:WaitForChild("Bell") :: Part
@@ -36,7 +44,6 @@ for _, object in map:GetDescendants() do
 end
 local state = RunState.new()
 local activePlayer: Player? = nil
-local distractedUntil = 0
 local graceUntil = 0
 local function update(message: string?)
     key.Transparency = if state.stage == 3 then 0 else 1
@@ -56,12 +63,15 @@ local function update(message: string?)
 end
 local function reset(message: string?)
     state = RunState.new()
-    distractedUntil = 0
     graceUntil = os.clock() + 3
     keyPlacement.choose()
     navigation.reset()
     encounter.reset()
+    hunt.reset()
+    grab.reset()
+    bell:SetAttribute("ReadyAt", 0)
     monster.CFrame = home
+    monster:SetAttribute("MonsterBehaviour", "Dormant")
     update(message)
 end
 local function join(player: Player)
@@ -112,8 +122,14 @@ for name, expected in stations do
         end
         if name == "Bell" then
             if state.stage < 3 or state.stage >= 5 then return end
-            distractedUntil = os.clock() + Config.DistractionSeconds
-            update("He is heading for the bell. Keep moving!")
+            if not hunt.ringBell(Vector3.new(-20, 0.5, 23)) then
+                update("Give the bell a moment: " .. math.ceil(hunt.bellCooldown()) .. "s.")
+                return
+            end
+            bell:SetAttribute("ReadyAt", workspace:GetServerTimeNow() + Config.BellCooldownSeconds)
+            local visible = senses.sample(character, root, hunt.alert())
+            update(if visible then "He can see you! The bell won't fool him. Break his sight and run!"
+                else "The bell rang. Move away before he investigates!")
             return
         end
         if state.stage ~= expected then
@@ -123,6 +139,9 @@ for name, expected in stations do
         RunState.advance(state, expected)
         if state.stage >= 5 then encounter.stop() end
         if expected == 2 then
+            local look = root.Position - monster.Position
+            local flat = Vector3.new(look.X, 0, look.Z)
+            if flat.Magnitude > 0.01 then monster.CFrame = CFrame.lookAt(monster.Position, monster.Position + flat.Unit) end
             encounter.wake()
             graceUntil = os.clock() + Config.MonsterRevealSeconds
             update("GLUG. GLUG. GLUG… Something is waking up.")
@@ -140,24 +159,40 @@ RunService.Heartbeat:Connect(function(dt: number)
     if not player or state.stage < 3 or state.stage >= 5 then return end
     local character = player.Character
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-    if not character or not root or not root:IsA("BasePart") then return end
-    local distracted = os.clock() < distractedUntil
-    local canMove, message = encounter.step(distracted)
-    if message then update(message) end
-    if not canMove then return end
-    local target = if distracted then bell.Position - Vector3.new(0, 4, -6) else root.Position - Vector3.new(0, 2.5, 0)
-    local delta = root.Position - monster.Position
-    local sight = RaycastParams.new()
-    sight.FilterType = Enum.RaycastFilterType.Exclude
-    sight.FilterDescendantsInstances = {monster, character}
-    if not distracted and delta.Magnitude < Config.CatchDistance and os.clock() > graceUntil
-        and workspace:Raycast(monster.Position, delta, sight) == nil then
+    local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
+    if not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
+    if not encounter.active() then
+        local _, message = encounter.step("Patrol")
+        if message then update(message) end
+        if not encounter.active() then return end
+    end
+    local visible, inReach, contact = senses.sample(character, root, hunt.alert())
+    local feet = monster.Position - Vector3.new(0, 4, 0)
+    if not visible and senses.footsteps(character, root) then
+        if hunt.hearFootstep(root.Position - Vector3.new(0, 2.5, 0)) then
+            update("He heard your footsteps. Break his sight and keep still to lose him.")
+        end
+    end
+    local target, behaviour, looking = hunt.step(feet, root.Position - Vector3.new(0, 2.5, 0), visible)
+    monster:SetAttribute("MonsterBehaviour", behaviour)
+    local action = grab.step(inReach and os.clock() > graceUntil, contact and os.clock() > graceUntil)
+    if action == "Caught" then
         reset("Caught! Try again. Your progress has been reset.")
         character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
         return
     end
+    local canMove, message = encounter.step(if action == "Ready" then behaviour else action)
+    if message then update(message) end
+    if not canMove then return end
     if os.clock() < graceUntil then return end
-    local speed = if state.stage >= 4 then Config.ChaseSpeed else Config.MonsterSpeed
+    if looking then
+        -- Searching turns his real sight cone; the client follows this authoritative facing.
+        monster.CFrame *= CFrame.Angles(0, math.min(dt, 0.1) * 1.8, 0)
+        return
+    end
+    local speed = if behaviour == "Chase" then Config.ChaseSpeed
+        elseif behaviour == "Investigate" then Config.InvestigateSpeed
+        elseif behaviour == "Search" then Config.SearchSpeed else Config.MonsterSpeed
     navigation.step(target, encounter.speed(speed), dt)
 end)
 print("Last Orders prototype ready")

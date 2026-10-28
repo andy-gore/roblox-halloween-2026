@@ -33,7 +33,9 @@ function Pose.frames(feet: CFrame, phase: number, moving: boolean, mode: string,
     local drinking=CFrame.new(0.3,6.9,-0.8)*CFrame.Angles(0,math.pi,0)*CFrame.Angles(-1.1+math.sin(elapsed*12)*0.035,0,0)*CFrame.new(0,-2.15,0)
     local mug=standing:Lerp(drinking,drink)+Vector3.new(0,0,-math.sin(drink*math.pi)*0.6)
     local upper,lower=rightArm(mug:PointToWorldSpace(Vector3.new(-1.35,1.13,0)))
-    local left=body*CFrame.new(-1.5,6,0)*CFrame.Angles(-gait*0.4,0,0.04)
+    local grab=if mode=="Grab" then math.clamp(elapsed/duration,0,1)
+        elseif mode=="Recover" then 1-math.clamp(elapsed/duration,0,1) else 0
+    local left=body*CFrame.new(-1.5,6,0)*CFrame.Angles(-gait*0.4+grab*1.5,0,0.04)
     return {
         Torso=body*CFrame.new(0,3.5,0),
         Head=body*CFrame.new(0,6.2,0)*CFrame.Angles(drink*0.14,0,0),

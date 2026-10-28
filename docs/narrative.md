@@ -24,6 +24,16 @@ This revision takes precedence over the original tankard-theft sequence below. T
 - The key alone unlocks the emergency exit. Tankard theft is no longer required; the original theft dialogue and stolen-tankard epilogue are not part of the current prototype. A replacement epilogue remains to be designed.
 - Current route: read the warning → restore lights → search for the key while hunted → unlock the emergency exit and escape. Capture/reset hides the key and restarts this sequence.
 
+## Approved gameplay refinements — 28 October 2026
+
+These refinements implement the hunt and layout changes selected for the next playtest. The key-based objective sequence above remains unchanged.
+
+- The Chuggernaught patrols fixed routes, pursues a player he can see, investigates the service bell, and searches the last place he saw the player before returning to patrol. Walls and floors block his sight; he cannot track an unseen player through the building.
+- Playtest refinement: briefly breaking sight retains pursuit momentum. He searches likely exits using the player's last observed direction, stays alert for longer, and can investigate nearby fast footsteps. Walls muffle those sounds and different floors block this footstep tracking. Standing still leaves no new sound trail. Route choices use walking distance, allowing him to take existing shorter connections around a loop.
+- A visible player takes priority over the bell. The bell has a reusable cooldown, and neither drinking nor investigating makes the monster harmless at close range. A frontal grab has a visible windup and can be dodged, followed by a brief recovery.
+- An enclosed rear staff staircase connects the far end of the upstairs corridor to the kitchen, creating a second route between floors. Rooms 1 and 2 have an open adjoining doorway; the other six bedrooms retain their single corridor entrance.
+- Breaker puzzles, clue-led key searching, additional antagonists and the extended exterior finale remain proposals for a later review, not part of this refinement.
+
 # 1. Narrative Vision
 
 **DRINK. DESTROY. REPEAT.**

@@ -133,7 +133,20 @@ function Expansion.build(map: Folder)
             marker(string.format("Room%02d", number), Vector3.new(side * 25, 20, z - 5.6))
             lamp(Vector3.new(side * 23, 27, z))
         end
-        for _, z in {-20, 0, 20} do solid("BedroomPartition", Vector3.new(40, 14, 1), Vector3.new(side * 28, 23.5, z)) end
+        for _, z in {-20, 0, 20} do
+            if side == -1 and z == -20 then
+                -- Only rooms 1 and 2 adjoin; the other six retain a single doorway.
+                solid("BedroomPartition",Vector3.new(24,14,1),Vector3.new(-36,23.5,z))
+                solid("BedroomPartition",Vector3.new(6,14,1),Vector3.new(-11,23.5,z))
+                solid("AdjoiningDoorLintel",Vector3.new(10,3,1),Vector3.new(-19,29,z)).Color=wood
+                for _,x in {-24,-14} do
+                    detail("AdjoiningDoorFrame",Vector3.new(0.3,11,1.2),Vector3.new(x,22,z),wood)
+                end
+                label("ADJOINING ROOMS 1 / 2",Vector3.new(-19,26,z),0,10)
+            else
+                solid("BedroomPartition", Vector3.new(40, 14, 1), Vector3.new(side * 28, 23.5, z))
+            end
+        end
     end
     for _, z in centers do
         lamp(Vector3.new(0, 27, z))
@@ -151,6 +164,7 @@ function Expansion.build(map: Folder)
         roof.CFrame *= CFrame.Angles(0, 0, -side * math.atan(7/28))
         roof.CanQuery = true
     end
+    require(script.Parent.StaffStairs).build(map)
 end
 function Expansion.addRoutes(positions: {Vector3}, edges: {{number}})
     local function node(position: Vector3): number
@@ -174,6 +188,7 @@ function Expansion.addRoutes(positions: {Vector3}, edges: {{number}})
     local corridorEnd = node(Vector3.new(0,20.5,44))
     link(previous,landing) link(landing,corridorEnd)
     previous = corridorEnd
+    local adjoining: {number} = {}
     for i = #centers,1,-1 do
         local z = centers[i]
         local hall = node(Vector3.new(0,20.5,z))
@@ -182,7 +197,12 @@ function Expansion.addRoutes(positions: {Vector3}, edges: {{number}})
             local door=node(Vector3.new(side*14,20.5,z))
             local room=node(Vector3.new(side*26,20.5,z))
             link(hall,door) link(door,room)
+            if side==-1 and (z==-30 or z==-10) then table.insert(adjoining,room) end
         end
     end
+    require(script.Parent.StaffStairs).addRoutes(positions,edges,previous)
+    local a=node(Vector3.new(-19,20.5,-10))
+    local b=node(Vector3.new(-19,20.5,-30))
+    link(adjoining[1],a) link(a,b) link(b,adjoining[2])
 end
 return Expansion
