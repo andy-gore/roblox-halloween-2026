@@ -1,0 +1,468 @@
+{
+  "SnugRoomSign": {
+    "wording": "THE SNUG",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 3.5,
+    "roblox_xyz_studs": [
+      4.5,
+      1.35,
+      0.381
+    ],
+    "triangles": 3524,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.25,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.25,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BarRoomSign": {
+    "wording": "MAIN BAR",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 3.5,
+    "roblox_xyz_studs": [
+      4.5,
+      1.35,
+      0.381
+    ],
+    "triangles": 3116,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.25,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.25,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "KitchenRoomSign": {
+    "wording": "KITCHEN",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 3.2,
+    "roblox_xyz_studs": [
+      4.2,
+      1.35,
+      0.381
+    ],
+    "triangles": 3244,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.0999999046325684,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.0999999046325684,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "OfficeRoomSign": {
+    "wording": "LANDLORD\u2019S OFFICE",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 4.8,
+    "roblox_xyz_studs": [
+      5.8,
+      1.35,
+      0.381
+    ],
+    "triangles": 6120,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.9000000953674316,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.9000000953674316,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "GuestRoomsSign": {
+    "wording": "GUEST ROOMS",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 4.1,
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.381
+    ],
+    "triangles": 4848,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "CellarRoomSign": {
+    "wording": "CELLAR",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 3.2,
+    "roblox_xyz_studs": [
+      4.2,
+      1.35,
+      0.381
+    ],
+    "triangles": 2764,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.0999999046325684,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.0999999046325684,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "StaffStairsSign": {
+    "wording": "STAFF STAIRS",
+    "family": "room",
+    "text_blender_xyz": [
+      0,
+      -0.175,
+      0.69
+    ],
+    "text_area_width": 4.1,
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.381
+    ],
+    "triangles": 4624,
+    "mesh_objects": 15,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber01": {
+    "wording": "1",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 604,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber02": {
+    "wording": "2",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 732,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber03": {
+    "wording": "3",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 968,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber04": {
+    "wording": "4",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 460,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber05": {
+    "wording": "5",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 736,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber06": {
+    "wording": "6",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 724,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber07": {
+    "wording": "7",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 480,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumber08": {
+    "wording": "8",
+    "family": "bedroom number",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 840,
+    "mesh_objects": 9,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "BedroomNumberBlank": {
+    "family": "shared number plaque",
+    "native_text": "Use native numerals to share one mesh across all eight bedrooms",
+    "roblox_xyz_studs": [
+      1.05,
+      1.35,
+      0.381
+    ],
+    "triangles": 404,
+    "mesh_objects": 8,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -0.5249999761581421,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5249999761581421,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "DirectionLeft": {
+    "wording": "GUEST ROOMS",
+    "family": "direction",
+    "direction": "Left",
+    "mounting_warning": "Choose only the arrow matching the actual route; do not infer placement.",
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.402
+    ],
+    "triangles": 4620,
+    "mesh_objects": 11,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.20200000703334808,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "DirectionRight": {
+    "wording": "GUEST ROOMS",
+    "family": "direction",
+    "direction": "Right",
+    "mounting_warning": "Choose only the arrow matching the actual route; do not infer placement.",
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.402
+    ],
+    "triangles": 4620,
+    "mesh_objects": 11,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.20200000703334808,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  },
+  "SharedBlankPlaque": {
+    "family": "editable blank",
+    "text_area_width": 4.1,
+    "text_area_height": 0.65,
+    "native_font": "Fondamento for room names; Nunito for multi-line directions",
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.381
+    ],
+    "triangles": 404,
+    "mesh_objects": 8,
+    "origin": "bottom centre; front Blender -Y / Roblox +Z; back Blender Y=0.20",
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.1810000091791153,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.19999998807907104,
+      1.350000023841858
+    ]
+  }
+}

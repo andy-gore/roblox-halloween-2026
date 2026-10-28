@@ -90,7 +90,19 @@ function Dressing.build(map: Folder)
             add("BedroomCoatRail",CFrame.new(side*32,23,z-9.35))
             add(if room%2==1 then "PortraitFrame" else "LandscapeFrame",CFrame.new(side*40,23,z-9.3))
             -- Door plaques sit beside, rather than over, the readable existing room labels.
-            add(string.format("RoomPlaque_%02d",room),CFrame.new(side*7.35,22.5,z+7.7)*CFrame.Angles(0,-side*math.pi/2,0),Vector3.one*1.5)
+            local origin=CFrame.new(side*7.35,22.5,z+7.7)*CFrame.Angles(0,-side*math.pi/2,0)
+            add("BedroomNumberBlank",origin,Vector3.one*1.5)
+            -- One shared original plaque mesh, with editable native numerals on its front.
+            local face=Props.part(folder,"BedroomPlaqueLettering",Vector3.new(1.05,1.35,.01)*1.5,origin*CFrame.new(0,.675*1.5,.18*1.5),Color3.new())
+            face.Transparency=1
+            face:SetAttribute("RoomNumber",room)
+            local gui=Instance.new("SurfaceGui") gui.Face=Enum.NormalId.Back
+            gui.SizingMode,gui.PixelsPerStud,gui.LightInfluence,gui.Brightness=Enum.SurfaceGuiSizingMode.PixelsPerStud,100,0,.9
+            gui.Parent=face
+            local label=Instance.new("TextLabel") label.BackgroundTransparency=1
+            label.Position,label.Size=UDim2.fromScale(.24,.25),UDim2.fromScale(.52,.5)
+            label.Text,label.TextScaled,label.TextColor3=tostring(room),true,Color3.fromRGB(240,223,188)
+            label.FontFace=Font.new("rbxasset://fonts/families/Fondamento.json") label.Parent=gui
         end
     end
     -- Countertop and storage dressing kept clear of the established walking routes.

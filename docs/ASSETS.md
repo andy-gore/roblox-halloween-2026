@@ -21,3 +21,8 @@ Both Rojo projects remain code-only sync mappings. The authored place is never r
 Saved local game: places/Halloween2026.rbxlx. Disposable build: build/LastOrdersPrototype.rbxlx. In the connected local game, press Play to see the integrated assets; Stop restores authored Workspace geometry. No test fixture remains in Edit mode.
 
 Read tests/README.md for executed checks and remaining human review. Bedroom/bar Blender placement images in build/ use captured Studio transforms plus neutral review fill; they are not Roblox screenshots or proof of final game lighting. The native computer-use permission was unavailable, so the final keyboard/touch visual walkthrough remains a human check.
+
+
+### Refined signage — 28 October 2026
+
+assets/props/tavern-signage contains the approved refined oak/enamel/brass family and original editable Blender source. Seven room plaques, eight baked-number plaques, two direction options and shared blank frames are available locally. In the game, TavernSigns uses the matching native cartouche with editable text on 78 sign faces. Existing words/arrows and mounting/physics are retained. All eight bedroom numbers now share BedroomNumberBlank GLB geometry plus native numerals, avoiding eight extra mesh templates. tools/export_prop_meshes.py records that source override. See the batch README and tests/README.md for integration/memory checks and remaining human visual review.

@@ -2,7 +2,9 @@
 import json,struct,math,hashlib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-SETS={'pub-set':['PubTable','PubChair','CellarBarrel'],'bedroom-set':['InnSingleBed','BedsideCabinet','InnWardrobe','DresserMirror'],'bedroom-details':['BedsideLamp','TravellerSuitcase','BedsideBooks','BedroomCoatRail']+[f'RoomPlaque_{i:02d}' for i in range(1,9)],'exit-key':['ExitKey'],'objective-set':['CellarFuseBox','ServiceBell','ExitDoorLock'],'pub-details':['OpenGuestbook','PortraitFrame','LandscapeFrame','GreenBottle','AmberBottle','StonewareMug','PubNameSign','RoomsAvailableSign','CellarSign'],'kitchen-cellar':['CellarShelf','OpenCellarCrate','ClosedCellarCrate','KitchenStockpot','KitchenFryingPan','KitchenPlateStack','CellarBucket','CellarBroom'],'windows':['BedroomWindowFrame','BedroomCurtainPair','PubWindowFrame','PubCurtainPair'],'cobwebs':['CornerCobweb','HangingCobweb','ShelfCobweb']}
+SETS={'pub-set':['PubTable','PubChair','CellarBarrel'],'bedroom-set':['InnSingleBed','BedsideCabinet','InnWardrobe','DresserMirror'],'bedroom-details':['BedsideLamp','TravellerSuitcase','BedsideBooks','BedroomCoatRail']+['BedroomNumberBlank'],'exit-key':['ExitKey'],'objective-set':['CellarFuseBox','ServiceBell','ExitDoorLock'],'pub-details':['OpenGuestbook','PortraitFrame','LandscapeFrame','GreenBottle','AmberBottle','StonewareMug','PubNameSign','RoomsAvailableSign','CellarSign'],'kitchen-cellar':['CellarShelf','OpenCellarCrate','ClosedCellarCrate','KitchenStockpot','KitchenFryingPan','KitchenPlateStack','CellarBucket','CellarBroom'],'windows':['BedroomWindowFrame','BedroomCurtainPair','PubWindowFrame','PubCurtainPair'],'cobwebs':['CornerCobweb','HangingCobweb','ShelfCobweb']}
+# Refined number plaques replace the original templates without adding mesh types.
+OVERRIDES={'BedroomNumberBlank':ROOT/'assets/props/tavern-signage/BedroomNumberBlank.glb'}
 def mul(a,b):return [[sum(a[r][k]*b[k][c] for k in range(4)) for c in range(4)] for r in range(4)]
 def matrix(n):
  if 'matrix'in n:return [[n['matrix'][c*4+r] for c in range(4)] for r in range(4)]
@@ -51,6 +53,6 @@ def main():
  out=ROOT/'src/shared/PropMeshData';out.mkdir(exist_ok=True);catalog={}
  for folder,names in SETS.items():
   for name in names:
-   path=ROOT/'assets/props'/folder/(name+'.glb');data=export(path);payload=json.dumps(data,separators=(',',':'));(out/(name+'.luau')).write_text('--!strict\n-- Generated from '+data['source']+'; original geometry unchanged.\nreturn [==['+payload+']==]\n');catalog[name]={'source':data['source'],'sha256':data['sha256'],'triangles':sum(len(g['faces'])//3 for g in data['groups']),'groups':len(data['groups'])}
+   path=OVERRIDES.get(name,ROOT/'assets/props'/folder/(name+'.glb'));data=export(path);payload=json.dumps(data,separators=(',',':'));(out/(name+'.luau')).write_text('--!strict\n-- Generated from '+data['source']+'; original geometry unchanged.\nreturn [==['+payload+']==]\n');catalog[name]={'source':data['source'],'sha256':data['sha256'],'triangles':sum(len(g['faces'])//3 for g in data['groups']),'groups':len(data['groups'])}
  (ROOT/'build/prop-export-catalog.json').write_text(json.dumps(catalog,indent=2)+'\n');print(len(catalog),'original assets packed;',sum(x['triangles'] for x in catalog.values()),'unique triangles')
 if __name__=='__main__':main()

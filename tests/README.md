@@ -287,3 +287,10 @@ TavernSigns styles 78 existing sign faces with oak, brass borders, ivory letteri
 Lightning now flashes 17 shadowed local sources inside actual side windows and front facade windows, fading over 0.32 seconds. Interior screen-wide brightening is removed; room light comes from windows. Server spawn orientation and the initial/replay client camera face the entrance from outside the car.
 
 Studio Play assertions passed for 78 styled faces, two illustrations, replicated text colours/backgrounds, unchanged closed navigation graph, player/camera entrance-facing dot products of 1, and all 17 shadowed light sources brightening then returning to zero. No new runtime errors; the existing 203785492 warnings remain. Both builds and whitespace checks passed. Visual sign readability, lightning balance/occlusion on device graphics settings and touch performance still need human Play review; no screen access is available. Standalone Luau analysis remains unavailable.
+
+
+## Refined signage integration — 28 October 2026
+
+TavernSigns.spec.luau checks repeat-safe styling of 78 faces, preserved wording/arrows, unchanged board transforms/collision/query flags, eight shared number plaques and navigation. It passed in a disposable Edit fixture, as did AssetIntegration.spec. PropRenderer.spec passed in Play. The live client loaded 164 asset placements with 44 fixed meshes and zero failed assets; all eight native numerals fit their allocated labels.
+
+The first implementation used eight baked-number meshes and exhausted the editable-mesh budget for TravellerSuitcase. Replacing these with one shared original BedroomNumberBlank mesh and native numerals resolved the issue. Both Rojo builds and git diff --check passed. Saved local place changes are limited to managed code folders, with authored bytes outside those folders preserved. Play stopped and fixtures cleaned. Existing asset-type warnings for 203785492 remain. Standalone Luau analysis and human visual/mobile readability review are not claimed; no publishing/upload.
