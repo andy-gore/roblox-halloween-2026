@@ -1,0 +1,29 @@
+{
+  "status": "proposed integration guidance; no map transforms or runtime implementation",
+  "selection": "bounded curated subset once per run; stable until reset",
+  "suggested_total_count": [8, 12],
+  "suggested_max_per_bedroom": 1,
+  "uniform_scale_range": [0.75, 1.15],
+  "assets": {
+    "CornerCobweb": ["ceiling_corner", "cellar_corner"],
+    "HangingCobweb": ["high_unused_beam", "storage_overhead"],
+    "ShelfCobweb": ["unused_shelf_corner", "frame_corner"]
+  },
+  "roblox_visual_properties": {
+    "Anchored": true,
+    "CanCollide": false,
+    "CanTouch": false,
+    "CanQuery": false,
+    "CastShadow": false
+  },
+  "reject_bounds_near": [
+    "all_possible_key_locations",
+    "power_panel_switches_and_maintenance_card",
+    "service_bell",
+    "exit_lock_and_signs",
+    "doorways_and_stair_headroom",
+    "player_camera_paths",
+    "readable_signs_and_picture_inserts",
+    "main_storm_view"
+  ]
+}

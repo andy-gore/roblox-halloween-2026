@@ -97,6 +97,10 @@ function Rig.new()
             end
             if not alive then return end
             mesh:RemoveUnused()
+            -- Bones animate the skin; topology stays fixed, freeing room for shared scenery meshes.
+            local compact=AssetService:CreateEditableMeshAsync(Content.fromObject(mesh),{FixedSize=true})
+            assert(compact,"Character fixed-size mesh memory unavailable")
+            mesh:Destroy() mesh=compact editable=compact
             part=AssetService:CreateMeshPartAsync(Content.fromObject(mesh),{CollisionFidelity=Enum.CollisionFidelity.Box})
             local built=part :: MeshPart
             built.Name,built.Size,built.Color="OriginalCharacterMesh",hi-lo,Color3.new(1,1,1)

@@ -15,3 +15,7 @@ For a QA render, run tools/capture_chuggernaught_poses.luau in the Studio Edit C
 ## Exterior QA preview
 
 `render_exterior_preview.py` renders a temporary Studio part export from ignored `build/exterior-scene.json` into `build/Stormy-exterior-preview.png`. The export contains part names, sizes, CFrames, colours, materials, alpha and primitive shapes, plus PointLight positions. It is an optional local Blender QA helper, not part of the game build. Its night lighting and rain are review staging; the image is not a Roblox screenshot. It does not save over the authored place or source artwork.
+
+## Original prop integration
+
+`python3 tools/export_prop_meshes.py` packs approved GLBs into source-hashed shared mesh data without uploads or dependencies. `render_asset_integration.py` renders ignored build/asset-review-scene.json (captured native geometry and asset transforms) for placement QA; its neutral fill is not game lighting. `update_local_place_code.py` merges reviewed built code folders into the backed-up saved local place and asserts all bytes outside those folders are unchanged. See docs/ASSETS.md and tests/README.md before regeneration or integration.

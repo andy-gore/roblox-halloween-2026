@@ -69,6 +69,7 @@ end
 local function reset(message: string?)
     state = RunState.new()
     power.reset()
+    require(script.Parent.AssetDressing).reroll(map)
     graceUntil = os.clock() + 3
     keyPlacement.choose()
     navigation.reset()
