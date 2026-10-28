@@ -22,6 +22,8 @@ local monster = map:WaitForChild("ChuggernaughtPlaceholder") :: Part
 local key = map:WaitForChild("OfficeKey") :: Part
 local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
 local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
+local keyVisual = require(script.Parent.ExitKeyVisual).new(key)
+local power = require(script.Parent.CellarPower).new(map)
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local encounter = require(script.Parent.MonsterEncounter).new(monster)
@@ -46,9 +48,11 @@ local state = RunState.new()
 local activePlayer: Player? = nil
 local graceUntil = 0
 local function update(message: string?)
+    power.available(state.stage == 2)
     key.Transparency = if state.stage == 3 then 0 else 1
     keyPrompt.Enabled = state.stage == 3
     key.CanQuery = state.stage == 3
+    keyVisual.refresh(state.stage == 3)
     for _, light in lights do
         light.Brightness = if state.stage >= 3 then 2 else 0.35
     end
@@ -59,10 +63,12 @@ local function update(message: string?)
         player:SetAttribute("LastOrdersStage", state.stage)
         player:SetAttribute("LastOrdersMessage", message or "")
         player:SetAttribute("HasExitKey", state.stage >= 4)
+        player:SetAttribute("CellarBreakerProgress", map.CellarPowerPanel:GetAttribute("BreakerProgress"))
     end
 end
 local function reset(message: string?)
     state = RunState.new()
+    power.reset()
     graceUntil = os.clock() + 3
     keyPlacement.choose()
     navigation.reset()
@@ -95,7 +101,8 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 for _, player in Players:GetPlayers() do join(player) end
-local stations = { Warning = 1, CellarFuseBox = 2, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
+local stations = { Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
+    CellarBreakerBar = 2, CellarInstructions = 0, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
 for name, expected in stations do
     local station = map:FindFirstChild(name) :: Part
     local prompt = station:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
@@ -120,6 +127,16 @@ for name, expected in stations do
             update("NEVER LET HIM FINISH HIS DRINK.")
             return
         end
+        if name == "CellarInstructions" then
+            update(require(script.Parent.CellarPower).Instructions)
+            return
+        end
+        if string.sub(name, 1, 13) == "CellarBreaker" then
+            if state.stage ~= 2 then update("Read the warning before restoring power.") return end
+            local _, message = power.use(name)
+            update(message)
+            return
+        end
         if name == "Bell" then
             if state.stage < 3 or state.stage >= 5 then return end
             if not hunt.ringBell(Vector3.new(-20, 0.5, 23)) then
@@ -136,6 +153,10 @@ for name, expected in stations do
             update("Follow the current objective first.")
             return
         end
+        if name == "CellarFuseBox" then
+            local completed, message = power.use(name)
+            if not completed then update(message) return end
+        end
         RunState.advance(state, expected)
         if state.stage >= 5 then encounter.stop() end
         if expected == 2 then
@@ -144,7 +165,7 @@ for name, expected in stations do
             if flat.Magnitude > 0.01 then monster.CFrame = CFrame.lookAt(monster.Position, monster.Position + flat.Unit) end
             encounter.wake()
             graceUntil = os.clock() + Config.MonsterRevealSeconds
-            update("GLUG. GLUG. GLUG… Something is waking up.")
+            update("POWER RESTORED! He's waking beyond the barrel rack. Get to the stairs!")
         elseif expected == 3 then
             update("You have the exit key. Get to the emergency exit!")
         elseif expected == 1 then

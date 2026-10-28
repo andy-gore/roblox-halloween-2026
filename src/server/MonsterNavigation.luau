@@ -1,6 +1,7 @@
 --!strict
 -- Fixed walking routes for this compact greybox. No movement through blocked edges.
 local Navigation = {}
+local Cellar = require(script.Parent.CellarMap)
 local positions = {
     Vector3.new(-8, 4.5, 23), -- 1 main bar
     Vector3.new(-36, 4.5, 23), -- 2 west bar
@@ -17,13 +18,13 @@ local positions = {
     Vector3.new(36, 4.5, 10), -- 13 stair entrance
     Vector3.new(36, 4.5, 7), -- 14 first step
     Vector3.new(36, -11.5, -27), -- 15 cellar landing
-    Vector3.new(36, -11.5, -35), -- 16 cellar reveal
+    Cellar.MonsterHome, -- 16 cellar reveal
     Vector3.new(-36, 4.5, 34), -- 17 exit
     Vector3.new(-8, 4.5, -5), -- 18 hall opposite snug
     Vector3.new(18, 4.5, 3), -- 19 kitchen doorway
     Vector3.new(18, 4.5, 14), -- 20 outside kitchen
 }
-local edges = {{1, 2}, {1, 3}, {1, 4}, {2, 17}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {5, 18}, {4, 18}, {18, 9}, {9, 10}, {6, 11}, {11, 12}, {12, 19}, {19, 20}, {20, 3}, {20, 1}, {3, 13}, {13, 14}, {15, 16}}
+local edges = {{1, 2}, {1, 3}, {1, 4}, {2, 17}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {5, 18}, {4, 18}, {18, 9}, {9, 10}, {6, 11}, {11, 12}, {12, 19}, {19, 20}, {20, 3}, {20, 1}, {3, 13}, {13, 14}}
 -- Follow every stair tread; a straight top-to-bottom shortcut would cross the floor.
 local previous = 14
 for step = 1, 15 do
@@ -34,9 +35,10 @@ for step = 1, 15 do
 end
 table.insert(edges, {previous, 15})
 require(script.Parent.PubExpansion).addRoutes(positions, edges)
+Cellar.addRoutes(positions, edges)
 function Navigation.new(monster: BasePart)
     local map = monster.Parent :: Folder
-    local offset = monster.Position - Vector3.new(36, -11.5, -35)
+    local offset = monster.Position - Cellar.MonsterHome
     local nodes: {Vector3} = {}
     local neighbours: {{number}} = {}
     for i, position in positions do

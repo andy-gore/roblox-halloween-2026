@@ -14,6 +14,7 @@ function KeyPlacement.new(map: Folder, key: BasePart)
         local chosen = locations[index or random:NextInteger(1, #locations)]
         assert(chosen, "Invalid key location")
         key.CFrame = chosen.CFrame
+        key:SetAttribute("KeyRoom",chosen.Name)
         return chosen.Name
     end
     return placement

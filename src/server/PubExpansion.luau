@@ -104,7 +104,7 @@ function Expansion.build(map: Folder)
         spot.Anchored, spot.CanCollide, spot.CanTouch, spot.CanQuery, spot.Transparency = true, false, false, false, 1
         spot.Parent = locations
     end
-    marker("Office", (map:FindFirstChild("OfficeKey") :: Part).Position)
+    marker("Office", (map:FindFirstChild("OfficeKey") :: Part).Position-Vector3.new(0,0.2,0))
     for sideIndex, side in {-1, 1} do
         -- Four separate doorways along each side of the sixteen-stud corridor.
         for roomIndex, z in centers do
@@ -130,7 +130,7 @@ function Expansion.build(map: Folder)
             local wardrobe = solid("BedroomWardrobe", Vector3.new(4.3, 7, 2.7), Vector3.new(side * 43, 20, z - 6), Enum.Material.Wood)
             wardrobe.Color = wood
             detail("WardrobeBrass", Vector3.new(0.12, 1.2, 0.15), Vector3.new(side * 43, 20, z - 4.55), brass, Enum.Material.Metal)
-            marker(string.format("Room%02d", number), Vector3.new(side * 25, 20, z - 5.6))
+            marker(string.format("Room%02d", number), Vector3.new(side * 25, 19.7, z - 5.6))
             lamp(Vector3.new(side * 23, 27, z))
         end
         for _, z in {-20, 0, 20} do

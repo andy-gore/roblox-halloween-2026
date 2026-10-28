@@ -172,3 +172,36 @@ Checks passed:
 - Normal client key pickup and emergency-exit interaction still completed stage 5 with the monster Stopped. Local Play ended and controls/fixtures were restored.
 
 Both Rojo configurations and whitespace checks pass. Standalone Luau Script Analysis remains unavailable. Human review still needs to establish chase fairness, whether players understand the footstep cue, quiet hiding opportunities and difficulty on keyboard/touch. This was a local refinement; the saved authored place and original artwork were preserved and no live experience was modified.
+
+## Expanded cellar and breaker puzzle — 28 October 2026
+
+CellarMap replaces only the generated cellar, keeping the original stairs/opening. The underground floor is now 48 by 74 studs, with a west-wall maintenance panel, wide passages around a solid barrel rack, clear stair landing and a far reveal position approximately 42 studs from the main lever. The rack's upper shelf is open for the head/tankard reveal. Ceiling pieces cover the new area without sealing the stairs. Existing pub/bedrooms/key locations and authored Workspace geometry are preserved. Backups are under ignored build/backups/cellar-puzzle-20261028/.
+
+BreakerSequence owns the fixed Cellar -> Guest Rooms -> Bar order and final main-lever completion. CellarPower owns switch poses, indicators, progress attributes, remote lamp, shifting crate and bundled clunk/thud/glug cues. Main validates active player, living character, distance, eye-level visibility and stage before panel actions. Partial progress cannot wake the monster or reveal the key. Wrong/repeated circuits reset the sequence without damage; an early main lever preserves progress and explains the order. Completion advances the existing power objective once. Capture/character reset clears circuit progress, lever/indicator state, sounds, crate tween and cue light. A printed/readable maintenance card also gives the order in the HUD; reading it does not advance objectives. Keyboard and touch use ordinary labelled proximity prompts with short holds.
+
+Checks passed locally:
+
+- BreakerSequence.spec.luau: wrong/unknown/repeated circuits, early main, fixed order, no power before final lever, idempotent completion and repeat/reset.
+- CellarPuzzle.spec.luau: reveal separation, hidden key/dormant monster during partial progress, panel/cue reset and blocked stair-opening regression. Engine walking paths and actual monster movement both used each aisle with the opposite aisle blocked; navigation edges remained clear and no tested wall/rack overlaps occurred.
+- Existing PubLayout, PubExterior, EscapeRoutes, ExpandedPub and MonsterIntelligence specs passed with the expanded cellar/new monster origin. The original stair, pub, eight bedrooms, staff stair and adjoining-room routes remain connected.
+- Actual avatar walked from the panel around the rear/east aisle, back to the landing and upstairs to the bar without jumping or getting stuck.
+- Normal client prompt interactions read the maintenance card before the warning without advancing stage; warning enabled the switches. Early main/wrong Bar/repeated Cellar left stage 2, health unchanged, monster Dormant and key hidden. Valid partial stages showed progress/lamp feedback, and all three circuits alone left main power off.
+- Final lever reached stage 3/Reveal, powered the pub and revealed the original chosen key position. The monster subsequently reached and captured the player at the original stair landing; objective, panel, cue light, key and monster reset correctly.
+- Character reload during partial progress also reset the puzzle. A subsequent full panel sequence, normal key pickup and emergency-exit use completed stage 5/Stopped with the key alone.
+- Clunk, crate thud and glug sounds loaded locally; the original Chuggernaught mesh still loaded. Controls were restored, temporary fixtures removed and Play stopped.
+
+Both Rojo builds and git diff --check pass. Standalone Luau Script Analysis remains unavailable. Human checks still required: printed card/label readability at small screen sizes, keyboard/touch prompt selection, anticipation cue volume, visibility of the far reveal from normal player camera angles, and escape pacing on both aisles. No assets or experience were uploaded/published.
+
+### Panel discovery and reveal clarity
+
+User clarified that finding the switches was the problem and was unsure whether main power had been restored when the monster seemed absent. Added larger orange housings/protruding handles, a distinct red main lever, permanent work light, panel trim/heading and a direction sign from the landing. The circuit order remains unchanged. Camera occlusion no longer hides the control prompts; server eye-level visibility/distance/stage validation still applies. Six-stud activation distance keeps adjacent switches from competing at each control's normal standing position.
+
+World main-supply status, prompt ON/OFF/READY text and replicated HUD circuit count make completion explicit. The stage-2 HUD has extra vertical space for the instructions. Power completion now explicitly announces the wake-up beyond the rack. CellarReveal.client applies one camera look per local reveal, only in the cellar, preserving CameraType.Custom and all movement/look controls. It does not continuously track the monster or lock a cutscene.
+
+CellarPuzzle fixture/navigation checks passed with the larger controls. Live normal prompt interactions reached 3/3 and MAIN LEVER READY, then stage 3/Reveal. The original mesh loaded with transparency 0; its head was in front of the panel player's camera (positive depth approximately 44.6 studs), and camera type remained Custom. Controls were restored and Play stopped. This verifies state, rendering and camera framing; final visual readability and touch selection still need the user's playtest. Both builds and whitespace checks pass; standalone Luau analysis remains unavailable.
+
+### Key discovery visibility
+
+The pickup was a small plain block, and one of its nine valid spots is the downstairs office desk. Added native brass ring/teeth geometry and a local warm light plus an 18-stud depth-occluded EXIT KEY label. No uploaded art is replaced. Adjusted fixed markers to sit just above dresser/desk surfaces. Main refreshes all geometry/cues with stage 3 only, so partial power, pickup and reset cannot leave visible pieces or locator cues. KeyPlacement records KeyRoom on the server pickup for diagnostics; the HUD names the candidate furniture without revealing the chosen room.
+
+KeyVisibility.spec.luau passed all nine choices with real doorway sight rays, furniture-height clearance, model relocation, hidden/available cue transitions and no through-wall/long-range label. Live prompt playthrough passed the full breaker sequence, stable Room06 choice through power, complete brass-key reveal, pickup hiding every piece/light/label, and key-only victory. Controls restored and Play stopped. Both builds and whitespace checks pass; standalone Luau analysis remains unavailable. Final perceived visibility on keyboard/touch remains a human playtest check.

@@ -22,6 +22,7 @@ This revision takes precedence over the original tankard-theft sequence below. T
 - The server chooses the exit key’s location once per run from the eight guest bedrooms or downstairs office. It stays in that room until the run ends; capture/reset may choose a different room. Restoring the lights reveals the key without moving it.
 - The service bell is an optional distraction that draws him towards the bar and buys time to search or pass him.
 - The key alone unlocks the emergency exit. Tankard theft is no longer required; the original theft dialogue and stolen-tankard epilogue are not part of the current prototype. A replacement epilogue remains to be designed.
+- For visibility, the pickup is presented as a brass key with a ring and teeth, above its dresser/desk surface. A small warm light and nearby depth-occluded label appear only while the key is available after power restoration. The HUD explicitly includes the downstairs office desk as well as bedroom dressers.
 - Current route: read the warning → restore lights → search for the key while hunted → unlock the emergency exit and escape. Capture/reset hides the key and restarts this sequence.
 
 ## Approved gameplay refinements — 28 October 2026
@@ -33,6 +34,17 @@ These refinements implement the hunt and layout changes selected for the next pl
 - A visible player takes priority over the bell. The bell has a reusable cooldown, and neither drinking nor investigating makes the monster harmless at close range. A frontal grab has a visible windup and can be dodged, followed by a brief recovery.
 - An enclosed rear staff staircase connects the far end of the upstairs corridor to the kitchen, creating a second route between floors. Rooms 1 and 2 have an open adjoining doorway; the other six bedrooms retain their single corridor entrance.
 - Breaker puzzles, clue-led key searching, additional antagonists and the extended exterior finale remain proposals for a later review, not part of this refinement.
+
+## Approved cellar and power puzzle — 28 October 2026
+
+This follow-up approves the cellar breaker puzzle previously listed as a proposal. The key-search and key-only exit rules remain unchanged.
+
+- The cellar expands around the original stairs, with a clear landing and two wide passages around a barrel rack. The power panel is in a side maintenance area; the Chuggernaught wakes over thirty studs away at the far end, beyond the racks.
+- Three labelled circuits must be set in order: Cellar, Guest Rooms, Bar. A readable maintenance card states: "Cellar first. Guest rooms before the bar. Main supply last."
+- A wrong or repeated circuit resets the circuit sequence with a clunk and clear feedback, without damage. An early main-lever pull explains what remains to be done and preserves valid partial progress.
+- Correct circuits light a distant lamp, shift a loose crate with a heavy sound, then produce a glug. These are anticipation cues; the monster remains dormant and the key remains hidden.
+- Only pulling the main supply after all three circuits restores the pub lights, reveals the existing key location and begins the monster's wake-up animation. The player can use either aisle to return to the stairs. Capture or character reset clears the whole panel and its cues for the next attempt.
+- Finding the controls should be clear: a landing sign points towards the lit west-wall power panel, with large orange circuit housings, protruding handles and a distinct red main lever. HUD/panel feedback shows circuit progress and when the main supply is ready. On awakening, the normal camera briefly looks towards the monster once; movement and look controls remain available.
 
 # 1. Narrative Vision
 

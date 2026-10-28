@@ -78,28 +78,7 @@ function Map.build(): Folder
     sign("HallLabel", "OFFICE  /  KITCHEN", Vector3.new(-8, 10, -38.9), 14).Orientation = Vector3.new(0, 180, 0)
     sign("SnugLabel", "THE SNUG", Vector3.new(-34, 10, -15.2), 12).Orientation = Vector3.new(0, 180, 0)
     sign("CellarLabel", "CELLAR\nSTAIRS DOWN", Vector3.new(44, 6, 12), 8).Orientation = Vector3.new(0, 180, 0)
-    -- Cellar is sixteen studs below the pub. Broad, shallow stairs need no jumping.
-    part("CellarFloor", Vector3.new(24, 1, 48), Vector3.new(36, -16, -16), stone, Enum.Material.Slate)
-    part("CellarWestWall", Vector3.new(1, 16, 48), Vector3.new(24, -8, -16), stone)
-    part("CellarEastWall", Vector3.new(1, 16, 48), Vector3.new(48, -8, -16), stone)
-    part("CellarNorthWall", Vector3.new(24, 16, 1), Vector3.new(36, -8, -40), stone)
-    part("CellarSouthWall", Vector3.new(24, 16, 1), Vector3.new(36, -8, 10), stone)
-    for step = 0, 15 do
-        part("CellarStep", Vector3.new(22, 1, 2), Vector3.new(36, -step, 7 - step * 2), Color3.fromRGB(133, 132, 124), Enum.Material.Slate)
-        local edge = part("StairEdge", Vector3.new(21, 0.08, 0.18), Vector3.new(36, 0.55 - step, 6.1 - step * 2), Color3.fromRGB(255, 195, 85), Enum.Material.Neon)
-        edge.CanCollide, edge.CanQuery = false, false
-    end
-    local stairLamp = part("StairLamp", Vector3.new(0.5, 0.5, 0.5), Vector3.new(46, 3, 4), Color3.fromRGB(255, 210, 145), Enum.Material.Neon)
-    stairLamp.CanCollide, stairLamp.CanQuery = false, false
-    local stairLight = Instance.new("PointLight")
-    stairLight.Name = "StairSafetyLight"
-    stairLight.Color, stairLight.Brightness, stairLight.Range = stairLamp.Color, 2, 36
-    stairLight.Parent = stairLamp
-    for _, z in {-31, -36} do
-        local barrel = part("CellarBarrel", Vector3.new(4, 5, 4), Vector3.new(28, -13, z), wood)
-        barrel.Shape = Enum.PartType.Cylinder
-        barrel.Orientation = Vector3.new(0, 0, 90)
-    end
+    require(script.Parent.CellarMap).build(folder)
     -- Low furniture leaves a generous route through each room.
     part("Bar", Vector3.new(18, 4, 4), Vector3.new(-27, 2.5, 17), wood)
     part("OfficeDesk", Vector3.new(10, 3, 5), Vector3.new(-37, 2, -33), wood)
@@ -128,14 +107,11 @@ function Map.build(): Folder
     writing.Text = "NEVER LET HIM\nFINISH HIS DRINK."
     writing.Parent = paper
     station("Bell", Vector3.new(-20, 5, 17), "Ring bell", Color3.fromRGB(210, 160, 65))
-    station("CellarFuseBox", Vector3.new(44, -12, -34), "Restore lights", Color3.fromRGB(95, 135, 160))
     local key = station("OfficeKey", Vector3.new(-37, 4, -33), "Take exit key", Color3.fromRGB(240, 195, 65))
     key.Size = Vector3.new(1.5, 0.3, 0.7)
     local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
     keyPrompt.ObjectText = "Emergency exit key"
     station("EmergencyExit", Vector3.new(-36, 5, 38), "Unlock and escape", Color3.fromRGB(65, 160, 90))
-    local monster = part("ChuggernaughtPlaceholder", Vector3.new(4, 8, 4), Vector3.new(36, -11.5, -35), Color3.fromRGB(145, 70, 80))
-    monster.CanCollide, monster.CanQuery, monster.Transparency = false, false, 1
     -- Lamps stay dim before power so the route remains readable.
     for _, position in {Vector3.new(-24, 11, 22), Vector3.new(-35, 11, -28), Vector3.new(-35, 11, -5), Vector3.new(-8, 11, -20), Vector3.new(12, 11, -20), Vector3.new(36, 11, 10), Vector3.new(40, -3, -32)} do
         local lamp = part("PubLamp", Vector3.new(1.5, 0.5, 1.5), position, Color3.fromRGB(255, 184, 90), Enum.Material.Neon)

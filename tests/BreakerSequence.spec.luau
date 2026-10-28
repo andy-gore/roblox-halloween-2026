@@ -1,0 +1,18 @@
+--!strict
+-- Studio Edit server Command Bar: power is granted once, only after all three circuits.
+local state=require(game.ServerScriptService.HalloweenServer.BreakerSequence).new()
+assert(not state.pullMain() and state.progress()==0 and not state.powered())
+assert(not state.press("Bar") and state.progress()==0)
+assert(state.press("Cellar") and state.progress()==1)
+assert(not state.pullMain() and state.progress()==1,"An early lever must not erase valid progress")
+assert(not state.press("Cellar") and state.progress()==0,"Repeated circuit must reset the order")
+assert(state.press("Cellar") and state.press("Guest"))
+assert(not state.press("Unknown") and state.progress()==0)
+assert(state.press("Cellar") and state.press("Guest") and state.press("Bar"))
+assert(state.progress()==3 and not state.powered(),"Circuits alone must not restore the main supply")
+assert(state.pullMain() and state.powered())
+assert(not state.pullMain() and not state.press("Bar") and state.progress()==3,"Completed puzzle must be idempotent")
+state.reset()
+assert(state.progress()==0 and not state.powered())
+assert(state.press("Cellar") and state.press("Guest") and state.press("Bar") and state.pullMain())
+print("Breaker sequence: order, failure/reset, early lever, final supply and repeat/reset passed")

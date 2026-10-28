@@ -3,8 +3,8 @@ return table.freeze({
     Title = "The Chuggernaught: Last Orders",
     Objectives = table.freeze({
         "Read the warning at the bar.",
-        "Restore the pub's lights at the cellar fuse box.",
-        "Search the eight guest rooms and office for the exit key.",
+        "Restore power at the lit panel on the cellar's west wall.",
+        "Find the brass exit key on a bedroom dresser or the downstairs office desk.",
         "Unlock the emergency exit with the key.",
         "YOU SURVIVED LAST ORDERS!",
     }),
