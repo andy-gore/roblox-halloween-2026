@@ -49,7 +49,8 @@ function Map.build(map: Folder)
         end end
     end
     local spawn=map.PrototypeSpawn :: SpawnLocation
-    spawn.Position,spawn.CanCollide,spawn.CanQuery=Vector3.new(-59,0.8,102),false,false
+    spawn.CFrame=CFrame.lookAt(Vector3.new(-59,0.8,102),Vector3.new(6,0.8,88))
+    spawn.CanCollide,spawn.CanQuery=false,false
     -- Eight-stud privacy walls prevent jumping over the two route turns.
     for _,row in {{"YardWestWall",Vector3.new(1,8,56),Vector3.new(-51,4.3,68)},
         {"YardEastWall",Vector3.new(1,8,56),Vector3.new(-21,4.3,68)},

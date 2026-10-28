@@ -21,6 +21,7 @@ local thunder=audio("LastOrdersThunder","rbxasset://sounds/impact_explosion_03.m
 local eq=Instance.new("EqualizerSoundEffect") eq.HighGain,eq.MidGain,eq.LowGain=-20,-8,4 eq.Parent=thunder
 rainSound:Play()
 local flash=Instance.new("ColorCorrectionEffect") flash.Name="LastOrdersLightning" flash.Parent=game:GetService("Lighting")
+local windowLightning=require(script.Parent.WindowLightning).new(map,folder)
 local random=Random.new()
 local nextThunder=os.clock()+random:NextNumber(20,30)
 local inside=true
@@ -59,7 +60,8 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     end
     if os.clock()>=nextThunder then
         nextThunder=os.clock()+random:NextNumber(35,55)
-        flash.Brightness=if inside then 0.025 else 0.055
+        windowLightning.flash()
+        flash.Brightness=if inside then 0 else 0.055
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
             if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end

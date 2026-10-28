@@ -15,6 +15,23 @@ replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),
 replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
 gui.Parent=player:WaitForChild("PlayerGui")
 replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
+local function faceEntrance()
+    task.defer(function()
+        local character=player.Character
+        if not character then return end
+        local root=character:WaitForChild("HumanoidRootPart",10)
+        task.wait(.2)
+        if not root or character~=player.Character or player:GetAttribute("LastOrdersStage")~=0 then return end
+        local camera=workspace.CurrentCamera
+        if camera then
+            local direction=Vector3.new(6-root.Position.X,0,88-root.Position.Z).Unit
+            camera.CFrame=CFrame.lookAt(root.Position-direction*10+Vector3.new(0,4,0),root.Position+direction*12)
+        end
+    end)
+end
+player.CharacterAdded:Connect(faceEntrance)
+player:GetAttributeChangedSignal("LastOrdersStage"):Connect(function() if player:GetAttribute("LastOrdersStage")==0 then faceEntrance() end end)
+faceEntrance()
 local previousType: Enum.CameraType?=nil
 local previousSubject: Instance?=nil
 local previousFrame=CFrame.identity

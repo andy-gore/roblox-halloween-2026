@@ -116,9 +116,11 @@ local function join(player: Player)
     end
     activePlayer = player
     player.RespawnLocation = spawn
-    player.CharacterAdded:Connect(function()
+    player.CharacterAdded:Connect(function(character)
         player.RespawnLocation = spawn
         reset(require(script.Parent.Journey).Intro)
+        local root=character:WaitForChild("HumanoidRootPart",10)
+        if root and character==player.Character then character:PivotTo(spawn.CFrame+Vector3.new(0,3,0)) end
     end)
     reset(require(script.Parent.Journey).Intro)
 end

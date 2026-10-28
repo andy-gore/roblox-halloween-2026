@@ -269,3 +269,21 @@ Studio Play checks passed for opening without advance, physical walking triggeri
 Journey.spec.luau passed in a disposable fresh-module fixture: threshold gating, collapse/reset, closed/open navigation validation, monster traversal through both courtyard turns, timed car movement and driver/car restoration. RunState.spec.luau covers revised stages 0–7. Both Rojo builds and diff checks passed. Standalone Luau analysis is unavailable.
 
 Manual keyboard/touch checks remain for courtyard chase balance, boarding readability, entrance camera comfort and reset during the drive. Interior/message visual polish is deferred. The saved local place receives managed code only, preserving authored geometry and artwork. Nothing was published.
+
+
+## Interior finish pass — 28 October 2026
+
+InteriorFinish adds cosmetic oak wainscot, dado mouldings, faded patterned wallpaper on internal wall segments, bordered woven rugs, bedroom headboard accents/ceiling beams, lounge ties and framed existing room signs. Window openings, furniture proxies, key surfaces and objectives are retained. All 649 new decorative parts are non-colliding, non-querying and non-touching.
+
+Studio fixture validation passed for closed/open navigation graphs. Live Play confirmed finish replication, normal stage 0/two-health startup and all nine existing KeyVisibility sightline/clearance/gating checks. No new runtime errors appeared; existing asset 203785492 warnings remain. Both Rojo builds and git diff --check passed. Saved place changes are confined to managed code folders with authored geometry/art preserved.
+
+Visual screen inspection was unavailable because computer-use permissions are absent. Review the colours, pattern density, bedroom differentiation and handheld performance in Play; those are not verified by geometry checks. Standalone Luau analysis remains unavailable.
+
+
+## Signs, window lightning and arrival facing — 28 October 2026
+
+TavernSigns styles 78 existing sign faces with oak, brass borders, ivory lettering, Fondamento brand text and Nunito directions; warning papers and live panel displays retain their own treatment. The hanging Firefly sign has a native engraved firefly illustration on both faces, requiring no external asset upload. Original mesh artwork is retained; its blank pub-name board is stored in the cellar while the live branded board displays text.
+
+Lightning now flashes 17 shadowed local sources inside actual side windows and front facade windows, fading over 0.32 seconds. Interior screen-wide brightening is removed; room light comes from windows. Server spawn orientation and the initial/replay client camera face the entrance from outside the car.
+
+Studio Play assertions passed for 78 styled faces, two illustrations, replicated text colours/backgrounds, unchanged closed navigation graph, player/camera entrance-facing dot products of 1, and all 17 shadowed light sources brightening then returning to zero. No new runtime errors; the existing 203785492 warnings remain. Both builds and whitespace checks passed. Visual sign readability, lightning balance/occlusion on device graphics settings and touch performance still need human Play review; no screen access is available. Standalone Luau analysis remains unavailable.

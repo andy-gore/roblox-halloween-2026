@@ -1572,6 +1572,23 @@ replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),
 replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
 gui.Parent=player:WaitForChild("PlayerGui")
 replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
+local function faceEntrance()
+    task.defer(function()
+        local character=player.Character
+        if not character then return end
+        local root=character:WaitForChild("HumanoidRootPart",10)
+        task.wait(.2)
+        if not root or character~=player.Character or player:GetAttribute("LastOrdersStage")~=0 then return end
+        local camera=workspace.CurrentCamera
+        if camera then
+            local direction=Vector3.new(6-root.Position.X,0,88-root.Position.Z).Unit
+            camera.CFrame=CFrame.lookAt(root.Position-direction*10+Vector3.new(0,4,0),root.Position+direction*12)
+        end
+    end)
+end
+player.CharacterAdded:Connect(faceEntrance)
+player:GetAttributeChangedSignal("LastOrdersStage"):Connect(function() if player:GetAttribute("LastOrdersStage")==0 then faceEntrance() end end)
+faceEntrance()
 local previousType: Enum.CameraType?=nil
 local previousSubject: Instance?=nil
 local previousFrame=CFrame.identity
@@ -1864,6 +1881,7 @@ local thunder=audio("LastOrdersThunder","rbxasset://sounds/impact_explosion_03.m
 local eq=Instance.new("EqualizerSoundEffect") eq.HighGain,eq.MidGain,eq.LowGain=-20,-8,4 eq.Parent=thunder
 rainSound:Play()
 local flash=Instance.new("ColorCorrectionEffect") flash.Name="LastOrdersLightning" flash.Parent=game:GetService("Lighting")
+local windowLightning=require(script.Parent.WindowLightning).new(map,folder)
 local random=Random.new()
 local nextThunder=os.clock()+random:NextNumber(20,30)
 local inside=true
@@ -1902,7 +1920,8 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     end
     if os.clock()&gt;=nextThunder then
         nextThunder=os.clock()+random:NextNumber(35,55)
-        flash.Brightness=if inside then 0.025 else 0.055
+        windowLightning.flash()
+        flash.Brightness=if inside then 0 else 0.055
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
             if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end
@@ -2020,6 +2039,44 @@ script.Destroying:Connect(function()
     gui:Destroy()
 end)
 update()
+</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_14">
+          <Properties>
+            <string name="Name">WindowLightning</string>
+            <string name="Source">--!strict
+-- Local light sources inside the window reveals; shadowing contains light to connected rooms.
+local TweenService=game:GetService("TweenService")
+local Lightning={}
+function Lightning.new(map: Folder,folder: Folder)
+    local lights: {PointLight}={}
+    local function source(position: Vector3)
+        local p=Instance.new("Part") p.Name="WindowLightningSource" p.Size=Vector3.one*.1
+        p.Position,p.Anchored,p.Transparency=position,true,1
+        p.CanCollide,p.CanTouch,p.CanQuery=false,false,false p.Parent=folder
+        local l=Instance.new("PointLight") l.Name="WindowFlash" l.Color=Color3.fromRGB(185,207,255)
+        l.Range,l.Brightness,l.Shadows,l.Parent=38,0,true,p table.insert(lights,l)
+    end
+    local windows=map:WaitForChild("StormViewWindows")
+    for _,p in windows:GetChildren() do
+        if p:IsA("BasePart") and p.Name=="WindowBarrier" then
+            source(Vector3.new(p.Position.X-math.sign(p.Position.X)*2,p.Position.Y,p.Position.Z))
+        end
+    end
+    -- Front facade windows overlook the tall lounge and two southern bedrooms.
+    for _,x in {6,25,40} do source(Vector3.new(x,24,86)) end
+    for _,x in {-40,-18} do source(Vector3.new(x,24,38)) end
+    local controller={}
+    function controller.flash()
+        for _,l in lights do
+            l.Brightness=3.5
+            TweenService:Create(l,TweenInfo.new(.32,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Brightness=0}):Play()
+        end
+    end
+    return controller
+end
+return Lightning
 </string>
           </Properties>
         </Item>
@@ -2993,7 +3050,8 @@ function Dressing.build(map: Folder)
     add("CellarSign",CFrame.new(44,10,9.1),Vector3.one*1.8)
     -- The obsolete lodging sign is stored in the cellar, not advertising the new arrival.
     add("RoomsAvailableSign",CFrame.new(71.3,-9,-54)*CFrame.Angles(0,-math.pi/2,0),Vector3.one*1.5)
-    add("PubNameSign",CFrame.new(-22,10,9.15),Vector3.new(6,2,1),{map.PubName})
+    -- Preserve the original blank sign artwork in storage; the branded live board uses readable lettering.
+    add("PubNameSign",CFrame.new(71.3,-7,-59)*CFrame.Angles(0,-math.pi/2,0),Vector3.new(2,1,1))
     local bell=map.Bell :: BasePart
     add("ServiceBell",CFrame.new(-20,4.62,17),nil,{bell},bell,"Bell")
     local key=map.OfficeKey :: BasePart
@@ -3418,6 +3476,92 @@ return Car
       </Item>
       <Item class="ModuleScript" referent="RBXAssetIntegration0_7">
         <Properties>
+          <string name="Name">InteriorFinish</string>
+          <string name="Source">--!strict
+-- Cosmetic finishes only: no collision, ray queries or changes to objective surfaces.
+local Props=require(script.Parent.PubProps)
+local Finish={}
+local oak=Color3.fromRGB(43,29,27)
+local brass=Color3.fromRGB(137,104,59)
+function Finish.build(map: Folder)
+    local decor=Instance.new("Folder") decor.Name="InteriorFinishes"
+    local function part(name: string,size: Vector3,cf: CFrame,color: Color3,material: Enum.Material?): Part
+        return Props.part(decor,name,size,cf,color,material)
+    end
+    -- Thin surfaces follow the existing wall segments, including the bedroom doorways.
+    -- Outer window walls are deliberately left alone so the storm views remain open.
+    for _,wall in map:GetChildren() do
+        if wall:IsA("BasePart") and (wall.Name=="BedroomDoorWall" or wall.Name=="BedroomPartition"
+            or wall.Name=="RoomFrontWall" or wall.Name=="OfficeSnugPartition" or wall.Name=="LoungeWestWall") then
+            local alongX=wall.Size.X&gt;wall.Size.Z
+            local length=if alongX then wall.Size.X else wall.Size.Z
+            local floor=if wall.Position.Y&gt;16 then 16.5 else 0.5
+            for _,side in {-1,1} do
+                local cf=wall.CFrame*CFrame.new(if alongX then 0 else side*(wall.Size.X/2+0.04),0,if alongX then side*(wall.Size.Z/2+0.04) else 0)
+                local yaw=if alongX then 0 else math.pi/2
+                local origin=CFrame.new(cf.Position.X,floor,cf.Position.Z)*CFrame.Angles(0,yaw,0)
+                part("OakWainscot",Vector3.new(length,3,0.08),origin*CFrame.new(0,1.5,0),oak)
+                for _,y in {0.18,2.95} do part("DadoMoulding",Vector3.new(length,0.16,0.16),origin*CFrame.new(0,y,0),brass,Enum.Material.Metal) end
+                local count=math.max(1,math.floor(length/3))
+                for i=1,count do
+                    part("PanelStile",Vector3.new(0.1,2.5,0.13),origin*CFrame.new(-length/2+(i-.5)*length/count,1.5,0),Color3.fromRGB(71,45,34))
+                end
+                -- A low-contrast repeat reads as aged wallpaper rather than a glowing sign.
+                local paper=part("FadedWallpaper",Vector3.new(length,6.5,0.025),origin*CFrame.new(0,6.3,0),Color3.fromRGB(70,67,65),Enum.Material.Fabric)
+                local gui=Instance.new("SurfaceGui") gui.Face=if side==1 then Enum.NormalId.Back else Enum.NormalId.Front
+                gui.SizingMode,gui.PixelsPerStud,gui.LightInfluence=Enum.SurfaceGuiSizingMode.PixelsPerStud,32,1 gui.Parent=paper
+                for i=1,math.floor(length/2) do
+                    local diamond=Instance.new("Frame") diamond.AnchorPoint=Vector2.new(.5,.5)
+                    diamond.Position,diamond.Size=UDim2.fromScale((i-.5)/math.floor(length/2),.5),UDim2.fromOffset(13,45)
+                    diamond.Rotation,diamond.BorderSizePixel,diamond.BackgroundColor3,diamond.BackgroundTransparency=45,0,Color3.fromRGB(109,94,73),.55
+                    diamond.Parent=gui
+                end
+            end
+        end
+    end
+    local function rug(cf: CFrame,width: number,length: number,color: Color3)
+        part("WornRugBorder",Vector3.new(width,.025,length),cf,Color3.fromRGB(104,78,49),Enum.Material.Fabric)
+        part("WornRugField",Vector3.new(width-.4,.028,length-.4),cf*CFrame.new(0,.018,0),color,Enum.Material.Fabric)
+        for _,z in {-length/2+.6,length/2-.6} do
+            part("RugWovenBand",Vector3.new(width-.7,.03,.12),cf*CFrame.new(0,.035,z),Color3.fromRGB(151,114,75),Enum.Material.Fabric)
+        end
+        for _,z in {-length*.25,0,length*.25} do
+            part("RugDiamond",Vector3.new(.65,.03,.65),cf*CFrame.new(0,.04,z)*CFrame.Angles(0,math.pi/4,0),Color3.fromRGB(132,97,65),Enum.Material.Fabric)
+        end
+    end
+    rug(CFrame.new(6,.55,66),8,25,Color3.fromRGB(74,34,42))
+    rug(CFrame.new(-8,.55,23),7,17,Color3.fromRGB(61,58,48))
+    local colours={Color3.fromRGB(66,58,52),Color3.fromRGB(52,65,62),Color3.fromRGB(68,49,59),Color3.fromRGB(55,58,76)}
+    for sideIndex,side in {-1,1} do
+        for i,z in {-30,-10,10,30} do
+            local number=(sideIndex-1)*4+i
+            rug(CFrame.new(side*31,16.55,z+2),5,10,colours[i])
+            -- Small room-specific finish on the existing headboard; no new furniture volume.
+            part("UpholsteredHeadboard",Vector3.new(4.2,1.5,.08),CFrame.new(side*40,19.3,z-.28),colours[i],Enum.Material.Fabric)
+            part("BedroomCeilingBeam",Vector3.new(38,.28,.35),CFrame.new(side*28,29.7,z),oak)
+            -- Brass cap over the doorway, kept above head height and clear of the number.
+            part("DoorHeaderMoulding",Vector3.new(.18,.2,12),CFrame.new(side*7.4,27,z),brass,Enum.Material.Metal)
+        end
+    end
+    for _,z in {48,64,80} do
+        part("LoungeCeilingTie",Vector3.new(55,.4,.5),CFrame.new(20,29.6,z),oak)
+    end
+    -- Frame existing signs in place, retaining their text, dimensions and orientation.
+    for _,object in map:GetDescendants() do
+        if object:IsA("BasePart") and (object.Name=="GuestSign" or object.Name=="PubName" or object.Name=="SnugLabel" or object.Name=="HallLabel") then
+            local size=object.Size
+            for _,y in {-1,1} do part("SignFrame",Vector3.new(size.X+.3,.13,size.Z+.12),object.CFrame*CFrame.new(0,y*(size.Y/2+.08),0),brass,Enum.Material.Metal) end
+            for _,x in {-1,1} do part("SignFrame",Vector3.new(.13,size.Y+.3,size.Z+.12),object.CFrame*CFrame.new(x*(size.X/2+.08),0,0),oak) end
+        end
+    end
+    decor.Parent=map
+end
+return Finish
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_8">
+        <Properties>
           <string name="Name">Journey</string>
           <string name="Source">--!strict
 -- Server-owned entrance collapse and car escape. All scenery/driver state resets together.
@@ -3547,7 +3691,7 @@ return Journey
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_8">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
         <Properties>
           <string name="Name">JourneyMap</string>
           <string name="Source">--!strict
@@ -3601,7 +3745,8 @@ function Map.build(map: Folder)
         end end
     end
     local spawn=map.PrototypeSpawn :: SpawnLocation
-    spawn.Position,spawn.CanCollide,spawn.CanQuery=Vector3.new(-59,0.8,102),false,false
+    spawn.CFrame=CFrame.lookAt(Vector3.new(-59,0.8,102),Vector3.new(6,0.8,88))
+    spawn.CanCollide,spawn.CanQuery=false,false
     -- Eight-stud privacy walls prevent jumping over the two route turns.
     for _,row in {{"YardWestWall",Vector3.new(1,8,56),Vector3.new(-51,4.3,68)},
         {"YardEastWall",Vector3.new(1,8,56),Vector3.new(-21,4.3,68)},
@@ -3630,7 +3775,7 @@ return Map
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_10">
         <Properties>
           <string name="Name">KeyPlacement</string>
           <string name="Source">--!strict
@@ -3658,7 +3803,7 @@ return KeyPlacement
 </string>
         </Properties>
       </Item>
-      <Item class="Script" referent="RBXAssetIntegration0_10">
+      <Item class="Script" referent="RBXAssetIntegration0_11">
         <Properties>
           <string name="Name">Main</string>
           <token name="RunContext">0</token>
@@ -3780,9 +3925,11 @@ local function join(player: Player)
     end
     activePlayer = player
     player.RespawnLocation = spawn
-    player.CharacterAdded:Connect(function()
+    player.CharacterAdded:Connect(function(character)
         player.RespawnLocation = spawn
         reset(require(script.Parent.Journey).Intro)
+        local root=character:WaitForChild("HumanoidRootPart",10)
+        if root and character==player.Character then character:PivotTo(spawn.CFrame+Vector3.new(0,3,0)) end
     end)
     reset(require(script.Parent.Journey).Intro)
 end
@@ -3959,7 +4106,7 @@ print("Last Orders prototype ready")
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_11">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_12">
         <Properties>
           <string name="Name">MonsterEncounter</string>
           <string name="Source">--!strict
@@ -4037,7 +4184,7 @@ return Encounter
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_12">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
         <Properties>
           <string name="Name">MonsterGrab</string>
           <string name="Source">--!strict
@@ -4071,7 +4218,7 @@ return Grab
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
         <Properties>
           <string name="Name">MonsterHunt</string>
           <string name="Source">--!strict
@@ -4199,7 +4346,7 @@ return Hunt
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
         <Properties>
           <string name="Name">MonsterNavigation</string>
           <string name="Source">--!strict
@@ -4384,7 +4531,7 @@ return Navigation
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
         <Properties>
           <string name="Name">MonsterRoutes</string>
           <string name="Source">--!strict
@@ -4450,7 +4597,7 @@ return Routes
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
         <Properties>
           <string name="Name">MonsterSenses</string>
           <string name="Source">--!strict
@@ -4498,7 +4645,7 @@ return Senses
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
         <Properties>
           <string name="Name">PlayerHold</string>
           <string name="Source">--!strict
@@ -4583,7 +4730,7 @@ return Hold
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
         <Properties>
           <string name="Name">PlayerSurvival</string>
           <string name="Source">--!strict
@@ -4636,7 +4783,7 @@ return Survival
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
         <Properties>
           <string name="Name">PrototypeMap</string>
           <string name="Source">--!strict
@@ -4775,13 +4922,15 @@ function Map.build(): Folder
     require(script.Parent.PubExterior).build(folder)
     require(script.Parent.JourneyMap).build(folder)
     require(script.Parent.AssetDressing).build(folder)
+    require(script.Parent.InteriorFinish).build(folder)
+    require(script.Parent.TavernSigns).build(folder)
     return folder
 end
 return Map
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
         <Properties>
           <string name="Name">PubAtmosphere</string>
           <string name="Source">--!strict
@@ -4810,7 +4959,7 @@ return Atmosphere
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
         <Properties>
           <string name="Name">PubDressing</string>
           <string name="Source">--!strict
@@ -4963,7 +5112,7 @@ return Dressing
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
         <Properties>
           <string name="Name">PubExpansion</string>
           <string name="Source">--!strict
@@ -5177,7 +5326,7 @@ return Expansion
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
         <Properties>
           <string name="Name">PubExterior</string>
           <string name="Source">--!strict
@@ -5327,7 +5476,7 @@ return Exterior
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
         <Properties>
           <string name="Name">PubProps</string>
           <string name="Source">--!strict
@@ -5393,7 +5542,7 @@ return Props
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_26">
         <Properties>
           <string name="Name">RunState</string>
           <string name="Source">--!strict
@@ -5413,7 +5562,7 @@ return RunState
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_26">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_27">
         <Properties>
           <string name="Name">StaffStairs</string>
           <string name="Source">--!strict
@@ -5520,7 +5669,7 @@ return Stairs
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_27">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_28">
         <Properties>
           <string name="Name">StormWindows</string>
           <string name="Source">--!strict
@@ -5603,6 +5752,70 @@ function Windows.build(map: Folder,add: Add)
     folder:SetAttribute("WindowCount",12)
 end
 return Windows
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_29">
+        <Properties>
+          <string name="Name">TavernSigns</string>
+          <string name="Source">--!strict
+-- Shared sign finish; preserves wording, prompts and physical board placement.
+local Signs={}
+local brass=Color3.fromRGB(188,161,106)
+local ivory=Color3.fromRGB(240,223,188)
+local oak=Color3.fromRGB(33,26,25)
+local function shape(parent: Instance,name: string,pos: UDim2,size: UDim2,color: Color3,rotation: number?): Frame
+    local f=Instance.new("Frame") f.Name,f.Position,f.Size=name,pos,size
+    f.AnchorPoint,f.BorderSizePixel,f.BackgroundColor3=Vector2.new(.5,.5),0,color
+    f.Rotation,f.Parent=rotation or 0,parent
+    local round=Instance.new("UICorner") round.CornerRadius=UDim.new(.5,0) round.Parent=f
+    return f
+end
+local function firefly(surface: SurfaceGui)
+    local art=Instance.new("Frame") art.Name="FireflyIllustration"
+    art.Position,art.Size,art.BackgroundTransparency=UDim2.fromScale(.1,.17),UDim2.fromScale(.28,.66),1 art.Parent=surface
+    -- Symmetric engraved wings, dark thorax and a luminous golden abdomen.
+    for _,side in {-1,1} do
+        local wing=shape(art,"EngravedWing",UDim2.fromScale(.5+side*.2,.4),UDim2.fromScale(.27,.57),brass,side*28)
+        local line=Instance.new("UIStroke") line.Color,line.Thickness,line.Parent=ivory,1,wing
+        shape(art,"Antenna",UDim2.fromScale(.5+side*.09,.08),UDim2.fromScale(.025,.18),brass,side*35)
+    end
+    shape(art,"AbdomenGlow",UDim2.fromScale(.5,.78),UDim2.fromScale(.24,.28),Color3.fromRGB(224,193,94))
+    shape(art,"Thorax",UDim2.fromScale(.5,.42),UDim2.fromScale(.13,.42),Color3.fromRGB(63,51,35))
+    shape(art,"Head",UDim2.fromScale(.5,.19),UDim2.fromScale(.16,.15),ivory)
+end
+function Signs.build(map: Folder)
+    for _,gui in map:GetDescendants() do
+        if not gui:IsA("SurfaceGui") then continue end
+        local board=gui.Parent
+        if not board or not board:IsA("BasePart") then continue end
+        -- Papers and active control displays retain their own instructional treatment.
+        if board.Name=="Warning" or board.Name=="CellarInstructions" or board.Name=="FadedWallpaper" then continue end
+        local labels: {TextLabel}={}
+        for _,child in gui:GetChildren() do if child:IsA("TextLabel") then table.insert(labels,child) end end
+        if #labels==0 then continue end
+        board.Color,board.Material=oak,Enum.Material.Wood
+        gui.LightInfluence,gui.Brightness=0,.9
+        local field=Instance.new("Frame") field.Name="OakSignFace" field.Size=UDim2.fromScale(1,1)
+        field.BackgroundColor3,field.BorderSizePixel,field.ZIndex=oak,0,0 field.Parent=gui
+        local border=Instance.new("Frame") border.Name="BrassBorder" border.Size,border.Position=UDim2.fromScale(.94,.82),UDim2.fromScale(.03,.09)
+        border.BackgroundTransparency,border.ZIndex,border.Parent=1,1,gui
+        local stroke=Instance.new("UIStroke") stroke.Color,stroke.Thickness,stroke.Parent=brass,2,border
+        for _,label in labels do
+            label.BackgroundTransparency,label.TextColor3,label.TextStrokeTransparency=1,ivory,1
+            label.Position,label.Size=UDim2.fromScale(.07,.17),UDim2.fromScale(.86,.66)
+            label.TextWrapped,label.TextScaled,label.ZIndex=true,true,2
+            local brand=board.Name=="PubName" or board.Name=="FrontPubName" or board.Name=="SignBoard" or board.Name=="OutsideSign"
+            label.FontFace=Font.new(if brand then "rbxasset://fonts/families/Fondamento.json" else "rbxasset://fonts/families/Nunito.json",Enum.FontWeight.Bold)
+            if board.Name=="SignBoard" then
+                label.Text="THE FIREFLY\nTAVERN"
+                label.Position,label.Size=UDim2.fromScale(.42,.19),UDim2.fromScale(.5,.62)
+                firefly(gui)
+            end
+        end
+    end
+end
+return Signs
 </string>
         </Properties>
       </Item>
