@@ -1554,6 +1554,63 @@ script.Destroying:Connect(function() restore() RunService:UnbindFromRenderStep("
         </Item>
         <Item class="LocalScript" referent="RBXAssetIntegration1_8">
           <Properties>
+            <string name="Name">Journey</string>
+            <string name="Source">--!strict
+-- Short entrance reaction and car escape presentation; the server owns progression.
+local Players=game:GetService("Players")
+local RunService=game:GetService("RunService")
+if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
+local player=Players.LocalPlayer
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersJourney",false,30
+local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
+fade.Parent=gui
+local title=Instance.new("TextLabel") title.Size,title.Position=UDim2.fromScale(0.9,0.35),UDim2.fromScale(0.05,0.25)
+title.BackgroundTransparency,title.Font,title.TextSize,title.TextWrapped=1,Enum.Font.GothamBold,30,true
+title.TextColor3,title.Text,title.Visible=Color3.fromRGB(245,220,180),"YOU SURVIVED LAST ORDERS!\n\nThe dare is over. Never again.",false title.Parent=fade
+local replay=Instance.new("TextButton") replay.Size,replay.Position=UDim2.fromOffset(200,52),UDim2.fromScale(0.5,0.7)
+replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),"Play again",Enum.Font.GothamBold,22
+replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
+gui.Parent=player:WaitForChild("PlayerGui")
+replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
+local previousType: Enum.CameraType?=nil
+local previousSubject: Instance?=nil
+local previousFrame=CFrame.identity
+local function restore()
+    local camera=workspace.CurrentCamera
+    if camera and previousType then
+        camera.CameraType=previousType camera.CameraSubject=previousSubject camera.CFrame=previousFrame
+    end
+    previousType=nil
+end
+RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value+2,function()
+    local camera=workspace.CurrentCamera
+    if not camera then return end
+    local entry=player:GetAttribute("LastOrdersEntryScene")==true
+    local driving=player:GetAttribute("LastOrdersDriving")==true
+    local stage=player:GetAttribute("LastOrdersStage")
+    title.Visible,replay.Visible=stage==7,stage==7
+    if not entry and not driving then restore() fade.BackgroundTransparency=1 return end
+    if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
+    camera.CameraType=Enum.CameraType.Scriptable
+    if entry then
+        camera.CFrame=CFrame.lookAt(Vector3.new(6,7,78),Vector3.new(6,6,88))
+    else
+        local map=workspace:FindFirstChild("LastOrdersPrototype")
+        -- Locate by model name so the camera also follows a translated test fixture.
+        local car=workspace:FindFirstChild("BrokenDownCar",true)
+        if car and car:IsA("Model") then
+            local cf=car:GetPivot()
+            camera.CFrame=CFrame.lookAt((cf*CFrame.new(-15,8,-12)).Position,cf.Position+Vector3.new(0,2,0))
+        end
+        fade.BackgroundTransparency=if stage==7 then 0 else 1
+    end
+end)
+script.Destroying:Connect(function() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)
+</string>
+          </Properties>
+        </Item>
+        <Item class="LocalScript" referent="RBXAssetIntegration1_9">
+          <Properties>
             <string name="Name">Main</string>
             <string name="Source">--!strict
 local Players = game:GetService("Players")
@@ -1593,7 +1650,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_9">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_10">
           <Properties>
             <string name="Name">PropRenderer</string>
             <string name="Source">--!strict
@@ -1781,7 +1838,7 @@ return Renderer
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_10">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_11">
           <Properties>
             <string name="Name">Storm</string>
             <string name="Source">--!strict
@@ -1815,7 +1872,8 @@ local coverCast=RaycastParams.new() coverCast.FilterType=Enum.RaycastFilterType.
 local sign=exterior:WaitForChild("PubFrontage"):WaitForChild("HangingPubSign") :: Model
 local signPivot=sign:GetPivot()
 local hazards: {BasePart}={}
-for _,object in exterior:WaitForChild("BrokenDownCar"):GetChildren() do
+local car=exterior:WaitForChild("BrokenDownCar")
+for _,object in car:GetChildren() do
     if object:IsA("BasePart") and object.Name=="HazardLamp" then table.insert(hazards,object) end
 end
 local alive=true
@@ -1839,7 +1897,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         rain.step(root.Position,character,accumulator) accumulator=0
         local t=workspace:GetServerTimeNow()
         sign:PivotTo(signPivot*CFrame.Angles(0,0,math.sin(t*1.1)*0.025))
-        local on=math.floor(t*1.3)%2==0
+        local on=car:GetAttribute("HazardsEnabled")==true and math.floor(t*1.3)%2==0
         for _,p in hazards do p.Material=if on then Enum.Material.Neon else Enum.Material.Glass p.Transparency=if on then 0 else 0.5 end
     end
     if os.clock()&gt;=nextThunder then
@@ -1854,7 +1912,7 @@ end)
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_11">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_12">
           <Properties>
             <string name="Name">StormRain</string>
             <string name="Source">--!strict
@@ -1900,7 +1958,7 @@ return Rain
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_12">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_13">
           <Properties>
             <string name="Name">Survival</string>
             <string name="Source">--!strict
@@ -1945,14 +2003,15 @@ local function update()
         segment.BackgroundColor3=if i&gt;health then Color3.fromRGB(60,47,48)
             elseif health==2 then Color3.fromRGB(155,185,110) else Color3.fromRGB(231,159,70)
     end
-    overlay.Visible,bar.Visible=gameOver,not gameOver
-    local locked=held or gameOver
+    local driving=player:GetAttribute("LastOrdersDriving")==true
+    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving
+    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true
     if locked~=movementLocked then
         movementLocked=locked
         if locked then controls:Disable() else controls:Enable() end
     end
 end
-for _,name in {"LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
+for _,name in {"LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
     player:GetAttributeChangedSignal(name):Connect(update)
 end
 script.Destroying:Connect(function()
@@ -2307,10 +2366,13 @@ return [==[{"sources":[{"file":"assets/characters/chuggernaught/Chuggernaught_Fi
 return table.freeze({
     Title = "The Chuggernaught: Last Orders",
     Objectives = table.freeze({
+        [0] = "Halloween dare: enter The Firefly Tavern and get its lights working.",
         "Read the warning at the bar.",
         "Restore power at the lit panel on the cellar's west wall.",
         "Find the brass exit key on a bedroom dresser or the downstairs office desk.",
         "Unlock the emergency exit with the key.",
+        "Get through the courtyard to your car!",
+        "Drive away from The Firefly Tavern.",
         "YOU SURVIVED LAST ORDERS!",
     }),
     InteractionDistance = 12,
@@ -2332,6 +2394,9 @@ return table.freeze({
     MonsterHitRecoverySeconds = 3,
     PlayerHitProtectionSeconds = 4,
     GameOverSeconds = 2,
+    FinaleSpeed = 20,
+    DriveSeconds = 5,
+    EntrySceneSeconds = 1,
     SightDistance = 75,
     SightPeripheralDistance = 8,
     SightConeCosine = 0.35,
@@ -2926,7 +2991,8 @@ function Dressing.build(map: Folder)
     local loose=map.CellarDressing:FindFirstChild("LooseCellarCrate") :: BasePart
     add("ClosedCellarCrate",loose.CFrame*CFrame.new(0,-2,0),Vector3.new(3.5/2.18,4/1.635,3.5/1.649),{loose},loose,"Crate")
     add("CellarSign",CFrame.new(44,10,9.1),Vector3.one*1.8)
-    add("RoomsAvailableSign",CFrame.new(6,8.5,88.76),Vector3.one*2)
+    -- The obsolete lodging sign is stored in the cellar, not advertising the new arrival.
+    add("RoomsAvailableSign",CFrame.new(71.3,-9,-54)*CFrame.Angles(0,-math.pi/2,0),Vector3.one*1.5)
     add("PubNameSign",CFrame.new(-22,10,9.15),Vector3.new(6,2,1),{map.PubName})
     local bell=map.Bell :: BasePart
     add("ServiceBell",CFrame.new(-20,4.62,17),nil,{bell},bell,"Bell")
@@ -3291,7 +3357,7 @@ return Visual
         <Properties>
           <string name="Name">ExteriorCar</string>
           <string name="Source">--!strict
--- Original local scenery only; arrival/drive-away gameplay is a later step.
+-- Working parked car. The legacy model name is retained for existing scenery references.
 local Props=require(script.Parent.PubProps)
 local Car={}
 function Car.build(parent: Instance): Model
@@ -3319,7 +3385,9 @@ function Car.build(parent: Instance): Model
             local hub=part("WheelHub",Vector3.new(0.72,1.3,1.3),Vector3.new(x,1.5,side*2.86),Color3.fromRGB(100,107,116),Enum.Material.Metal)
             hub.Shape=Enum.PartType.Cylinder hub.CFrame*=CFrame.Angles(0,math.pi/2,0)
         end
-        part("UnlitHeadlight",Vector3.new(0.12,0.55,1.3),Vector3.new(6.56,2.3,side*1.65),Color3.fromRGB(190,186,161),Enum.Material.Glass)
+        local headlight=part("Headlight",Vector3.new(0.12,0.55,1.3),Vector3.new(6.56,2.3,side*1.65),Color3.fromRGB(240,223,173),Enum.Material.Glass)
+        local light=Instance.new("SpotLight") light.Face,light.Range,light.Brightness,light.Angle=Enum.NormalId.Right,60,2,75
+        light.Enabled,light.Color,light.Parent=false,headlight.Color,headlight
         part("RearLamp",Vector3.new(0.12,0.55,1.3),Vector3.new(-6.56,2.3,side*1.65),Color3.fromRGB(94,23,29),Enum.Material.Glass)
         for _,endX in {-6.58,6.58} do
             part("HazardLamp",Vector3.new(0.15,0.45,0.45),Vector3.new(endX,2.3,side*2.3),Color3.fromRGB(239,139,44),Enum.Material.Neon)
@@ -3329,10 +3397,18 @@ function Car.build(parent: Instance): Model
     part("RearGlass",Vector3.new(0.06,1.5,4.7),Vector3.new(-4.5,3.85,0),Color3.fromRGB(51,68,85),Enum.Material.Glass)
     part("EngineBay",Vector3.new(4.3,0.12,4.8),Vector3.new(4.3,2.87,0),Color3.fromRGB(19,21,25),Enum.Material.Metal)
     part("Engine",Vector3.new(2.4,0.5,2.3),Vector3.new(4.2,3.1,0),Color3.fromRGB(78,83,88),Enum.Material.Metal)
-    local bonnet=part("RaisedBonnet",Vector3.new(4.3,0.18,5.3),Vector3.new(4.3,3.9,0),paint,Enum.Material.Metal)
-    bonnet.CFrame*=CFrame.Angles(0,0,0.55)
+    part("ClosedBonnet",Vector3.new(4.3,0.18,5.3),Vector3.new(4.3,3.5,0),paint,Enum.Material.Metal)
     for _,x in {-6.6,6.6} do part("Bumper",Vector3.new(0.3,0.45,5.5),Vector3.new(x,1.7,0),Color3.fromRGB(48,49,52)) end
     local marker=part("CarLocation",Vector3.one,Vector3.new(0,0.8,-5),Color3.new()) marker.Transparency=1
+    local door=part("EscapeCar",Vector3.new(1,1.5,0.5),Vector3.new(-1.3,2.8,-4.5),paint)
+    door.Transparency,door.CanQuery=1,true
+    local prompt=Instance.new("ProximityPrompt") prompt.ActionText,prompt.ObjectText="Get in and drive","Your car"
+    prompt.MaxActivationDistance,prompt.HoldDuration,prompt.RequiresLineOfSight,prompt.Enabled=8,0.35,false,false prompt.Parent=door
+    local tag=Instance.new("BillboardGui") tag.Name,tag.Adornee,tag.Size="CarGoal",door,UDim2.fromOffset(180,38)
+    tag.StudsOffsetWorldSpace,tag.MaxDistance,tag.Enabled,tag.AlwaysOnTop=Vector3.new(0,3,0),100,false,false tag.Parent=door
+    local text=Instance.new("TextLabel") text.Size,text.BackgroundTransparency=UDim2.fromScale(1,1),1
+    text.Text,text.Font,text.TextSize,text.TextColor3="YOUR CAR",Enum.Font.GothamBold,22,Color3.fromRGB(255,224,170) text.Parent=tag
+    model:SetAttribute("HazardsEnabled",false)
     model.PrimaryPart=body model.Parent=parent
     return model
 end
@@ -3341,6 +3417,220 @@ return Car
         </Properties>
       </Item>
       <Item class="ModuleScript" referent="RBXAssetIntegration0_7">
+        <Properties>
+          <string name="Name">Journey</string>
+          <string name="Source">--!strict
+-- Server-owned entrance collapse and car escape. All scenery/driver state resets together.
+local TweenService=game:GetService("TweenService")
+local Config=require(game.ReplicatedStorage:WaitForChild("HalloweenShared"):WaitForChild("Config"))
+local Journey={}
+Journey.Intro="HALLOWEEN DARE: get the lights on in the abandoned Firefly Tavern. Your working car is parked here."
+function Journey.new(map: Folder,clock: (() -&gt; number)?)
+    local time=clock or os.clock
+    local decor=map.JourneyDressing
+    local front=map.FrontDoor :: BasePart
+    local beam=decor.FallingEntranceBeam :: BasePart
+    local blocker=map.FrontEntranceBlocker :: BasePart
+    local car=map.Exterior.BrokenDownCar :: Model
+    local parked=car:GetPivot()
+    local offset=front.Position-Vector3.new(6,5.5,88)
+    local beamHome,doorHome,exitHome=beam.CFrame,front.CFrame,map.ExitDoor.CFrame
+    local opened,collapsed=false,false
+    local entryUntil,driveAt=0,0
+    local driving=false
+    local tween: Tween?=nil
+    local driver: BasePart?=nil
+    local restoreDriver: (() -&gt; ())?=nil
+    local wheels: {[BasePart]: CFrame}={}
+    for _,p in car:GetChildren() do
+        if p:IsA("BasePart") and (p.Name=="Tyre" or p.Name=="WheelHub") then wheels[p]=parked:ToObjectSpace(p.CFrame) end
+    end
+    local crash=Instance.new("Sound") crash.Name,crash.SoundId="EntranceCrash","rbxasset://sounds/impact_explosion_03.mp3"
+    crash.Volume,crash.PlaybackSpeed,crash.RollOffMaxDistance,crash.Parent=0.7,0.75,180,beam
+    local doorSound=Instance.new("Sound") doorSound.Name,doorSound.SoundId="ExitClatter","rbxasset://sounds/impact_explosion_03.mp3"
+    doorSound.Volume,doorSound.PlaybackSpeed,doorSound.RollOffMaxDistance,doorSound.Parent=0.35,1.1,150,map.ExitDoor
+    local engine=Instance.new("Sound") engine.Name,engine.SoundId="CarEngine","rbxasset://sounds/action_swim.mp3"
+    engine.Volume,engine.PlaybackSpeed,engine.Looped,engine.RollOffMaxDistance,engine.Parent=0.15,0.45,true,80,car.PrimaryPart
+    local function lights(enabled: boolean)
+        for _,p in car:GetChildren() do
+            if p:IsA("BasePart") and (p.Name=="Headlight" or p.Name=="RearLamp") then
+                p.Material=if enabled then Enum.Material.Neon else Enum.Material.Glass
+                local light=p:FindFirstChildOfClass("SpotLight") if light then light.Enabled=enabled end
+            end
+        end
+    end
+    local controller={}
+    function controller.entryActive(): boolean return time()&lt;entryUntil end
+    function controller.driveStarted(): number return driveAt end
+    function controller.openEntrance()
+        if opened or collapsed then return end
+        opened=true
+        front.CFrame=CFrame.new(offset+Vector3.new(1.5,5.5,88))*CFrame.Angles(0,-math.pi/2,0)*CFrame.new(4.5,0,0)
+    end
+    function controller.crossed(position: Vector3): boolean
+        position-=offset
+        return opened and not collapsed and position.X&gt;0 and position.X&lt;12 and position.Y&gt;0 and position.Y&lt;11
+            and position.Z&lt;85.5 and position.Z&gt;80
+    end
+    function controller.collapse()
+        if collapsed then return end
+        collapsed=true entryUntil=time()+Config.EntrySceneSeconds
+        blocker.CanCollide=true map:SetAttribute("EntranceCollapsed",true)
+        crash:Play()
+        tween=TweenService:Create(beam,TweenInfo.new(0.75,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{CFrame=CFrame.new(offset+Vector3.new(6,4.2,88))*CFrame.Angles(0,0,0.2)})
+        tween:Play()
+        for _,p in decor:GetChildren() do if p:IsA("BasePart") and p.Name=="EntranceDebris" then p.Transparency=0 end end
+    end
+    function controller.phase(stage: number)
+        local entry=map.FrontEntrance :: BasePart
+        entry.Position=offset+(if collapsed then Vector3.new(6,5,85) else Vector3.new(6,5,90))
+        local prompt=entry:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
+        prompt.Enabled=(stage==0 and not opened) or (collapsed and stage&lt;6)
+        prompt.ActionText,prompt.ObjectText=if collapsed then "Inspect wreckage" else "Open front door",if collapsed then "Front entrance — blocked" else "The Firefly Tavern"
+        local escape=car.EscapeCar
+        escape.ProximityPrompt.Enabled=stage==5
+        escape.CarGoal.Enabled=stage==5
+        for _,label in map.EntranceLabel:GetDescendants() do if label:IsA("TextLabel") then label.Text=if collapsed then "FRONT ENTRANCE — BLOCKED" else "FRONT ENTRANCE" end end
+    end
+    function controller.openExit()
+        map.ExitDoor.CanCollide=false map.ExitDoor.Transparency=0.8
+        doorSound:Play()
+    end
+    function controller.beginDrive(character: Model,root: BasePart,humanoid: Humanoid)
+        if driving then return end
+        driving=true driveAt=time()
+        local original,anchored=root.CFrame,root.Anchored
+        local speed,jumpPower,jumpHeight,rotate,sit=humanoid.WalkSpeed,humanoid.JumpPower,humanoid.JumpHeight,humanoid.AutoRotate,humanoid.Sit
+        local collisions: {[BasePart]: boolean}={}
+        for _,p in character:GetDescendants() do if p:IsA("BasePart") then collisions[p]=p.CanCollide p.CanCollide=false end end
+        root.Anchored=true root.AssemblyLinearVelocity,root.AssemblyAngularVelocity=Vector3.zero,Vector3.zero
+        humanoid.WalkSpeed,humanoid.JumpPower,humanoid.JumpHeight,humanoid.AutoRotate,humanoid.Sit=0,0,0,false,true
+        driver=root lights(true) engine:Play()
+        restoreDriver=function()
+            for p,value in collisions do if p.Parent then p.CanCollide=value end end
+            if root.Parent then root.CFrame=original root.Anchored=anchored root.AssemblyLinearVelocity,root.AssemblyAngularVelocity=Vector3.zero,Vector3.zero
+                if not anchored then pcall(function() root:SetNetworkOwnershipAuto() end) end end
+            if humanoid.Parent then humanoid.WalkSpeed,humanoid.JumpPower,humanoid.JumpHeight,humanoid.AutoRotate,humanoid.Sit=speed,jumpPower,jumpHeight,rotate,sit end
+        end
+    end
+    function controller.stepDrive(): boolean
+        if not driving then return false end
+        local elapsed=math.max(0,time()-driveAt)
+        local junction=CFrame.new(-40+offset.X,parked.Y,132+offset.Z)
+        local cf
+        if elapsed&lt;1.3 then
+            local t=elapsed/1.3 cf=parked:Lerp(junction,t*t*(3-2*t))
+        else cf=junction:Lerp(CFrame.new(190+offset.X,parked.Y,132+offset.Z),math.clamp((elapsed-1.3)/(Config.DriveSeconds-1.3),0,1)) end
+        car:PivotTo(cf)
+        for wheel,bind in wheels do wheel.CFrame=cf*bind*CFrame.Angles(elapsed*22,0,0) end
+        if driver and driver.Parent then driver.CFrame=cf*CFrame.new(-1,0.4,0) end
+        return elapsed&gt;=Config.DriveSeconds
+    end
+    function controller.reset()
+        if restoreDriver then restoreDriver() restoreDriver=nil end
+        driver=nil driving=false driveAt=0 entryUntil=0 opened=false collapsed=false
+        if tween then tween:Cancel() tween=nil end
+        crash:Stop() doorSound:Stop() engine:Stop()
+        front.CFrame,beam.CFrame,blocker.CanCollide=doorHome,beamHome,false
+        map.ExitDoor.CFrame=exitHome map.ExitDoor.CanCollide,map.ExitDoor.Transparency=true,0
+        map:SetAttribute("EntranceCollapsed",false)
+        car:PivotTo(parked)
+        for wheel,bind in wheels do wheel.CFrame=parked*bind end
+        lights(false)
+        for _,p in decor:GetChildren() do if p:IsA("BasePart") and p.Name=="EntranceDebris" then p.Transparency=1 end end
+        controller.phase(0)
+    end
+    controller.reset()
+    return controller
+end
+return Journey
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_8">
+        <Properties>
+          <string name="Name">JourneyMap</string>
+          <string name="Source">--!strict
+-- Runtime arrival opening and two-corner courtyard. Authored Studio geometry is untouched.
+local Props=require(script.Parent.PubProps)
+local Map={}
+Map.ExitNoise=Vector3.new(-36,0.5,44)
+function Map.build(map: Folder)
+    local wood=Color3.fromRGB(53,35,28)
+    local decor=Instance.new("Folder") decor.Name,decor.Parent="JourneyDressing",map
+    local function solid(name: string,size: Vector3,position: Vector3): Part
+        local p=Instance.new("Part") p.Name,p.Size,p.Position=name,size,position
+        p.Anchored,p.Color,p.Material=true,wood,Enum.Material.WoodPlanks
+        p:SetAttribute("BlocksNavigation",true) p.Parent=map return p
+    end
+    local function sign(name: string,text: string,position: Vector3,width: number,height: number): Part
+        local board=Props.part(decor,name,Vector3.new(width,height,0.15),CFrame.new(position),Color3.fromRGB(32,25,28))
+        for _,face in {Enum.NormalId.Front,Enum.NormalId.Back} do
+            local gui=Instance.new("SurfaceGui") gui.Face,gui.LightInfluence,gui.PixelsPerStud=face,0,50
+            gui.SizingMode,gui.Parent=Enum.SurfaceGuiSizingMode.PixelsPerStud,board
+            local label=Instance.new("TextLabel") label.Size,label.BackgroundTransparency=UDim2.fromScale(1,1),1
+            label.Font,label.TextScaled,label.TextColor3,label.Text=Enum.Font.GothamBold,true,Color3.fromRGB(255,224,170),text label.Parent=gui
+        end
+        return board
+    end
+    local wall=map:FindFirstChild("LoungeSouthWall") :: BasePart
+    wall:Destroy()
+    for _,span in {{-4,8},{30,36}} do
+        local p=solid("LoungeSouthWall",Vector3.new(span[2],30,1),Vector3.new(span[1],15,88))
+        p.Material,p.Color=Enum.Material.Plaster,Color3.fromRGB(107,100,110)
+    end
+    solid("FrontDoorLintel",Vector3.new(12,19,1),Vector3.new(6,20.5,88))
+    local old=map:FindFirstChild("JammedEntrance") if old then old:Destroy() end
+    local facade=map.Exterior.PubFrontage
+    local oldDoor=facade:FindFirstChild("ExteriorFrontDoor") if oldDoor then oldDoor:Destroy() end
+    solid("FrontDoor",Vector3.new(9,10,0.5),Vector3.new(6,5.5,88))
+    local blocker=solid("FrontEntranceBlocker",Vector3.new(12,11,1),Vector3.new(6,5.5,88))
+    blocker.CanCollide,blocker.Transparency=false,1
+    local entry=Instance.new("Part") entry.Name,entry.Size,entry.Position="FrontEntrance",Vector3.one,Vector3.new(6,5,90)
+    entry.Anchored,entry.Transparency,entry.CanCollide,entry.Parent=true,1,false,map
+    local prompt=Instance.new("ProximityPrompt") prompt.ActionText,prompt.ObjectText="Enter pub","The Firefly Tavern"
+    prompt.MaxActivationDistance,prompt.RequiresLineOfSight,prompt.Parent=9,false,entry
+    local beam=Props.part(decor,"FallingEntranceBeam",Vector3.new(14,2.8,2.8),CFrame.new(6,13.5,88),wood)
+    for i=1,6 do
+        local p=Props.part(decor,"EntranceDebris",Vector3.new(2.5,2.2,1.8),CFrame.new(1+i*1.5,1.3,87.8+(i%2)*0.6)*CFrame.Angles(0,i*0.4,i*0.1),Color3.fromRGB(112,102,99),Enum.Material.Plaster)
+        p.Transparency=1
+    end
+    for _,object in {map:FindFirstChild("EntranceLabel"),map:FindFirstChild("OutsideSign"),facade:FindFirstChild("RoomsAvailable"),facade.HangingPubSign} do
+        if object then for _,label in object:GetDescendants() do
+            if label:IsA("TextLabel") then label.Text=if object.Name=="EntranceLabel" then "FRONT ENTRANCE" else "THE FIREFLY TAVERN\nCLOSED" end
+        end end
+    end
+    local spawn=map.PrototypeSpawn :: SpawnLocation
+    spawn.Position,spawn.CanCollide,spawn.CanQuery=Vector3.new(-59,0.8,102),false,false
+    -- Eight-stud privacy walls prevent jumping over the two route turns.
+    for _,row in {{"YardWestWall",Vector3.new(1,8,56),Vector3.new(-51,4.3,68)},
+        {"YardEastWall",Vector3.new(1,8,56),Vector3.new(-21,4.3,68)},
+        {"YardFirstWall",Vector3.new(20,8,1),Vector3.new(-41,4.3,72)},
+        {"YardSecondWall",Vector3.new(20,8,1),Vector3.new(-31,4.3,90)}} do
+        local p=solid(row[1] :: string,row[2] :: Vector3,row[3] :: Vector3)
+        p.Material,p.Color=Enum.Material.Brick,Color3.fromRGB(63,58,66)
+    end
+    for _,position in {Vector3.new(-23,6,72),Vector3.new(-49,6,90),Vector3.new(-47,6,99)} do
+        local bulb=Props.part(decor,"YardLantern",Vector3.new(0.6,1,0.6),CFrame.new(position),Color3.fromRGB(255,192,98),Enum.Material.Neon)
+        local light=Instance.new("PointLight") light.Color,light.Brightness,light.Range,light.Parent=bulb.Color,1.5,22,bulb
+    end
+    sign("YardEscapeSign","CAR PARK\nFOLLOW THE LIGHTS",Vector3.new(-41,6,71.4),12,2.5)
+    sign("YardEscapeSign","CAR PARK",Vector3.new(-31,6,89.4),10,2)
+end
+function Map.addRoutes(positions: {Vector3},edges: {{number}})
+    local previous=17
+    for i,point in {Vector3.new(-36,4.5,48),Vector3.new(-36,4.5,61),Vector3.new(-26,4.5,64),
+        Vector3.new(-26,4.5,80),Vector3.new(-46,4.5,80),Vector3.new(-46,4.5,101),Vector3.new(-62,4.5,106)} do
+        table.insert(positions,point)
+        table.insert(edges,{previous,#positions,if i==1 then 1 else 0})
+        previous=#positions
+    end
+end
+return Map
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
         <Properties>
           <string name="Name">KeyPlacement</string>
           <string name="Source">--!strict
@@ -3368,7 +3658,7 @@ return KeyPlacement
 </string>
         </Properties>
       </Item>
-      <Item class="Script" referent="RBXAssetIntegration0_8">
+      <Item class="Script" referent="RBXAssetIntegration0_10">
         <Properties>
           <string name="Name">Main</string>
           <token name="RunContext">0</token>
@@ -3398,6 +3688,9 @@ local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPromp
 local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
 local keyVisual = require(script.Parent.ExitKeyVisual).new(key)
 local power = require(script.Parent.CellarPower).new(map)
+local journey = require(script.Parent.Journey).new(map)
+local replay = Instance.new("RemoteEvent")
+replay.Name, replay.Parent = "RestartJourney", game.ReplicatedStorage.HalloweenShared
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local encounter = require(script.Parent.MonsterEncounter).new(monster)
@@ -3426,6 +3719,9 @@ local graceUntil = 0
 local function updateVitals()
     local player=activePlayer
     if not player then return end
+    player:SetAttribute("LastOrdersDriving",state.stage&gt;=6)
+    player:SetAttribute("LastOrdersEntryScene",journey.entryActive())
+    player:SetAttribute("LastOrdersDriveStarted",journey.driveStarted())
     player:SetAttribute("LastOrdersHealth",survival.health())
     player:SetAttribute("LastOrdersMaxHealth",Config.PlayerMaxHealth)
     player:SetAttribute("LastOrdersHeld",survival.locked())
@@ -3434,6 +3730,7 @@ local function updateVitals()
 end
 local function update(message: string?)
     updateVitals()
+    journey.phase(state.stage)
     power.available(state.stage == 2)
     key.Transparency = if state.stage == 3 then 0 else 1
     keyPrompt.Enabled = state.stage == 3
@@ -3455,6 +3752,7 @@ end
 local function reset(message: string?)
     hold.release()
     survival.reset()
+    journey.reset()
     state = RunState.new()
     power.reset()
     require(script.Parent.AssetDressing).reroll(map)
@@ -3468,7 +3766,13 @@ local function reset(message: string?)
     monster.CFrame = home
     monster:SetAttribute("MonsterBehaviour", "Dormant")
     update(message)
+    navigation.refresh()
 end
+replay.OnServerEvent:Connect(function(player)
+    if player~=activePlayer or state.stage~=7 then return end
+    reset(require(script.Parent.Journey).Intro)
+    if player.Character then player.Character:PivotTo(spawn.CFrame+Vector3.new(0,4,0)) end
+end)
 local function join(player: Player)
     if activePlayer then
         player:SetAttribute("LastOrdersMessage", "This prototype supports one player per server.")
@@ -3478,9 +3782,9 @@ local function join(player: Player)
     player.RespawnLocation = spawn
     player.CharacterAdded:Connect(function()
         player.RespawnLocation = spawn
-        reset("Find the warning at the bar.")
+        reset(require(script.Parent.Journey).Intro)
     end)
-    reset()
+    reset(require(script.Parent.Journey).Intro)
 end
 Players.PlayerAdded:Connect(join)
 Players.PlayerRemoving:Connect(function(player)
@@ -3490,17 +3794,17 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 for _, player in Players:GetPlayers() do join(player) end
-local stations = { Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
+local stations = { FrontEntrance = 0, EscapeCar = 5, Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
     CellarBreakerBar = 2, CellarInstructions = 0, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
 for name, expected in stations do
-    local station = map:FindFirstChild(name) :: Part
+    local station = map:FindFirstChild(name,true) :: Part
     local prompt = station:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
     prompt.Triggered:Connect(function(player: Player)
         local character = player.Character
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health &lt;= 0 then return end
-        if survival.locked() then return end
+        if survival.locked() or journey.entryActive() or state.stage&gt;=6 then return end
         if (root.Position - station.Position).Magnitude &gt; Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -3511,6 +3815,11 @@ for name, expected in stations do
         local obstruction = workspace:Raycast(eye, station.Position - eye, sight)
         if obstruction and obstruction.Instance ~= station then
             update("Move into view of the item to interact.")
+            return
+        end
+        if name == "FrontEntrance" then
+            if state.stage==0 then journey.openEntrance() update("The door is open. Step inside to begin the dare.")
+            else update("The fallen beam blocks the entrance. Find the emergency exit key.") end
             return
         end
         if name == "Warning" and state.stage &gt; 1 then
@@ -3548,7 +3857,14 @@ for name, expected in stations do
             if not completed then update(message) return end
         end
         RunState.advance(state, expected)
-        if state.stage &gt;= 5 then encounter.stop() survival.finish() end
+        if expected==5 then
+            survival.finish() encounter.stop() journey.beginDrive(character,root,humanoid)
+            update("You made it to the car. Get out of here!") return
+        elseif expected==4 then
+            journey.openExit() navigation.refresh()
+            hunt.alarm(Vector3.new(-36,0.5,44)) encounter.rally()
+            update("The exit is open! Follow the courtyard lights to your car!") return
+        end
         if expected == 2 then
             local look = root.Position - monster.Position
             local flat = Vector3.new(look.X, 0, look.Z)
@@ -3567,11 +3883,21 @@ for name, expected in stations do
 end
 RunService.Heartbeat:Connect(function(dt: number)
     local player = activePlayer
-    if not player or state.stage &lt; 3 or state.stage &gt;= 5 then return end
+    if not player or state.stage==7 then return end
     local character = player.Character
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
     if not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health &lt;= 0 then return end
+    if state.stage==0 then
+        if journey.crossed(root.Position) then
+            RunState.advance(state,0) journey.collapse() navigation.refresh()
+            update("The entrance beam has fallen! Find another way out. Read the warning at the bar.")
+        end
+        return
+    elseif state.stage==6 then
+        if journey.stepDrive() then RunState.advance(state,6) update("You survived Last Orders. The dare is over.") end
+        return
+    elseif state.stage&lt;3 then updateVitals() return end
     hold.step()
     local event=survival.step()
     if event=="Restart" then
@@ -3627,13 +3953,13 @@ RunService.Heartbeat:Connect(function(dt: number)
     local speed = if behaviour == "Chase" then Config.ChaseSpeed
         elseif behaviour == "Investigate" then Config.InvestigateSpeed
         elseif behaviour == "Search" then Config.SearchSpeed else Config.MonsterSpeed
-    navigation.step(target, encounter.speed(speed), dt)
+    navigation.step(target, if state.stage==5 then Config.FinaleSpeed else encounter.speed(speed), dt)
 end)
 print("Last Orders prototype ready")
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_11">
         <Properties>
           <string name="Name">MonsterEncounter</string>
           <string name="Source">--!strict
@@ -3643,6 +3969,7 @@ local Encounter={}
 function Encounter.new(root: BasePart, clock: (() -&gt; number)?)
     local time = clock or os.clock
     local mode="Dormant"
+    local finale=false
     local endsAt,nextDrink,drinks=0,math.huge,0
     local function setMode(value: string)
         if mode==value and root:GetAttribute("MonsterMode")==value then return end
@@ -3652,12 +3979,17 @@ function Encounter.new(root: BasePart, clock: (() -&gt; number)?)
     end
     local controller={}
     function controller.reset()
+        finale=false
         drinks,endsAt,nextDrink=0,0,math.huge
         root:SetAttribute("DrinkCount",0)
         setMode("Dormant")
     end
     function controller.wake()
         setMode("Reveal") endsAt=time()+Config.MonsterRevealSeconds
+    end
+    function controller.rally()
+        finale=true nextDrink=math.huge
+        if mode=="Chug" then setMode("Search") end
     end
     function controller.stop() setMode("Stopped") end
     function controller.active(): boolean
@@ -3692,7 +4024,7 @@ function Encounter.new(root: BasePart, clock: (() -&gt; number)?)
             setMode(activity)
             return true,if drinks&gt;previous then "The Chuggernaught is getting faster." else "He finished his drink. Keep moving."
         end
-        if now&gt;=nextDrink then
+        if not finale and now&gt;=nextDrink then
             endsAt=now+Config.MonsterChugSeconds setMode("Chug") return false,nil
         end
         setMode(activity)
@@ -3705,7 +4037,7 @@ return Encounter
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_10">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_12">
         <Properties>
           <string name="Name">MonsterGrab</string>
           <string name="Source">--!strict
@@ -3739,7 +4071,7 @@ return Grab
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_11">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
         <Properties>
           <string name="Name">MonsterHunt</string>
           <string name="Source">--!strict
@@ -3777,6 +4109,11 @@ function Hunt.new(patrol: {Vector3}, clock: (() -&gt; number)?, plan: Planner?)
         bellReady, noiseUntil = now + Config.BellCooldownSeconds, now + Config.DistractionSeconds
         noise, alertUntil = position, math.max(alertUntil, noiseUntil)
         return true
+    end
+    function controller.alarm(position: Vector3)
+        lastKnown,noise,planned=position,nil,false
+        direction=Vector3.new(0,0,1)
+        chaseUntil,alertUntil=time()+Config.SightMemorySeconds,time()+40
     end
     function controller.bellCooldown(): number
         return math.max(0, bellReady - time())
@@ -3862,7 +4199,7 @@ return Hunt
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_12">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
         <Properties>
           <string name="Name">MonsterNavigation</string>
           <string name="Source">--!strict
@@ -3903,6 +4240,7 @@ end
 table.insert(edges, {previous, 15})
 require(script.Parent.PubExpansion).addRoutes(positions, edges)
 Cellar.addRoutes(positions, edges)
+require(script.Parent.JourneyMap).addRoutes(positions,edges)
 function Navigation.new(monster: BasePart)
     local map = monster.Parent :: Folder
     local offset = monster.Position - Cellar.MonsterHome
@@ -3934,12 +4272,16 @@ function Navigation.new(monster: BasePart)
         -- The lower two studs allow normal one-stud step climbing.
         return workspace:Blockcast(CFrame.new(a + Vector3.new(0,1,0)), Vector3.new(4.2,5.6,4.2), delta, floorCast) == nil
     end
-    for _, edge in edges do
-        if clear(nodes[edge[1]], nodes[edge[2]]) then
-            table.insert(neighbours[edge[1]], edge[2])
-            table.insert(neighbours[edge[2]], edge[1])
+    local function refreshEdges()
+        for _,list in neighbours do table.clear(list) end
+        for _,edge in edges do
+            if clear(nodes[edge[1]],nodes[edge[2]]) then
+                table.insert(neighbours[edge[1]],edge[2])
+                table.insert(neighbours[edge[2]],edge[1])
+            end
         end
     end
+    refreshEdges()
     local searchStops: {[number]: boolean} = {}
     for i,position in positions do
         -- Inspect rooms and landings, rather than stopping halfway up a flight of stairs.
@@ -3963,11 +4305,15 @@ function Navigation.new(monster: BasePart)
     local controller = {}
     function controller.validate()
         for _,edge in edges do
+            if edge[3]==1 and map.ExitDoor.CanCollide then continue end
             assert(table.find(neighbours[edge[1]],edge[2]), "Blocked pub route: "..tostring(nodes[edge[1]]).." -&gt; "..tostring(nodes[edge[2]]))
         end
     end
     function controller.reset()
         route, nextPlan, lastTarget = {}, 0, nil
+    end
+    function controller.refresh()
+        refreshEdges() controller.reset()
     end
     function controller.searchTargets(position: Vector3, direction: Vector3): {Vector3}
         local first=nearest(position+Vector3.new(0,4,0))
@@ -4038,7 +4384,7 @@ return Navigation
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
         <Properties>
           <string name="Name">MonsterRoutes</string>
           <string name="Source">--!strict
@@ -4104,7 +4450,7 @@ return Routes
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
         <Properties>
           <string name="Name">MonsterSenses</string>
           <string name="Source">--!strict
@@ -4152,7 +4498,7 @@ return Senses
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
         <Properties>
           <string name="Name">PlayerHold</string>
           <string name="Source">--!strict
@@ -4237,7 +4583,7 @@ return Hold
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
         <Properties>
           <string name="Name">PlayerSurvival</string>
           <string name="Source">--!strict
@@ -4290,7 +4636,7 @@ return Survival
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
         <Properties>
           <string name="Name">PrototypeMap</string>
           <string name="Source">--!strict
@@ -4382,7 +4728,7 @@ function Map.build(): Folder
     for _, x in {-17, 25} do
         part("PubTable", Vector3.new(7, 3, 6), Vector3.new(x, 2, 29), wood)
     end
-    sign("PubName", "THE CROOKED TANKARD", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
+    sign("PubName", "THE FIREFLY TAVERN", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
     -- Put the note on the customer-facing side, clear of the counter and bar top.
     local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read note", Color3.fromRGB(230, 215, 170))
     warning.Size, warning.Material = Vector3.new(5, 1.8, 0.12), Enum.Material.SmoothPlastic
@@ -4418,7 +4764,7 @@ function Map.build(): Folder
         light.Parent = lamp
     end
     part("EscapePath", Vector3.new(16, 1, 32), Vector3.new(-36, 0, 56), stone)
-    sign("OutsideSign", "THE CROOKED TANKARD — ROOMS AVAILABLE", Vector3.new(6, 12, 41), 24).Orientation = Vector3.new(0, 180, 0)
+    sign("OutsideSign", "THE FIREFLY TAVERN — ROOMS AVAILABLE", Vector3.new(6, 12, 41), 24).Orientation = Vector3.new(0, 180, 0)
     local spawn = Instance.new("SpawnLocation")
     spawn.Name, spawn.Size, spawn.Position = "PrototypeSpawn", Vector3.new(6, 1, 6), Vector3.new(6, 1, 30)
     spawn.Anchored, spawn.Neutral, spawn.Transparency = true, true, 1
@@ -4427,6 +4773,7 @@ function Map.build(): Folder
     require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
     require(script.Parent.PubExterior).build(folder)
+    require(script.Parent.JourneyMap).build(folder)
     require(script.Parent.AssetDressing).build(folder)
     return folder
 end
@@ -4434,7 +4781,7 @@ return Map
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
         <Properties>
           <string name="Name">PubAtmosphere</string>
           <string name="Source">--!strict
@@ -4463,7 +4810,7 @@ return Atmosphere
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
         <Properties>
           <string name="Name">PubDressing</string>
           <string name="Source">--!strict
@@ -4616,7 +4963,7 @@ return Dressing
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
         <Properties>
           <string name="Name">PubExpansion</string>
           <string name="Source">--!strict
@@ -4830,7 +5177,7 @@ return Expansion
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
         <Properties>
           <string name="Name">PubExterior</string>
           <string name="Source">--!strict
@@ -4943,7 +5290,7 @@ function Exterior.build(map: Folder)
         p(facade,"StoneChimney",Vector3.new(4,12,5),v,stone,Enum.Material.Brick)
         p(facade,"ChimneyCap",Vector3.new(5,0.6,6),v+Vector3.new(0,6,0),Color3.fromRGB(45,42,49),Enum.Material.Slate)
     end
-    board(facade,"FrontPubName","THE CROOKED TANKARD",Vector3.new(20,13,89.1),37,2.5)
+    board(facade,"FrontPubName","THE FIREFLY TAVERN",Vector3.new(20,13,89.1),37,2.5)
     board(facade,"RoomsAvailable","ROOMS AVAILABLE",Vector3.new(6,8,89.1),9,1.4)
     p(facade,"ExteriorFrontDoor",Vector3.new(9,10,0.3),Vector3.new(6,5.5,88.7),Color3.fromRGB(50,32,29))
     for _,x in {0.5,11.5} do p(facade,"FrontDoorFrame",Vector3.new(0.6,11,0.7),Vector3.new(x,5.7,88.9),timber) end
@@ -4954,7 +5301,7 @@ function Exterior.build(map: Folder)
     solid(facade,"SignPost",Vector3.new(0.7,15,0.7),Vector3.new(-5,7.8,100),timber)
     beam(facade,"SignArm",Vector3.new(-5,14.5,100),Vector3.new(2,14.5,100),0.55,timber)
     local sign=Instance.new("Model") sign.Name="HangingPubSign" sign.Parent=facade
-    board(sign,"SignBoard","THE CROOKED TANKARD\nROOMS AVAILABLE",Vector3.new(-0.5,11,100),8,4)
+    board(sign,"SignBoard","THE FIREFLY TAVERN\nROOMS AVAILABLE",Vector3.new(-0.5,11,100),8,4)
     for _,x in {-3,2} do p(sign,"SignChain",Vector3.new(0.1,1.5,0.1),Vector3.new(x,13.75,100),Color3.fromRGB(87,82,75),Enum.Material.Metal) end
     sign.WorldPivot=CFrame.new(-0.5,14.5,100)
     require(script.Parent.ExteriorCar).build(root)
@@ -4980,7 +5327,7 @@ return Exterior
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
         <Properties>
           <string name="Name">PubProps</string>
           <string name="Source">--!strict
@@ -5046,17 +5393,17 @@ return Props
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
         <Properties>
           <string name="Name">RunState</string>
           <string name="Source">--!strict
 local RunState = {}
 export type State = { stage: number }
 function RunState.new(): State
-    return { stage = 1 }
+    return { stage = 0 }
 end
 function RunState.advance(state: State, expected: number): boolean
-    if state.stage ~= expected or expected &lt; 1 or expected &gt; 4 then
+    if state.stage ~= expected or expected &lt; 0 or expected &gt; 6 then
         return false
     end
     state.stage += 1
@@ -5066,7 +5413,7 @@ return RunState
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_26">
         <Properties>
           <string name="Name">StaffStairs</string>
           <string name="Source">--!strict
@@ -5173,7 +5520,7 @@ return Stairs
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_27">
         <Properties>
           <string name="Name">StormWindows</string>
           <string name="Source">--!strict

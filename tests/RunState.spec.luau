@@ -1,14 +1,14 @@
 --!strict
--- In Studio's server Command Bar, run this body after syncing.
-local RunState = require(game.ServerScriptService.HalloweenServer.RunState)
-local state = RunState.new()
-assert(not RunState.advance(state, 2), "Out-of-order action must fail")
-assert(not RunState.advance(state, 0), "Invalid action must fail")
-for stage = 1, 4 do
-    assert(RunState.advance(state, stage), "Expected action must advance")
-    assert(not RunState.advance(state, stage), "Repeated action must fail")
+local RunState=require(game.ServerScriptService.HalloweenServer.RunState)
+local state=RunState.new()
+assert(state.stage==0)
+assert(not RunState.advance(state,1))
+assert(not RunState.advance(state,-1))
+for stage=0,6 do
+    assert(RunState.advance(state,stage))
+    assert(not RunState.advance(state,stage))
 end
-assert(state.stage == 5, "The key and exit must lead to victory without theft")
-assert(not RunState.advance(state, 5), "Victory must be terminal")
-assert(RunState.new().stage == 1, "A fresh run must start at the warning")
+assert(state.stage==7)
+assert(not RunState.advance(state,7))
+assert(RunState.new().stage==0)
 print("RunState checks passed")

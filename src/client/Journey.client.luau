@@ -1,0 +1,51 @@
+--!strict
+-- Short entrance reaction and car escape presentation; the server owns progression.
+local Players=game:GetService("Players")
+local RunService=game:GetService("RunService")
+if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
+local player=Players.LocalPlayer
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersJourney",false,30
+local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
+fade.Parent=gui
+local title=Instance.new("TextLabel") title.Size,title.Position=UDim2.fromScale(0.9,0.35),UDim2.fromScale(0.05,0.25)
+title.BackgroundTransparency,title.Font,title.TextSize,title.TextWrapped=1,Enum.Font.GothamBold,30,true
+title.TextColor3,title.Text,title.Visible=Color3.fromRGB(245,220,180),"YOU SURVIVED LAST ORDERS!\n\nThe dare is over. Never again.",false title.Parent=fade
+local replay=Instance.new("TextButton") replay.Size,replay.Position=UDim2.fromOffset(200,52),UDim2.fromScale(0.5,0.7)
+replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),"Play again",Enum.Font.GothamBold,22
+replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
+gui.Parent=player:WaitForChild("PlayerGui")
+replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
+local previousType: Enum.CameraType?=nil
+local previousSubject: Instance?=nil
+local previousFrame=CFrame.identity
+local function restore()
+    local camera=workspace.CurrentCamera
+    if camera and previousType then
+        camera.CameraType=previousType camera.CameraSubject=previousSubject camera.CFrame=previousFrame
+    end
+    previousType=nil
+end
+RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value+2,function()
+    local camera=workspace.CurrentCamera
+    if not camera then return end
+    local entry=player:GetAttribute("LastOrdersEntryScene")==true
+    local driving=player:GetAttribute("LastOrdersDriving")==true
+    local stage=player:GetAttribute("LastOrdersStage")
+    title.Visible,replay.Visible=stage==7,stage==7
+    if not entry and not driving then restore() fade.BackgroundTransparency=1 return end
+    if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
+    camera.CameraType=Enum.CameraType.Scriptable
+    if entry then
+        camera.CFrame=CFrame.lookAt(Vector3.new(6,7,78),Vector3.new(6,6,88))
+    else
+        local map=workspace:FindFirstChild("LastOrdersPrototype")
+        -- Locate by model name so the camera also follows a translated test fixture.
+        local car=workspace:FindFirstChild("BrokenDownCar",true)
+        if car and car:IsA("Model") then
+            local cf=car:GetPivot()
+            camera.CFrame=CFrame.lookAt((cf*CFrame.new(-15,8,-12)).Position,cf.Position+Vector3.new(0,2,0))
+        end
+        fade.BackgroundTransparency=if stage==7 then 0 else 1
+    end
+end)
+script.Destroying:Connect(function() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)

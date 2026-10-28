@@ -87,7 +87,7 @@ function Map.build(): Folder
     for _, x in {-17, 25} do
         part("PubTable", Vector3.new(7, 3, 6), Vector3.new(x, 2, 29), wood)
     end
-    sign("PubName", "THE CROOKED TANKARD", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
+    sign("PubName", "THE FIREFLY TAVERN", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
     -- Put the note on the customer-facing side, clear of the counter and bar top.
     local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read note", Color3.fromRGB(230, 215, 170))
     warning.Size, warning.Material = Vector3.new(5, 1.8, 0.12), Enum.Material.SmoothPlastic
@@ -123,7 +123,7 @@ function Map.build(): Folder
         light.Parent = lamp
     end
     part("EscapePath", Vector3.new(16, 1, 32), Vector3.new(-36, 0, 56), stone)
-    sign("OutsideSign", "THE CROOKED TANKARD — ROOMS AVAILABLE", Vector3.new(6, 12, 41), 24).Orientation = Vector3.new(0, 180, 0)
+    sign("OutsideSign", "THE FIREFLY TAVERN — ROOMS AVAILABLE", Vector3.new(6, 12, 41), 24).Orientation = Vector3.new(0, 180, 0)
     local spawn = Instance.new("SpawnLocation")
     spawn.Name, spawn.Size, spawn.Position = "PrototypeSpawn", Vector3.new(6, 1, 6), Vector3.new(6, 1, 30)
     spawn.Anchored, spawn.Neutral, spawn.Transparency = true, true, 1
@@ -132,6 +132,7 @@ function Map.build(): Folder
     require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
     require(script.Parent.PubExterior).build(folder)
+    require(script.Parent.JourneyMap).build(folder)
     require(script.Parent.AssetDressing).build(folder)
     return folder
 end

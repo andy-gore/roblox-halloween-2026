@@ -123,7 +123,8 @@ function Dressing.build(map: Folder)
     local loose=map.CellarDressing:FindFirstChild("LooseCellarCrate") :: BasePart
     add("ClosedCellarCrate",loose.CFrame*CFrame.new(0,-2,0),Vector3.new(3.5/2.18,4/1.635,3.5/1.649),{loose},loose,"Crate")
     add("CellarSign",CFrame.new(44,10,9.1),Vector3.one*1.8)
-    add("RoomsAvailableSign",CFrame.new(6,8.5,88.76),Vector3.one*2)
+    -- The obsolete lodging sign is stored in the cellar, not advertising the new arrival.
+    add("RoomsAvailableSign",CFrame.new(71.3,-9,-54)*CFrame.Angles(0,-math.pi/2,0),Vector3.one*1.5)
     add("PubNameSign",CFrame.new(-22,10,9.15),Vector3.new(6,2,1),{map.PubName})
     local bell=map.Bell :: BasePart
     add("ServiceBell",CFrame.new(-20,4.62,17),nil,{bell},bell,"Bell")

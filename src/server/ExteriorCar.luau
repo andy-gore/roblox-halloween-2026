@@ -1,5 +1,5 @@
 --!strict
--- Original local scenery only; arrival/drive-away gameplay is a later step.
+-- Working parked car. The legacy model name is retained for existing scenery references.
 local Props=require(script.Parent.PubProps)
 local Car={}
 function Car.build(parent: Instance): Model
@@ -27,7 +27,9 @@ function Car.build(parent: Instance): Model
             local hub=part("WheelHub",Vector3.new(0.72,1.3,1.3),Vector3.new(x,1.5,side*2.86),Color3.fromRGB(100,107,116),Enum.Material.Metal)
             hub.Shape=Enum.PartType.Cylinder hub.CFrame*=CFrame.Angles(0,math.pi/2,0)
         end
-        part("UnlitHeadlight",Vector3.new(0.12,0.55,1.3),Vector3.new(6.56,2.3,side*1.65),Color3.fromRGB(190,186,161),Enum.Material.Glass)
+        local headlight=part("Headlight",Vector3.new(0.12,0.55,1.3),Vector3.new(6.56,2.3,side*1.65),Color3.fromRGB(240,223,173),Enum.Material.Glass)
+        local light=Instance.new("SpotLight") light.Face,light.Range,light.Brightness,light.Angle=Enum.NormalId.Right,60,2,75
+        light.Enabled,light.Color,light.Parent=false,headlight.Color,headlight
         part("RearLamp",Vector3.new(0.12,0.55,1.3),Vector3.new(-6.56,2.3,side*1.65),Color3.fromRGB(94,23,29),Enum.Material.Glass)
         for _,endX in {-6.58,6.58} do
             part("HazardLamp",Vector3.new(0.15,0.45,0.45),Vector3.new(endX,2.3,side*2.3),Color3.fromRGB(239,139,44),Enum.Material.Neon)
@@ -37,10 +39,18 @@ function Car.build(parent: Instance): Model
     part("RearGlass",Vector3.new(0.06,1.5,4.7),Vector3.new(-4.5,3.85,0),Color3.fromRGB(51,68,85),Enum.Material.Glass)
     part("EngineBay",Vector3.new(4.3,0.12,4.8),Vector3.new(4.3,2.87,0),Color3.fromRGB(19,21,25),Enum.Material.Metal)
     part("Engine",Vector3.new(2.4,0.5,2.3),Vector3.new(4.2,3.1,0),Color3.fromRGB(78,83,88),Enum.Material.Metal)
-    local bonnet=part("RaisedBonnet",Vector3.new(4.3,0.18,5.3),Vector3.new(4.3,3.9,0),paint,Enum.Material.Metal)
-    bonnet.CFrame*=CFrame.Angles(0,0,0.55)
+    part("ClosedBonnet",Vector3.new(4.3,0.18,5.3),Vector3.new(4.3,3.5,0),paint,Enum.Material.Metal)
     for _,x in {-6.6,6.6} do part("Bumper",Vector3.new(0.3,0.45,5.5),Vector3.new(x,1.7,0),Color3.fromRGB(48,49,52)) end
     local marker=part("CarLocation",Vector3.one,Vector3.new(0,0.8,-5),Color3.new()) marker.Transparency=1
+    local door=part("EscapeCar",Vector3.new(1,1.5,0.5),Vector3.new(-1.3,2.8,-4.5),paint)
+    door.Transparency,door.CanQuery=1,true
+    local prompt=Instance.new("ProximityPrompt") prompt.ActionText,prompt.ObjectText="Get in and drive","Your car"
+    prompt.MaxActivationDistance,prompt.HoldDuration,prompt.RequiresLineOfSight,prompt.Enabled=8,0.35,false,false prompt.Parent=door
+    local tag=Instance.new("BillboardGui") tag.Name,tag.Adornee,tag.Size="CarGoal",door,UDim2.fromOffset(180,38)
+    tag.StudsOffsetWorldSpace,tag.MaxDistance,tag.Enabled,tag.AlwaysOnTop=Vector3.new(0,3,0),100,false,false tag.Parent=door
+    local text=Instance.new("TextLabel") text.Size,text.BackgroundTransparency=UDim2.fromScale(1,1),1
+    text.Text,text.Font,text.TextSize,text.TextColor3="YOUR CAR",Enum.Font.GothamBold,22,Color3.fromRGB(255,224,170) text.Parent=tag
+    model:SetAttribute("HazardsEnabled",false)
     model.PrimaryPart=body model.Parent=parent
     return model
 end

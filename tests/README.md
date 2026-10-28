@@ -258,3 +258,14 @@ The original skin now leans into the reach, blends the left arm into the live av
 Updated PlayerHold controlled-time checks passed for progressive motion instead of teleport, visible lift/lower, safe original return, fatal grip retention, obstruction and reset cleanup. PlayerSurvival timing tests passed with the new hold duration. Live samples showed an approximately 1.6-stud lift, a steady elevated phase and lowering before release. Camera samples framed both actors in open space and near the closed exit wall, with the view remaining inside the wall. First-person avatar visibility and restoration of first-person preference/normal camera type passed. Transient hand error during moving replicated frames was about 0.24 studs (within the 0.35-stud fist tolerance); steady live grip error was below 0.001 studs, as was tankard contact. A fatal lift followed by character reload restored health/movement and Custom camera without a stale hold. Existing live ChuggernaughtRig spec passed. Play/temporary controls were cleaned up.
 
 Both builds and whitespace checks pass. The saved place is updated in managed code only with outside bytes preserved. Standalone Luau analysis remains unavailable. Human review remains necessary for how clear/comfortable the short holding view feels, especially portrait/touch screens and tight spaces.
+
+
+## Arrival, Firefly Tavern and car finale — 28 October 2026
+
+The approved current pub name is The Firefly Tavern. Start outside by a working car. Open the front door, then walk through: only crossing the threshold drops the beam and advances to the warning. Power separately wakes the monster. Unlocking the emergency exit starts the courtyard escape; boarding the car drives away before victory/replay.
+
+Studio Play checks passed for opening without advance, physical walking triggering stage 1, warning, three circuits/main supply, key pickup, exit advancing to stage 5, car boarding/drive to stage 7, and replay restoring stage 0, full health, unanchored root and Custom camera. Existing asset 203785492 warnings remain; no new gameplay errors appeared. A first-hit recovery was observed during the exterior sequence.
+
+Journey.spec.luau passed in a disposable fresh-module fixture: threshold gating, collapse/reset, closed/open navigation validation, monster traversal through both courtyard turns, timed car movement and driver/car restoration. RunState.spec.luau covers revised stages 0–7. Both Rojo builds and diff checks passed. Standalone Luau analysis is unavailable.
+
+Manual keyboard/touch checks remain for courtyard chase balance, boarding readability, entrance camera comfort and reset during the drive. Interior/message visual polish is deferred. The saved local place receives managed code only, preserving authored geometry and artwork. Nothing was published.

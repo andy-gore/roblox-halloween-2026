@@ -2,10 +2,13 @@
 return table.freeze({
     Title = "The Chuggernaught: Last Orders",
     Objectives = table.freeze({
+        [0] = "Halloween dare: enter The Firefly Tavern and get its lights working.",
         "Read the warning at the bar.",
         "Restore power at the lit panel on the cellar's west wall.",
         "Find the brass exit key on a bedroom dresser or the downstairs office desk.",
         "Unlock the emergency exit with the key.",
+        "Get through the courtyard to your car!",
+        "Drive away from The Firefly Tavern.",
         "YOU SURVIVED LAST ORDERS!",
     }),
     InteractionDistance = 12,
@@ -27,6 +30,9 @@ return table.freeze({
     MonsterHitRecoverySeconds = 3,
     PlayerHitProtectionSeconds = 4,
     GameOverSeconds = 2,
+    FinaleSpeed = 20,
+    DriveSeconds = 5,
+    EntrySceneSeconds = 1,
     SightDistance = 75,
     SightPeripheralDistance = 8,
     SightConeCosine = 0.35,

@@ -34,6 +34,11 @@ function Hunt.new(patrol: {Vector3}, clock: (() -> number)?, plan: Planner?)
         noise, alertUntil = position, math.max(alertUntil, noiseUntil)
         return true
     end
+    function controller.alarm(position: Vector3)
+        lastKnown,noise,planned=position,nil,false
+        direction=Vector3.new(0,0,1)
+        chaseUntil,alertUntil=time()+Config.SightMemorySeconds,time()+40
+    end
     function controller.bellCooldown(): number
         return math.max(0, bellReady - time())
     end

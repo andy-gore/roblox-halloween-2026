@@ -24,6 +24,9 @@ local keyPrompt = key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPromp
 local keyPlacement = require(script.Parent.KeyPlacement).new(map, key)
 local keyVisual = require(script.Parent.ExitKeyVisual).new(key)
 local power = require(script.Parent.CellarPower).new(map)
+local journey = require(script.Parent.Journey).new(map)
+local replay = Instance.new("RemoteEvent")
+replay.Name, replay.Parent = "RestartJourney", game.ReplicatedStorage.HalloweenShared
 local home = monster.CFrame
 local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local encounter = require(script.Parent.MonsterEncounter).new(monster)
@@ -52,6 +55,9 @@ local graceUntil = 0
 local function updateVitals()
     local player=activePlayer
     if not player then return end
+    player:SetAttribute("LastOrdersDriving",state.stage>=6)
+    player:SetAttribute("LastOrdersEntryScene",journey.entryActive())
+    player:SetAttribute("LastOrdersDriveStarted",journey.driveStarted())
     player:SetAttribute("LastOrdersHealth",survival.health())
     player:SetAttribute("LastOrdersMaxHealth",Config.PlayerMaxHealth)
     player:SetAttribute("LastOrdersHeld",survival.locked())
@@ -60,6 +66,7 @@ local function updateVitals()
 end
 local function update(message: string?)
     updateVitals()
+    journey.phase(state.stage)
     power.available(state.stage == 2)
     key.Transparency = if state.stage == 3 then 0 else 1
     keyPrompt.Enabled = state.stage == 3
@@ -81,6 +88,7 @@ end
 local function reset(message: string?)
     hold.release()
     survival.reset()
+    journey.reset()
     state = RunState.new()
     power.reset()
     require(script.Parent.AssetDressing).reroll(map)
@@ -94,7 +102,13 @@ local function reset(message: string?)
     monster.CFrame = home
     monster:SetAttribute("MonsterBehaviour", "Dormant")
     update(message)
+    navigation.refresh()
 end
+replay.OnServerEvent:Connect(function(player)
+    if player~=activePlayer or state.stage~=7 then return end
+    reset(require(script.Parent.Journey).Intro)
+    if player.Character then player.Character:PivotTo(spawn.CFrame+Vector3.new(0,4,0)) end
+end)
 local function join(player: Player)
     if activePlayer then
         player:SetAttribute("LastOrdersMessage", "This prototype supports one player per server.")
@@ -104,9 +118,9 @@ local function join(player: Player)
     player.RespawnLocation = spawn
     player.CharacterAdded:Connect(function()
         player.RespawnLocation = spawn
-        reset("Find the warning at the bar.")
+        reset(require(script.Parent.Journey).Intro)
     end)
-    reset()
+    reset(require(script.Parent.Journey).Intro)
 end
 Players.PlayerAdded:Connect(join)
 Players.PlayerRemoving:Connect(function(player)
@@ -116,17 +130,17 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 for _, player in Players:GetPlayers() do join(player) end
-local stations = { Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
+local stations = { FrontEntrance = 0, EscapeCar = 5, Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
     CellarBreakerBar = 2, CellarInstructions = 0, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
 for name, expected in stations do
-    local station = map:FindFirstChild(name) :: Part
+    local station = map:FindFirstChild(name,true) :: Part
     local prompt = station:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
     prompt.Triggered:Connect(function(player: Player)
         local character = player.Character
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
-        if survival.locked() then return end
+        if survival.locked() or journey.entryActive() or state.stage>=6 then return end
         if (root.Position - station.Position).Magnitude > Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -137,6 +151,11 @@ for name, expected in stations do
         local obstruction = workspace:Raycast(eye, station.Position - eye, sight)
         if obstruction and obstruction.Instance ~= station then
             update("Move into view of the item to interact.")
+            return
+        end
+        if name == "FrontEntrance" then
+            if state.stage==0 then journey.openEntrance() update("The door is open. Step inside to begin the dare.")
+            else update("The fallen beam blocks the entrance. Find the emergency exit key.") end
             return
         end
         if name == "Warning" and state.stage > 1 then
@@ -174,7 +193,14 @@ for name, expected in stations do
             if not completed then update(message) return end
         end
         RunState.advance(state, expected)
-        if state.stage >= 5 then encounter.stop() survival.finish() end
+        if expected==5 then
+            survival.finish() encounter.stop() journey.beginDrive(character,root,humanoid)
+            update("You made it to the car. Get out of here!") return
+        elseif expected==4 then
+            journey.openExit() navigation.refresh()
+            hunt.alarm(Vector3.new(-36,0.5,44)) encounter.rally()
+            update("The exit is open! Follow the courtyard lights to your car!") return
+        end
         if expected == 2 then
             local look = root.Position - monster.Position
             local flat = Vector3.new(look.X, 0, look.Z)
@@ -193,11 +219,21 @@ for name, expected in stations do
 end
 RunService.Heartbeat:Connect(function(dt: number)
     local player = activePlayer
-    if not player or state.stage < 3 or state.stage >= 5 then return end
+    if not player or state.stage==7 then return end
     local character = player.Character
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
     if not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
+    if state.stage==0 then
+        if journey.crossed(root.Position) then
+            RunState.advance(state,0) journey.collapse() navigation.refresh()
+            update("The entrance beam has fallen! Find another way out. Read the warning at the bar.")
+        end
+        return
+    elseif state.stage==6 then
+        if journey.stepDrive() then RunState.advance(state,6) update("You survived Last Orders. The dare is over.") end
+        return
+    elseif state.stage<3 then updateVitals() return end
     hold.step()
     local event=survival.step()
     if event=="Restart" then
@@ -253,6 +289,6 @@ RunService.Heartbeat:Connect(function(dt: number)
     local speed = if behaviour == "Chase" then Config.ChaseSpeed
         elseif behaviour == "Investigate" then Config.InvestigateSpeed
         elseif behaviour == "Search" then Config.SearchSpeed else Config.MonsterSpeed
-    navigation.step(target, encounter.speed(speed), dt)
+    navigation.step(target, if state.stage==5 then Config.FinaleSpeed else encounter.speed(speed), dt)
 end)
 print("Last Orders prototype ready")

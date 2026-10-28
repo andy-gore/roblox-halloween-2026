@@ -36,6 +36,7 @@ end
 table.insert(edges, {previous, 15})
 require(script.Parent.PubExpansion).addRoutes(positions, edges)
 Cellar.addRoutes(positions, edges)
+require(script.Parent.JourneyMap).addRoutes(positions,edges)
 function Navigation.new(monster: BasePart)
     local map = monster.Parent :: Folder
     local offset = monster.Position - Cellar.MonsterHome
@@ -67,12 +68,16 @@ function Navigation.new(monster: BasePart)
         -- The lower two studs allow normal one-stud step climbing.
         return workspace:Blockcast(CFrame.new(a + Vector3.new(0,1,0)), Vector3.new(4.2,5.6,4.2), delta, floorCast) == nil
     end
-    for _, edge in edges do
-        if clear(nodes[edge[1]], nodes[edge[2]]) then
-            table.insert(neighbours[edge[1]], edge[2])
-            table.insert(neighbours[edge[2]], edge[1])
+    local function refreshEdges()
+        for _,list in neighbours do table.clear(list) end
+        for _,edge in edges do
+            if clear(nodes[edge[1]],nodes[edge[2]]) then
+                table.insert(neighbours[edge[1]],edge[2])
+                table.insert(neighbours[edge[2]],edge[1])
+            end
         end
     end
+    refreshEdges()
     local searchStops: {[number]: boolean} = {}
     for i,position in positions do
         -- Inspect rooms and landings, rather than stopping halfway up a flight of stairs.
@@ -96,11 +101,15 @@ function Navigation.new(monster: BasePart)
     local controller = {}
     function controller.validate()
         for _,edge in edges do
+            if edge[3]==1 and map.ExitDoor.CanCollide then continue end
             assert(table.find(neighbours[edge[1]],edge[2]), "Blocked pub route: "..tostring(nodes[edge[1]]).." -> "..tostring(nodes[edge[2]]))
         end
     end
     function controller.reset()
         route, nextPlan, lastTarget = {}, 0, nil
+    end
+    function controller.refresh()
+        refreshEdges() controller.reset()
     end
     function controller.searchTargets(position: Vector3, direction: Vector3): {Vector3}
         local first=nearest(position+Vector3.new(0,4,0))

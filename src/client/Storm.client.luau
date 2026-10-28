@@ -29,7 +29,8 @@ local coverCast=RaycastParams.new() coverCast.FilterType=Enum.RaycastFilterType.
 local sign=exterior:WaitForChild("PubFrontage"):WaitForChild("HangingPubSign") :: Model
 local signPivot=sign:GetPivot()
 local hazards: {BasePart}={}
-for _,object in exterior:WaitForChild("BrokenDownCar"):GetChildren() do
+local car=exterior:WaitForChild("BrokenDownCar")
+for _,object in car:GetChildren() do
     if object:IsA("BasePart") and object.Name=="HazardLamp" then table.insert(hazards,object) end
 end
 local alive=true
@@ -53,7 +54,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         rain.step(root.Position,character,accumulator) accumulator=0
         local t=workspace:GetServerTimeNow()
         sign:PivotTo(signPivot*CFrame.Angles(0,0,math.sin(t*1.1)*0.025))
-        local on=math.floor(t*1.3)%2==0
+        local on=car:GetAttribute("HazardsEnabled")==true and math.floor(t*1.3)%2==0
         for _,p in hazards do p.Material=if on then Enum.Material.Neon else Enum.Material.Glass p.Transparency=if on then 0 else 0.5 end
     end
     if os.clock()>=nextThunder then

@@ -11,6 +11,21 @@
 
 ---
 
+## Approved pub name — 28 October 2026
+
+The pub is now **The Firefly Tavern**. This name supersedes The Crooked Tankard in the historical text below. The game title remains **The Chuggernaught: Last Orders**; original text and artwork are preserved.
+
+## Approved arrival and escape revision — 28 October 2026
+
+This revision supersedes the original broken-down car, lodgings and slamming-door opening below; the original text and artwork remain reference material.
+
+- The player parks a working car outside the abandoned pub on Halloween night. Their dare is to get its lights working.
+- Opening the front door does not trigger the collapse. As soon as the player walks inside, a beam drops behind them, blocking the front entrance. The door itself does not slam shut.
+- The player reads the warning and restores power to see and search for the emergency exit key. Restoring power separately wakes the Chuggernaught; it does not cause the entrance collapse.
+- The existing breaker puzzle, random room key and two-hit survival rules remain in place.
+- Unlocking the emergency exit starts the courtyard escape rather than ending the game. Follow the lights around the courtyard walls to the working car while the Chuggernaught can pursue outside.
+- Getting into the car starts a short drive away, followed by the survival screen and a replay option. No repair task, tankard theft or stolen-tankard epilogue is required.
+
 ## Approved gameplay revision — 27 October 2026
 
 This revision takes precedence over the original tankard-theft sequence below. The original narrative remains as a creative reference.

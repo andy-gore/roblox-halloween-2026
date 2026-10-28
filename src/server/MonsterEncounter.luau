@@ -5,6 +5,7 @@ local Encounter={}
 function Encounter.new(root: BasePart, clock: (() -> number)?)
     local time = clock or os.clock
     local mode="Dormant"
+    local finale=false
     local endsAt,nextDrink,drinks=0,math.huge,0
     local function setMode(value: string)
         if mode==value and root:GetAttribute("MonsterMode")==value then return end
@@ -14,12 +15,17 @@ function Encounter.new(root: BasePart, clock: (() -> number)?)
     end
     local controller={}
     function controller.reset()
+        finale=false
         drinks,endsAt,nextDrink=0,0,math.huge
         root:SetAttribute("DrinkCount",0)
         setMode("Dormant")
     end
     function controller.wake()
         setMode("Reveal") endsAt=time()+Config.MonsterRevealSeconds
+    end
+    function controller.rally()
+        finale=true nextDrink=math.huge
+        if mode=="Chug" then setMode("Search") end
     end
     function controller.stop() setMode("Stopped") end
     function controller.active(): boolean
@@ -54,7 +60,7 @@ function Encounter.new(root: BasePart, clock: (() -> number)?)
             setMode(activity)
             return true,if drinks>previous then "The Chuggernaught is getting faster." else "He finished his drink. Keep moving."
         end
-        if now>=nextDrink then
+        if not finale and now>=nextDrink then
             endsAt=now+Config.MonsterChugSeconds setMode("Chug") return false,nil
         end
         setMode(activity)

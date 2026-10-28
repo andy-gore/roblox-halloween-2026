@@ -40,14 +40,15 @@ local function update()
         segment.BackgroundColor3=if i>health then Color3.fromRGB(60,47,48)
             elseif health==2 then Color3.fromRGB(155,185,110) else Color3.fromRGB(231,159,70)
     end
-    overlay.Visible,bar.Visible=gameOver,not gameOver
-    local locked=held or gameOver
+    local driving=player:GetAttribute("LastOrdersDriving")==true
+    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving
+    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true
     if locked~=movementLocked then
         movementLocked=locked
         if locked then controls:Disable() else controls:Enable() end
     end
 end
-for _,name in {"LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
+for _,name in {"LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
     player:GetAttributeChangedSignal(name):Connect(update)
 end
 script.Destroying:Connect(function()

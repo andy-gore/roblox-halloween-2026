@@ -108,7 +108,7 @@ function Exterior.build(map: Folder)
         p(facade,"StoneChimney",Vector3.new(4,12,5),v,stone,Enum.Material.Brick)
         p(facade,"ChimneyCap",Vector3.new(5,0.6,6),v+Vector3.new(0,6,0),Color3.fromRGB(45,42,49),Enum.Material.Slate)
     end
-    board(facade,"FrontPubName","THE CROOKED TANKARD",Vector3.new(20,13,89.1),37,2.5)
+    board(facade,"FrontPubName","THE FIREFLY TAVERN",Vector3.new(20,13,89.1),37,2.5)
     board(facade,"RoomsAvailable","ROOMS AVAILABLE",Vector3.new(6,8,89.1),9,1.4)
     p(facade,"ExteriorFrontDoor",Vector3.new(9,10,0.3),Vector3.new(6,5.5,88.7),Color3.fromRGB(50,32,29))
     for _,x in {0.5,11.5} do p(facade,"FrontDoorFrame",Vector3.new(0.6,11,0.7),Vector3.new(x,5.7,88.9),timber) end
@@ -119,7 +119,7 @@ function Exterior.build(map: Folder)
     solid(facade,"SignPost",Vector3.new(0.7,15,0.7),Vector3.new(-5,7.8,100),timber)
     beam(facade,"SignArm",Vector3.new(-5,14.5,100),Vector3.new(2,14.5,100),0.55,timber)
     local sign=Instance.new("Model") sign.Name="HangingPubSign" sign.Parent=facade
-    board(sign,"SignBoard","THE CROOKED TANKARD\nROOMS AVAILABLE",Vector3.new(-0.5,11,100),8,4)
+    board(sign,"SignBoard","THE FIREFLY TAVERN\nROOMS AVAILABLE",Vector3.new(-0.5,11,100),8,4)
     for _,x in {-3,2} do p(sign,"SignChain",Vector3.new(0.1,1.5,0.1),Vector3.new(x,13.75,100),Color3.fromRGB(87,82,75),Enum.Material.Metal) end
     sign.WorldPivot=CFrame.new(-0.5,14.5,100)
     require(script.Parent.ExteriorCar).build(root)
