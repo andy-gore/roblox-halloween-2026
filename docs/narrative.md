@@ -46,6 +46,15 @@ This follow-up approves the cellar breaker puzzle previously listed as a proposa
 - Only pulling the main supply after all three circuits restores the pub lights, reveals the existing key location and begins the monster's wake-up animation. The player can use either aisle to return to the stairs. Capture or character reset clears the whole panel and its cues for the next attempt.
 - Finding the controls should be clear: a landing sign points towards the lit west-wall power panel, with large orange circuit housings, protruding handles and a distinct red main lever. HUD/panel feedback shows circuit progress and when the main supply is ready. On awakening, the normal camera briefly looks towards the monster once; movement and look controls remain available.
 
+## Approved two-hit survival — 28 October 2026
+
+This revision replaces the immediate capture/reset behaviour above. The power/key/exit objectives are unchanged.
+
+- The player has two health segments. A successful grab follows the existing warning/dodge window, takes one segment and produces a 1.6-second reach/lift/hold/lower animation, with the tankard in the monster's other hand.
+- After the first hit, the player is released to their pre-grab position. The monster recovers for three seconds and the player is protected for four seconds after release. The key, objective progress, puzzle and monster drink progression are preserved. The player can move and interact during the recovery window.
+- The second successful grab plays the holding animation again, then a short game-over screen before the run restarts with full health and reset objectives. Character reset also restores full health and cancels any hold/protection/game-over state.
+- Holds do not throw the player. Obstacle checks cover the whole lift path and prevent dragging through walls or furniture; release restores the original position, movement and collisions, including on stairs. A brief collision-checked holding view shows both characters, then restores the prior view and camera subject. It also restores correctly on character reset.
+
 # 1. Narrative Vision
 
 **DRINK. DESTROY. REPEAT.**

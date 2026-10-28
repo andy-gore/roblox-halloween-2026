@@ -14,6 +14,7 @@ end
 -- Bundled Roblox sounds verified locally; no uploaded sound IDs or invented voice assets.
 local stepSound=sound("HeavyFootsteps","rbxasset://sounds/action_footsteps_plastic.mp3",0.65,0.62)
 local drinkSound=sound("TankardGlug","rbxasset://sounds/impact_water.mp3",0.35,0.65)
+local grabSound=sound("GrabThud","rbxasset://sounds/action_footsteps_plastic.mp3",0.6,0.5)
 local caption=Instance.new("BillboardGui")
 caption.Name,caption.Size,caption.StudsOffsetWorldSpace="ChuggernaughtCaption",UDim2.fromOffset(260,50),Vector3.new(0,5.1,0)
 caption.MaxDistance,caption.Adornee,caption.Parent=70,root,rig.model
@@ -26,11 +27,12 @@ local last=displayed
 local facing=Vector3.new(0,0,1)
 local phase,lastStep,lastGlug=0,-1,-1
 local previousMode=""
+local lastChest: Vector3?=nil
 local connection: RBXScriptConnection? = nil
 connection=RunService.RenderStepped:Connect(function(dt: number)
     if not root:IsDescendantOf(workspace) then
         if connection then connection:Disconnect() end
-        rig.destroy() stepSound:Destroy() drinkSound:Destroy() return
+        rig.destroy() stepSound:Destroy() drinkSound:Destroy() grabSound:Destroy() return
     end
     local mode=root:GetAttribute("MonsterMode")
     if typeof(mode)~="string" then mode="Dormant" end
@@ -38,7 +40,8 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
     local elapsed=if typeof(started)=="number" then math.max(0,workspace:GetServerTimeNow()-started) else 0
     if mode~=previousMode then
         lastGlug=-1 previousMode=mode
-        if mode=="Dormant" then phase,lastStep=0,-1 stepSound:Stop() drinkSound:Stop() end
+        if mode=="Hold" then grabSound:Play() end
+        if mode=="Dormant" then phase,lastStep=0,-1 lastChest=nil stepSound:Stop() drinkSound:Stop() grabSound:Stop() end
     end
     local targetPosition=root.Position
     if (targetPosition-displayed).Magnitude>12 then displayed=targetPosition
@@ -66,9 +69,19 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
     local basis=CFrame.lookAt(feet,feet+facing.Unit)
     local duration=if mode=="Reveal" then Config.MonsterRevealSeconds
         elseif mode=="Grab" then Config.GrabWindupSeconds
-        elseif mode=="Recover" then Config.GrabRecoverySeconds else Config.MonsterChugSeconds
+        elseif mode=="Recover" then Config.GrabRecoverySeconds
+        elseif mode=="Hold" then Config.PlayerHoldSeconds
+        elseif mode=="Stunned" then Config.MonsterHitRecoverySeconds
+        elseif mode=="Defeat" then Config.GameOverSeconds else Config.MonsterChugSeconds
     local alpha=if mode=="Dormant" then 1 elseif mode=="Reveal" then 1-math.clamp(elapsed/0.35,0,1) else 0
-    rig.pose(Pose.frames(basis,phase,moving,mode,elapsed,duration),alpha,basis)
+    local chest=root:GetAttribute("HeldChestPosition")
+    if mode=="Hold" or mode=="Defeat" then
+        local character=Players.LocalPlayer.Character
+        local playerRoot=if character then character:FindFirstChild("HumanoidRootPart") else nil
+        if playerRoot and playerRoot:IsA("BasePart") then chest=playerRoot.Position+Vector3.new(0,0.8,0) end
+        if typeof(chest)=="Vector3" then lastChest=chest end
+    elseif mode=="Stunned" then chest=lastChest end
+    rig.pose(Pose.frames(basis,phase,moving,mode,elapsed,duration,if typeof(chest)=="Vector3" then chest else nil),alpha,basis)
     local beat=math.floor(phase/math.pi)
     if moving and beat~=lastStep and mode~="Dormant" then stepSound:Play() end
     lastStep=beat
@@ -77,6 +90,7 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
         if glug>=0 and glug<3 and glug~=lastGlug then drinkSound:Play() lastGlug=glug end
     end
     text.Text=if mode=="Reveal" then "GLUG. GLUG. GLUG." elseif mode=="Grab" then "!"
+        elseif mode=="Hold" then "GOT YOU!" elseif mode=="Stunned" then "…"
         elseif mode=="Search" and elapsed<1.5 then "?"
         elseif mode=="Chase" and elapsed<1.5 then "LAST ORDERS!" else ""
     caption.Enabled=text.Text~=""

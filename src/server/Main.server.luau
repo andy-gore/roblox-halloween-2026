@@ -29,6 +29,8 @@ local navigation = require(script.Parent.MonsterNavigation).new(monster)
 local encounter = require(script.Parent.MonsterEncounter).new(monster)
 local senses = require(script.Parent.MonsterSenses).new(monster)
 local grab = require(script.Parent.MonsterGrab).new()
+local survival = require(script.Parent.PlayerSurvival).new()
+local hold = require(script.Parent.PlayerHold).new(monster)
 local hunt = require(script.Parent.MonsterHunt).new({
     Vector3.new(36, 0.5, 23), Vector3.new(-8, 0.5, 23),
     Vector3.new(-29, 0.5, -29), Vector3.new(9, 0.5, -29),
@@ -47,7 +49,17 @@ end
 local state = RunState.new()
 local activePlayer: Player? = nil
 local graceUntil = 0
+local function updateVitals()
+    local player=activePlayer
+    if not player then return end
+    player:SetAttribute("LastOrdersHealth",survival.health())
+    player:SetAttribute("LastOrdersMaxHealth",Config.PlayerMaxHealth)
+    player:SetAttribute("LastOrdersHeld",survival.locked())
+    player:SetAttribute("LastOrdersGameOver",survival.phase()=="GameOver")
+    player:SetAttribute("LastOrdersProtected",survival.protected())
+end
 local function update(message: string?)
+    updateVitals()
     power.available(state.stage == 2)
     key.Transparency = if state.stage == 3 then 0 else 1
     keyPrompt.Enabled = state.stage == 3
@@ -67,6 +79,8 @@ local function update(message: string?)
     end
 end
 local function reset(message: string?)
+    hold.release()
+    survival.reset()
     state = RunState.new()
     power.reset()
     require(script.Parent.AssetDressing).reroll(map)
@@ -112,6 +126,7 @@ for name, expected in stations do
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
+        if survival.locked() then return end
         if (root.Position - station.Position).Magnitude > Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -159,7 +174,7 @@ for name, expected in stations do
             if not completed then update(message) return end
         end
         RunState.advance(state, expected)
-        if state.stage >= 5 then encounter.stop() end
+        if state.stage >= 5 then encounter.stop() survival.finish() end
         if expected == 2 then
             local look = root.Position - monster.Position
             local flat = Vector3.new(look.X, 0, look.Z)
@@ -183,6 +198,23 @@ RunService.Heartbeat:Connect(function(dt: number)
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
     if not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
+    hold.step()
+    local event=survival.step()
+    if event=="Restart" then
+        reset("Caught twice! Try again with two fresh health segments.")
+        character:PivotTo(spawn.CFrame+Vector3.new(0,4,0))
+        return
+    elseif event=="Release" then
+        hold.release()
+        grab.reset()
+        update("One hit left! He's recovering. Get away and break his sight!")
+    end
+    updateVitals()
+    local phase=survival.phase()
+    if phase=="Held" or phase=="Recovery" or phase=="GameOver" then
+        encounter.step(if phase=="Held" then "Hold" elseif phase=="Recovery" then "Stunned" else "Defeat")
+        return
+    end
     if not encounter.active() then
         local _, message = encounter.step("Patrol")
         if message then update(message) end
@@ -197,10 +229,16 @@ RunService.Heartbeat:Connect(function(dt: number)
     end
     local target, behaviour, looking = hunt.step(feet, root.Position - Vector3.new(0, 2.5, 0), visible)
     monster:SetAttribute("MonsterBehaviour", behaviour)
-    local action = grab.step(inReach and os.clock() > graceUntil, contact and os.clock() > graceUntil)
+    local vulnerable=not survival.protected() and os.clock()>graceUntil
+    local action = grab.step(inReach and vulnerable, contact and vulnerable)
     if action == "Caught" then
-        reset("Caught! Try again. Your progress has been reset.")
-        character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
+        if survival.hit() then
+            hold.begin(character,root,humanoid,survival.health()==0)
+            grab.reset()
+            encounter.step("Hold")
+            update(if survival.health()>0 then "He caught you! One hit left — get ready to run."
+                else "He caught you again!")
+        end
         return
     end
     local canMove, message = encounter.step(if action == "Ready" then behaviour else action)

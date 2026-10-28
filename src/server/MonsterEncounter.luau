@@ -37,7 +37,7 @@ function Encounter.new(root: BasePart, clock: (() -> number)?)
             setMode(activity) return true,"LAST ORDERS! Break his sight, then keep quiet."
         end
         -- Grabbing or investigating interrupts a drink without granting a boost.
-        if activity=="Grab" or activity=="Recover" then
+        if activity=="Grab" or activity=="Recover" or activity=="Hold" or activity=="Stunned" or activity=="Defeat" then
             if mode=="Chug" then nextDrink=now+Config.MonsterDrinkInterval end
             setMode(activity) return false,nil
         end
