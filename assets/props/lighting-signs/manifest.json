@@ -1,0 +1,416 @@
+{
+  "BedroomCeilingLight": {
+    "blender_xyz_studs": [
+      1.38,
+      1.38,
+      1.285
+    ],
+    "roblox_xyz_studs": [
+      1.38,
+      1.285,
+      1.38
+    ],
+    "bounds_min_xyz": [
+      -0.6899999976158142,
+      -0.6899999976158142,
+      -1.284999966621399
+    ],
+    "bounds_max_xyz": [
+      0.6899999976158142,
+      0.6899999976158142,
+      0.0
+    ],
+    "triangles": 1240,
+    "mesh_objects": 6,
+    "origin": "ceiling centre; hangs down local Blender -Z / Roblox -Y",
+    "light_blender_xyz": [
+      0,
+      0,
+      -0.9
+    ],
+    "suggested_light": "one warm PointLight; start Range 14, Brightness 0.8; tune in game",
+    "attachment_blender_xyz": [
+      0,
+      0,
+      0
+    ]
+  },
+  "PubWallSconce": {
+    "blender_xyz_studs": [
+      1.02,
+      1.47,
+      2.015
+    ],
+    "roblox_xyz_studs": [
+      1.02,
+      2.015,
+      1.47
+    ],
+    "bounds_min_xyz": [
+      -0.5099999904632568,
+      -1.3199999332427979,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.5099999904632568,
+      0.15000000596046448,
+      2.015000104904175
+    ],
+    "triangles": 1308,
+    "mesh_objects": 13,
+    "origin": "bottom of backplate; back surface Blender Y=+0.15 / Roblox Z=-0.15",
+    "light_blender_xyz": [
+      0,
+      -0.81,
+      1.4
+    ],
+    "suggested_light": "one warm PointLight; start Range 12, Brightness 0.6",
+    "attachment_blender_xyz": [
+      0,
+      0.15,
+      0.9
+    ]
+  },
+  "PubChandelier": {
+    "blender_xyz_studs": [
+      3.24,
+      2.8676,
+      1.94
+    ],
+    "roblox_xyz_studs": [
+      3.24,
+      1.94,
+      2.8676
+    ],
+    "bounds_min_xyz": [
+      -1.6200000047683716,
+      -1.4337753057479858,
+      -1.940000057220459
+    ],
+    "bounds_max_xyz": [
+      1.6200000047683716,
+      1.4337753057479858,
+      0.0
+    ],
+    "triangles": 3256,
+    "mesh_objects": 32,
+    "origin": "ceiling centre; rigid hanging fixture; no chain physics",
+    "light_blender_xyz": [
+      0,
+      0,
+      -1.25
+    ],
+    "suggested_light": "prefer one warm PointLight at centre; start Range 22, Brightness 1.2, rather than six shadowed lights",
+    "attachment_blender_xyz": [
+      0,
+      0,
+      0
+    ],
+    "bulb_centres_blender_xyz": [
+      [
+        1.39,
+        0.0,
+        -0.76
+      ],
+      [
+        0.695,
+        1.2038,
+        -0.76
+      ],
+      [
+        -0.695,
+        1.2038,
+        -0.76
+      ],
+      [
+        -1.39,
+        0.0,
+        -0.76
+      ],
+      [
+        -0.695,
+        -1.2038,
+        -0.76
+      ],
+      [
+        0.695,
+        -1.2038,
+        -0.76
+      ]
+    ]
+  },
+  "CellarBulkheadLight": {
+    "blender_xyz_studs": [
+      0.98,
+      0.6242,
+      1.68
+    ],
+    "roblox_xyz_studs": [
+      0.98,
+      1.68,
+      0.6242
+    ],
+    "bounds_min_xyz": [
+      -0.49000000953674316,
+      -0.5042486786842346,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      0.49000000953674316,
+      0.11999999731779099,
+      1.6799999475479126
+    ],
+    "triangles": 1144,
+    "mesh_objects": 16,
+    "origin": "bottom of housing; back surface Blender Y=+0.12 / Roblox Z=-0.12",
+    "light_blender_xyz": [
+      0,
+      -0.35,
+      0.84
+    ],
+    "suggested_light": "one warm-neutral PointLight; start Range 14, Brightness 0.8; retain existing cellar safety-light rules",
+    "attachment_blender_xyz": [
+      0,
+      0.12,
+      0.84
+    ]
+  },
+  "SnugRoomSign": {
+    "blender_xyz_studs": [
+      4.5,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      4.5,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.25,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.25,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 3084,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "THE SNUG",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 3.45,
+    "text_area_height": 0.5
+  },
+  "BarRoomSign": {
+    "blender_xyz_studs": [
+      4.5,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      4.5,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.25,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.25,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 2900,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "MAIN BAR",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 3.45,
+    "text_area_height": 0.5
+  },
+  "KitchenRoomSign": {
+    "blender_xyz_studs": [
+      4.2,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      4.2,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.0999999046325684,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.0999999046325684,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 2900,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "KITCHEN",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 3.1500000000000004,
+    "text_area_height": 0.5
+  },
+  "OfficeRoomSign": {
+    "blender_xyz_studs": [
+      5.8,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      5.8,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.9000000953674316,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.9000000953674316,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 5720,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "LANDLORD'S OFFICE",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 4.75,
+    "text_area_height": 0.5
+  },
+  "GuestRoomsSign": {
+    "blender_xyz_studs": [
+      5.1,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 4304,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "GUEST ROOMS",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 4.05,
+    "text_area_height": 0.5
+  },
+  "CellarRoomSign": {
+    "blender_xyz_studs": [
+      4.2,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      4.2,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.0999999046325684,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.0999999046325684,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 2464,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "CELLAR",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 3.1500000000000004,
+    "text_area_height": 0.5
+  },
+  "StaffStairsSign": {
+    "blender_xyz_studs": [
+      5.1,
+      0.346,
+      1.35
+    ],
+    "roblox_xyz_studs": [
+      5.1,
+      1.35,
+      0.346
+    ],
+    "bounds_min_xyz": [
+      -2.549999952316284,
+      -0.1459999978542328,
+      0.0
+    ],
+    "bounds_max_xyz": [
+      2.549999952316284,
+      0.20000000298023224,
+      1.350000023841858
+    ],
+    "triangles": 4272,
+    "mesh_objects": 11,
+    "origin": "bottom centre of plaque; back surface Blender Y=+0.2 / Roblox Z=-0.2; front -Y / Roblox +Z",
+    "wording": "STAFF STAIRS",
+    "attachment_blender_xyz": [
+      0,
+      0.2,
+      0.675
+    ],
+    "readability": "mesh lettering is supplied; native SurfaceGui text can replace it for distance/touch readability; keep dark enamel and ivory contrast",
+    "text_area_width": 4.05,
+    "text_area_height": 0.5
+  }
+}
