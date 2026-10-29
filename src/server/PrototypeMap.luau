@@ -134,6 +134,7 @@ function Map.build(): Folder
     require(script.Parent.PubExterior).build(folder)
     require(script.Parent.ExteriorFinish).build(folder)
     require(script.Parent.JourneyMap).build(folder)
+    require(script.Parent.TavernArchitecture).build(folder)
     require(script.Parent.AssetDressing).build(folder)
     require(script.Parent.InteriorFinish).build(folder)
     require(script.Parent.TavernSigns).build(folder)
