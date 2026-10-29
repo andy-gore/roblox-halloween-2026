@@ -6,7 +6,7 @@ local Config=require(game.ReplicatedStorage.HalloweenShared.Config)
 local deadline=os.clock()+30
 while view:GetAttribute("Rendering")=="Loading" and os.clock()<deadline do task.wait(0.1) end
 assert(view:GetAttribute("Rendering")=="OriginalMeshes",tostring(view:GetAttribute("LastError")))
-assert(view:GetAttribute("LoadedPlacements")==164 and view:GetAttribute("FailedAssets")==0)
+assert(view:GetAttribute("LoadedPlacements")==194 and view:GetAttribute("FailedAssets")==0)
 local key,panel,bell,door=map.OfficeKey,map.CellarPowerPanel,map.Bell,map.ExitDoor
 local keyCF,keyAlpha,powered,ready,doorAlpha=key.CFrame,key.Transparency,panel:GetAttribute("Powered"),bell:GetAttribute("ReadyAt"),door.Transparency
 local marker
@@ -44,4 +44,4 @@ key.CFrame,key.Transparency=keyCF,keyAlpha panel:SetAttribute("Powered",powered)
 bell:SetAttribute("ReadyAt",ready) door.Transparency=doorAlpha marker:SetAttribute("Enabled",oldEnabled)
 task.wait(.12)
 assert(ok,tostring(err))
-print("Original asset client: 164 placements, fixed-memory templates, key reveal/follow/hide, power lever/lens, bell press/return, exit fade and cosmetic webs passed")
+print("Original asset client: 194 placements, fixed-memory templates, key reveal/follow/hide, power lever/lens, bell press/return, exit fade and cosmetic webs passed")

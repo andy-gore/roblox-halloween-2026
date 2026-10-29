@@ -77,7 +77,6 @@ function Map.build(): Folder
     end
     sign("HallLabel", "OFFICE  /  KITCHEN", Vector3.new(-8, 10, -38.9), 14).Orientation = Vector3.new(0, 180, 0)
     sign("SnugLabel", "THE SNUG", Vector3.new(-34, 10, -15.2), 12).Orientation = Vector3.new(0, 180, 0)
-    sign("CellarLabel", "CELLAR\nSTAIRS DOWN", Vector3.new(44, 6, 12), 8).Orientation = Vector3.new(0, 180, 0)
     require(script.Parent.CellarMap).build(folder)
     -- Low furniture leaves a generous route through each room.
     part("Bar", Vector3.new(18, 4, 4), Vector3.new(-27, 2.5, 17), wood)
@@ -89,10 +88,10 @@ function Map.build(): Folder
     end
     sign("PubName", "THE FIREFLY TAVERN", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
     -- Put the note on the customer-facing side, clear of the counter and bar top.
-    local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read note", Color3.fromRGB(230, 215, 170))
+    local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read staff note", Color3.fromRGB(230, 215, 170))
     warning.Size, warning.Material = Vector3.new(5, 1.8, 0.12), Enum.Material.SmoothPlastic
     local warningPrompt = warning:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
-    warningPrompt.ObjectText = "Warning note"
+    warningPrompt.ObjectText = "Staff note"
     -- Server distance and eye-level wall checks still apply; camera occlusion must not hide this prompt.
     warningPrompt.RequiresLineOfSight = false
     local paper = Instance.new("SurfaceGui")
@@ -104,7 +103,7 @@ function Map.build(): Folder
     writing.BackgroundTransparency = 1
     writing.TextColor3 = Color3.fromRGB(35, 22, 24)
     writing.Font, writing.TextScaled = Enum.Font.GothamBold, true
-    writing.Text = "NEVER LET HIM\nFINISH HIS DRINK."
+    writing.Text = "EMERGENCY EXIT LOCKED\nRESTORE LIGHTS · FIND THE KEY"
     writing.Parent = paper
     station("Bell", Vector3.new(-20, 5, 17), "Ring bell", Color3.fromRGB(210, 160, 65))
     local key = station("OfficeKey", Vector3.new(-37, 4, -33), "Take exit key", Color3.fromRGB(240, 195, 65))

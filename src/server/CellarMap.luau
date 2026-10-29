@@ -71,20 +71,11 @@ function Cellar.build(map: Folder)
     end
     local crate=solid("CellarCrateCollider",Vector3.new(3.5,4,3.5),Vector3.new(58,-13.5,-51)) crate.Transparency=1
     detail("LooseCellarCrate",crate.Size,crate.Position,Color3.fromRGB(89,55,34))
-    label("CellarReturnSign","STAIRS UP\nKEEP BOTH AISLES CLEAR",Vector3.new(36,-5,-25),15,2.5,0)
-    label("CellarAisleSign","STAIRS UP",Vector3.new(69,-8,-29),8,1.8,math.pi/2)
-    label("PowerDirectionSign","POWER PANEL  <\nWEST WALL",Vector3.new(35,-8.5,-29),12,2.5,0)
-    label("MaintenanceSign","POWER PANEL\nTHREE SWITCHES + MAIN LEVER",Vector3.new(25.5,-3.5,-53),18,2,math.pi/2)
     local panel=solid("CellarPowerPanel",Vector3.new(0.8,7,20),Vector3.new(24.9,-10.2,-51))
     panel.Color,panel.Material=Color3.fromRGB(52,62,66),Enum.Material.Metal
     for _,z in {-61,-41} do
         detail("PanelSafetyTrim",Vector3.new(0.2,6.8,0.25),Vector3.new(25.4,-10.2,z),Color3.fromRGB(229,168,57))
     end
-    local note=label("CellarInstructions","RESTORE CIRCUITS IN ORDER\nCELLAR FIRST\nGUEST ROOMS BEFORE THE BAR\nMAIN SUPPLY LAST",Vector3.new(25.45,-6.7,-53),15,3.3,math.pi/2)
-    note.CanQuery=true
-    note.Parent=map
-    local read=Instance.new("ProximityPrompt") read.ActionText,read.ObjectText="Read instructions","Maintenance card"
-    read.MaxActivationDistance,read.RequiresLineOfSight,read.Parent=10,false,note
     local function station(name: string,text: string,z: number): Part
         local p=Instance.new("Part") p.Name,p.Size,p.Position=name,Vector3.new(0.8,1.8,2.4),Vector3.new(26,-11.6,z)
         p.Anchored,p.CanCollide,p.Color,p.Material=true,false,Color3.fromRGB(211,128,40),Enum.Material.Metal
@@ -93,7 +84,7 @@ function Cellar.build(map: Folder)
         -- Third-person camera occlusion must not conceal the controls; server eye rays still validate use.
         prompt.MaxActivationDistance,prompt.HoldDuration,prompt.RequiresLineOfSight=6,0.25,false
         prompt.Enabled,prompt.Parent=false,p
-        label("BreakerLabel",text,Vector3.new(26.5,-9.6,z),4.5,1.1,math.pi/2)
+        label("BreakerLabel",text,Vector3.new(26.5,-9.6,z),3.4,.6,math.pi/2)
         local handle=detail(name.."Handle",Vector3.new(0.7,1.4,0.5),Vector3.new(26.9,-11.8,z),Color3.fromRGB(239,186,70))
         handle.Material=Enum.Material.Metal
         local indicator=detail(name.."Indicator",Vector3.new(0.2,0.5,0.5),Vector3.new(26.6,-11.1,z+0.75),Color3.fromRGB(77,63,45))
@@ -107,7 +98,6 @@ function Cellar.build(map: Folder)
     main.Size,main.Color=Vector3.new(0.8,2.4,2.4),Color3.fromRGB(104,44,35)
     local mainHandle=decor:FindFirstChild("CellarFuseBoxHandle") :: BasePart
     mainHandle.Size,mainHandle.Color=Vector3.new(0.8,1.7,0.6),Color3.fromRGB(210,62,43)
-    label("MainSupplyStatus","NOT READY\n0/3 CIRCUITS",Vector3.new(26.6,-8,-43),4.5,1.4,math.pi/2)
     local mainPrompt=main:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
     mainPrompt.ActionText,mainPrompt.HoldDuration="Pull main lever",0.4
     local monster=Instance.new("Part") monster.Name,monster.Size,monster.Position="ChuggernaughtPlaceholder",Vector3.new(4,8,4),Cellar.MonsterHome

@@ -45,26 +45,19 @@ local caption=Instance.new("TextLabel") caption.Name="SceneCaption"
 caption.Size,caption.Position=UDim2.fromScale(.86,.12),UDim2.fromScale(.07,.78)
 caption.BackgroundTransparency,caption.FontFace,caption.TextSize,caption.TextWrapped=1,UI.Body,21,true
 caption.TextColor3,caption.TextStrokeTransparency,caption.Visible,caption.Parent=UI.Ivory,.25,false,gui
-local skip=Instance.new("TextButton") skip.Name="SkipArrival" skip.Text="Skip intro  ·  Space / B"
-skip.Size,skip.Position=UDim2.fromOffset(220,44),UDim2.new(1,-236,0,16)
-skip.BackgroundColor3,skip.TextColor3,skip.FontFace,skip.TextSize=UI.Ink,UI.Ivory,UI.Body,17
-skip.Visible,skip.Parent=false,gui
-local function skipIntro()
-    if player:GetAttribute("LastOrdersArrivalScene")==true then game.ReplicatedStorage.HalloweenShared:WaitForChild("SkipArrival"):FireServer() end
-end
-skip.Activated:Connect(skipIntro)
-local skipInput=Input.InputBegan:Connect(function(input,processed)
-    if not processed and (input.KeyCode==Enum.KeyCode.Space or input.KeyCode==Enum.KeyCode.ButtonB) then skipIntro() end
-end)
+local cleanupSkip=require(script.Parent.HoldToSkip).new(gui,player)
 local previousType: Enum.CameraType?=nil
 local previousSubject: Instance?=nil
 local previousFrame=CFrame.identity
 local lastScene=""
 local sceneAt=0
+local arrivalEnd: CFrame?=nil
 local function restore()
     local camera=workspace.CurrentCamera
     if camera and previousType then
-        camera.CameraType=previousType camera.CameraSubject=previousSubject camera.CFrame=previousFrame
+        local character=player.Character
+        local live=if character then character:FindFirstChildOfClass("Humanoid") else nil
+        camera.CameraType=previousType camera.CameraSubject=live or previousSubject camera.CFrame=previousFrame
     end
     previousType=nil
 end
@@ -77,21 +70,30 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local arrival=player:GetAttribute("LastOrdersArrivalScene")==true
     card.Visible=stage==7
     local scene=if arrival then "Arrival" elseif entry then "Entry" elseif driving then "Drive" else ""
-    if scene~=lastScene then sceneAt=os.clock() lastScene=scene end
-    skip.Visible=arrival
+    if scene~=lastScene then sceneAt=os.clock() lastScene=scene arrivalEnd=nil end
     caption.Visible=scene~="" and stage~=7
     for _,bar in bars do bar.Visible=caption.Visible end
     if scene=="" then restore() fade.BackgroundTransparency=1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable
     if arrival then
-        local started=player:GetAttribute("LastOrdersArrivalStarted")
+        local started=player:GetAttribute("LastOrdersSceneStarted")
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
-        local t=math.clamp(elapsed/4,0,1)
-        local signView=CFrame.lookAt(Vector3.new(-8,12,110),Vector3.new(-.5,11,100))
-        local entranceView=CFrame.lookAt(Vector3.new(-24,13,115),Vector3.new(6,12,89))
-        camera.CFrame=signView:Lerp(entranceView,t*t*(3-2*t))
-        caption.Text="The Firefly Tavern. Halloween night.\nOne dare: get the lights working."
+        local t=math.clamp(elapsed/Config.ArrivalSceneSeconds,0,1)
+        if not arrivalEnd then
+            local character=player.Character
+            local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
+            if root and root:IsA("BasePart") then
+                local direction=Vector3.new(6-root.Position.X,0,88-root.Position.Z).Unit
+                arrivalEnd=CFrame.lookAt(root.Position-direction*10+Vector3.new(0,4,0),root.Position+direction*12)
+            else arrivalEnd=previousFrame end
+        end
+        local finish=arrivalEnd :: CFrame
+        local establish=CFrame.lookAt(finish.Position+Vector3.new(0,4.5,5),Vector3.new(14,24,89))
+        camera.CFrame=establish:Lerp(finish,t*t*(3-2*t))
+        previousFrame=finish
+        caption.Text=if t<.4 then "The Firefly Tavern. Halloween night." elseif t<.75 then "One dare: get the lights working." else "Find your way inside."
+
     elseif entry then
         local map=workspace:FindFirstChild("LastOrdersPrototype")
         local started=if map then map:GetAttribute("EntranceCollapseStarted") else nil
@@ -116,4 +118,4 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         if stage==7 then fade.BackgroundTransparency=0 end
     end
 end)
-script.Destroying:Connect(function() skipInput:Disconnect() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)
+script.Destroying:Connect(function() cleanupSkip() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)

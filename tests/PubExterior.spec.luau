@@ -12,11 +12,11 @@ local ok,err=pcall(function()
     local body=car:FindFirstChild("CarBody") :: BasePart
     local cabin=car:FindFirstChild("CarCabin") :: BasePart
     assert(body.CanCollide and cabin.CanCollide,"Car must be solid scenery")
-    assert(car:FindFirstChild("RaisedBonnet") and car:FindFirstChild("CarLocation"))
+    assert(car:FindFirstChild("ClosedBonnet") and car:FindFirstChild("CarLocation"))
     local key=map:FindFirstChild("OfficeKey") :: Part
     assert(key.Transparency==1 and not (key:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt).Enabled)
     assert(#map.KeyLocations:GetChildren()==9)
-    assert((map.PrototypeSpawn.Position-offset-Vector3.new(6,1,30)).Magnitude<0.01,"Exterior must not move the starting spawn")
+    assert((map.PrototypeSpawn.Position-offset-Vector3.new(-59,.8,102)).Magnitude<0.01,"Player must start outside the working car")
     local cast=RaycastParams.new() cast.FilterType=Enum.RaycastFilterType.Include cast.FilterDescendantsInstances={map}
     local cellar=workspace:Raycast(offset+Vector3.new(36,6,0),Vector3.new(0,-40,0),cast)
     assert(cellar and cellar.Instance.Name=="CellarStep","Outdoor ground must not seal cellar stairs")
@@ -34,4 +34,4 @@ local ok,err=pcall(function()
 end)
 map:Destroy()
 assert(ok,tostring(err))
-print("Exterior: cellar opening, roof cover, car collision, walking routes and unchanged interior passed")
+print("Exterior: cellar opening, roof cover, working car, arrival spawn and walking routes passed")

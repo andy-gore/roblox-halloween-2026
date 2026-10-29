@@ -325,3 +325,60 @@ BellRing uses the verified bundled volume_slider.ogg clip spatially at the bell.
 GroundsBoundary contains four barriers within supported ground and distant hedge markers. Normal exploration cannot step off the edge; a server check recovers an unlocked player from below -45 studs/outside the bounds, preserving health/key/stage and providing three seconds of grace. The car endpoint remains inside the limits. Four boundary ray checks passed. Live out-of-bounds recovery after key pickup preserved stage 4/key and returned the player above ground.
 
 Studio Play passed arrival skip (Scriptable to Custom), entry/warning/power sequence, awakening camera sampling (maximum about 1.2 degrees per sampled frame across 127 frames), key, out-of-bounds recovery, exit, full drive/victory/replay, health restoration and no repeated arrival on replay. An unattended test run was caught during pauses and correctly reset; final continuous playthrough passed. Studio MCP's own camera-type safety restoration interfered with early automation samples and was explicitly cleared before the final check. Navigation validation passed after dressing. Both Rojo builds and whitespace checks passed; saved place changes remain managed code only with backups. Existing 203785492 warnings remain; native visual/audio balance and handheld memory still require human review. No screen access or standalone Luau analysis is available. Nothing was published.
+
+
+## Mobile HUD and scene backlog implementation — 29 October 2026
+
+The HUD now collapses to a 340×48 objective strip with a 44-pixel expand control, readable on-demand details, separate five-second feedback, contextual circuit progress and dismissible reading panels. Health is 148×42. Stage changes/return from a scene briefly expand instructions. Real Studio iPhone 13 Device Simulator checks passed for landscape (749×389 viewport) and portrait (389×762), plus an independent 320-wide container (296×48 strip with fitting heading). Actual touch/phone review remains required; ProximityPrompt InputHoldBegin automation did not reliably trigger all switches while touch simulation was enabled, so desktop input automation was used for setup before checking the reveal in phone simulation.
+
+The opening lasts ten seconds. SceneDirector owns eligibility, timing and continuous one-second skip holds; SceneHistory stores only three completion flags across visits, using a merging UpdateAsync. Studio explicitly bypasses live data stores. SceneDirector.spec.luau passed controlled-clock checks for mandatory unseen scenes, full completion, wrong-scene requests, finish without begin, too-short/accumulated partial holds, release cancellation, interrupted scenes and history merging. Live remote checks rejected a short hold and accepted a full hold on a repeat arrival; 32 UI ring segments were present. Across-visit cloud reads/writes were not exercised and need a separate published test.
+
+The awakening uses a protected, input-locked, fade-masked camera shot with collision checking, instead of a limited orientation nudge. On simulated iPhone landscape, the monster's centre projected to approximately (374.5,194.5) at positive depth in a 749×389 viewport; the sightline was clear. Normal camera returned after completion. First-view skip was hidden. A continuous loop passed entry, warning note opening, circuits, mandatory awakening, key, emergency exit, mandatory escape, victory, replay and hold-skipping the eligible repeat arrival; full health was restored. Death during an unfinished first arrival cleared the scene and the retry remained mandatory/unseen.
+
+The connected Studio instance changed to the published-place-named local editor. Its Main source was stale despite new modules appearing, so the managed sources were backed up under build/backups/mobile-scenes-20261029 and updated in Edit only. No geometry, publication or live settings were changed. The loaded place reports Players.MaxPlayers=60. Extra joins now receive a solo-game rejection; dashboard capacity 1 plus second-account matchmaking verification remain outstanding.
+
+Both Rojo builds, saved XML/referent checks and whitespace checks passed. Managed code-only place merge preserves authored bytes outside the code folders. Device simulation was restored to default and Play stopped. The authored place emitted multiple asset-authentication warnings in addition to the older 203785492 warning; their external assets were not modified by this task. No new scene/HUD script errors remained. Standalone Luau analysis and actual-device/visual review remain unavailable.
+
+
+## Remaining local release polish — 29 October 2026
+
+The bar note/world text/repeat feedback now explain the locked exit, power and key; no managed player-facing text contains the old drink-prevention warning. Cellar MaintenanceSign and CellarAisleSign are removed, the return board reads STAIRS UP, and two lounge directions are removed. Circuit order is read from the maintenance card rather than repeated in the HUD. Current objective wording uses staff note. Historical narrative/art are preserved.
+
+Health is now a 56×56 red circle comprising two separated semicircles. Forty-four filled segments at health 2, twenty-two at health 1, and zero at health 0 passed client checks; empty halves retain outlines. Healthy text takes no persistent space. The dial is at (12,8), next to the objective at (76,8). Actual Studio iPhone 13 simulation passed portrait (389×762, objective 301×48) and landscape (749×389, objective 340×48), without overlap and with fitting heading text. Red filled segment colour was verified as RGB 196/59/71.
+
+Sound levels are rebalanced without uploads. MonsterAudio samples structural occlusion every 0.2 seconds, muffles walls/different floors, and footfalls cannot retrigger faster than 0.32 seconds. MonsterAudio.spec.client.luau passed clear, blocked and different-floor volume/filter checks. Subjective listening on phone/headphones remains required.
+
+Seventeen spec bodies passed in Studio: RunState, BreakerSequence, MonsterRoutes, MonsterHunt, MonsterEncounter, PlayerSurvival, PlayerHold, SceneDirector, AssetIntegration, KeyVisibility, Journey, PubExterior, ExpandedPub, MonsterIntelligence, EscapeRoutes, CellarPuzzle and MonsterAudio. AssetIntegration/PubExterior assertions were updated for the already-approved 197-placement pack, working bonnet and outside-car spawn; cloned fixture Main is disabled before parenting. All 197 runtime placements/62 fixed groups again loaded without failures on this desktop client.
+
+A live actual two-catch sequence passed first-hit hold/release/protection and second-hit game-over/full reset with Custom camera. Another run reset the character during escape: camera subject became the new humanoid, root was unanchored, inventory/stage reset, and incomplete Escape remained mandatory on the following run. That following run won, replayed and hold-skipped its eligible arrival. Reset during awakening also restored the new avatar subject and clean scene state. Both cinematic restore paths now use the current humanoid after character reload.
+
+Existing v2 marketing files were visually reviewed and their 512×512 / 1920×1080 PNG dimensions verified. RELEASE.md contains copy/instructions/admin handoff; PLAYTEST.md provides the father/son/device review. No image was changed or uploaded.
+
+Both Rojo builds, whitespace checks and saved XML/referent validation passed. The place merge updates managed code only and preserves authored geometry/art. Final Studio state was confirmed as Edit, and device simulation was restored to default. Real phone hardware/memory, subjective audio/visual acceptance, cross-visit cloud stores, published capacity and publication remain external release gates. Authored-place asset authentication warnings/old 203785492 warnings remain outside these managed changes. Standalone Luau analysis remains unavailable.
+
+
+## Icon-only phone objective, continuous opening and minimal cellar labels — 29 October 2026
+
+Phone/touch layouts now show the 56×56 notebook objective button beside health, with no permanent strip or automatic instruction expansion. Desktop retains the text strip. Tapping toggles a drawer with the objective heading, instructions and contextual circuit progress. Simulated iPhone portrait virtual-input clicks opened/closed a 340×90 drawer with fitting text. Input coordinates were corrected using GuiService:GetInsetArea(None) to account for notch and core insets; early incorrectly offset automation was blocked by CoreGui or missed the button, without modifying CoreGui.
+
+The arrival now uses one continuous camera interpolation ending at the entrance-facing gameplay view beside the car. A full replay sample recorded 598 frames with minimum projected forward delta 0 (no backwards movement), then cleared the scene normally. Ten-second duration and first-view/hold-skip rules are retained.
+
+CellarReturnSign, PowerDirectionSign and MainSupplyStatus are removed. Two floor chevrons, existing panel/stair lighting, four small control labels and a 4.2×2.6 maintenance card remain. Circuit readiness uses the existing indicators/proximity prompt; reading the card opens the full instructions. CellarPower no longer waits on the removed status board. Three obsolete imported sign placements are retired; original source art remains in the repo.
+
+AssetIntegration and CellarPuzzle specs passed. PropRenderer's previously stale 164-placement assertion was updated to the current 194 placements and its key/lever/indicator/bell/door/web dynamic checks passed. Runtime reports 59 fixed groups and zero failures. Both builds, saved XML/referent checks and whitespace checks passed. Real-phone review remains required.
+
+
+## Remove cellar reading obstruction — 29 October 2026
+
+The CellarInstructions card/prompt and server reading branch are removed completely. Cellar controls no longer open a reading overlay. Wrong-order and early-main messages retain clear reset/readiness feedback without revealing circuit order; the optional objective drawer says TRY THE CIRCUITS. The staff note remains independent of the cellar puzzle. Original narrative/art are preserved under a new approved discovery-based revision.
+
+The updated CellarPuzzle spec passed in a fresh, disposable Edit fixture: no card, enabled switches, correct progression/main supply, reset, monster separation, navigation and both walking aisles. Both builds and diff checks passed; local place code was merged with authored bytes preserved and a backup. No publication or commit was performed.
+
+
+## Cellar wayfinding and failed-avatar repair — 29 October 2026
+
+Removed CellarLabel and cellar floor chevrons. Fresh CellarPuzzle fixture passed. Live server inspection confirmed no entrance sign/chevrons and unchanged server head transparency (0), with no fallback instance on the server.
+
+The current client head mesh reported AssetFetchStatus.Failure despite normal original visibility. A client-only bundled classic head/face fallback appeared, followed the real head within 0.001 studs, and left HumanoidRootPart unanchored. AvatarFace.spec.client.luau passed full-head/face-only fallback, follow/first-person opacity, clear and original-transparency restoration checks. Only failed content is substituted; successful head assets retain their avatar appearance. This repairs appearance locally, not the external asset permission. Real affected-phone appearance and dynamic-head recovery remain human acceptance checks.
+
+Both Rojo builds and whitespace checks passed. The saved local place receives managed code only; Studio is left in Edit. No uploads, publication or live capacity changes.

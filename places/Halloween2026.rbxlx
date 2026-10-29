@@ -1097,6 +1097,124 @@ require(script.Parent.PropRenderer).new(map)
         </Item>
         <Item class="LocalScript" referent="RBXAssetIntegration1_2">
           <Properties>
+            <string name="Name">AvatarFace</string>
+            <string name="Source">--!strict
+-- Only use the bundled face when the avatar's original head/face content actually fails.
+local Players=game:GetService("Players")
+local RunService=game:GetService("RunService")
+local ContentProvider=game:GetService("ContentProvider")
+if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
+local player=Players.LocalPlayer
+local Visual=require(script.Parent.AvatarFaceVisual)
+local generation=0
+local connections: {RBXScriptConnection}={}
+local assetConnections: {RBXScriptConnection}={}
+local visual: any=nil
+local function clear()
+    generation+=1
+    for _,c in connections do c:Disconnect() end connections={}
+    for _,c in assetConnections do c:Disconnect() end assetConnections={}
+    if visual then visual.clear() visual=nil end
+end
+local function attach(character: Model)
+    clear() local token=generation
+    local head=character:WaitForChild("Head",10)
+    if not head or not head:IsA("BasePart") or character~=player.Character or token~=generation then return end
+    visual=Visual.new(character,head)
+    local revision=0
+    local function watch()
+        revision+=1 local currentRevision=revision
+        for _,c in assetConnections do c:Disconnect() end assetConnections={}
+        local meshId=""
+        if head:IsA("MeshPart") then meshId=head.MeshId
+        else local mesh=head:FindFirstChildOfClass("SpecialMesh") if mesh and mesh.MeshType==Enum.MeshType.FileMesh then meshId=mesh.MeshId end end
+        local faceIds: {string}={}
+        for _,face in head:GetChildren() do
+            if face:IsA("Decal") and face.Face==Enum.NormalId.Front and face.Name~="LocalClassicFace" and face.Texture~="" then table.insert(faceIds,face.Texture) end
+        end
+        local ids=table.clone(faceIds) if meshId~="" then table.insert(ids,meshId) end
+        local function failed(id: string): boolean
+            local ok,status=pcall(function() return ContentProvider:GetAssetFetchStatus(id) end)
+            return ok and (status.Name=="Failure" or status.Name=="TimedOut")
+        end
+        local function check()
+            if currentRevision~=revision or token~=generation or not visual or character~=player.Character then return end
+            if meshId~="" and failed(meshId) then visual.show(true) return end
+            for _,id in faceIds do if failed(id) then visual.show(false) return end end
+            visual.clear()
+        end
+        for _,id in ids do table.insert(assetConnections,ContentProvider:GetAssetFetchStatusChangedSignal(id):Connect(check)) end
+        check()
+        if #ids&gt;0 then task.spawn(function() pcall(function() ContentProvider:PreloadAsync(ids) end) check() end) end
+    end
+    if head:IsA("MeshPart") then table.insert(connections,head:GetPropertyChangedSignal("MeshId"):Connect(watch)) end
+    table.insert(connections,head.ChildAdded:Connect(function(child) if child:IsA("Decal") and child.Name~="LocalClassicFace" then watch() end end))
+    table.insert(connections,head.AncestryChanged:Connect(function() if not head:IsDescendantOf(character) then clear() end end))
+    watch()
+end
+local added=player.CharacterAdded:Connect(attach)
+local removed=player.CharacterRemoving:Connect(clear)
+RunService:BindToRenderStep("LastOrdersAvatarFace",Enum.RenderPriority.Camera.Value+15,function() if visual then visual.update() end end)
+if player.Character then task.spawn(attach,player.Character) end
+script.Destroying:Connect(function() added:Disconnect() removed:Disconnect() clear() RunService:UnbindFromRenderStep("LastOrdersAvatarFace") end)
+</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_3">
+          <Properties>
+            <string name="Name">AvatarFaceVisual</string>
+            <string name="Source">--!strict
+-- Local visual repair only; preserve the real head, joints, accessories and server hitbox.
+local Visual={}
+function Visual.new(character: Model,head: BasePart)
+    local part: Part?=nil
+    local decal: Decal?=nil
+    local originalAlpha: number?=nil
+    local hidden: {[Decal]: number}={}
+    local mode: boolean?=nil
+    local controller={}
+    function controller.clear()
+        if part then part:Destroy() part=nil end
+        if decal then decal:Destroy() decal=nil end
+        if originalAlpha~=nil and head.Parent then head.Transparency=originalAlpha end
+        originalAlpha=nil
+        for old,alpha in hidden do if old.Parent then old.Transparency=alpha end end
+        hidden={} mode=nil
+    end
+    function controller.show(fullHead: boolean)
+        if mode==fullHead and decal and decal.Parent then return end
+        controller.clear() mode=fullHead
+        local parent: Instance=head
+        if fullHead then
+            originalAlpha=head.Transparency head.Transparency=1
+            local replacement=Instance.new("Part") replacement.Name="UnavailableHeadFallback"
+            replacement.Anchored,replacement.CanCollide,replacement.CanTouch,replacement.CanQuery=true,false,false,false
+            replacement.Size,replacement.Color,replacement.CFrame=head.Size,head.Color,head.CFrame
+            replacement.Transparency,replacement.Massless=originalAlpha,true
+            local mesh=Instance.new("SpecialMesh") mesh.MeshType,mesh.Scale,mesh.Parent=Enum.MeshType.Head,Vector3.one*1.25,replacement
+            replacement.Parent=character part=replacement parent=replacement
+        else
+            for _,old in head:GetChildren() do
+                if old:IsA("Decal") and old.Face==Enum.NormalId.Front then hidden[old]=old.Transparency old.Transparency=1 end
+            end
+        end
+        local face=Instance.new("Decal") face.Name,face.Face,face.Texture="LocalClassicFace",Enum.NormalId.Front,"rbxasset://textures/face.png"
+        face.Parent=parent decal=face
+    end
+    function controller.update()
+        if part and part.Parent and head.Parent then
+            part.CFrame,part.Color,part.Size=head.CFrame,head.Color,head.Size
+            part.LocalTransparencyModifier=head.LocalTransparencyModifier
+        end
+    end
+    return controller
+end
+return Visual
+</string>
+          </Properties>
+        </Item>
+        <Item class="LocalScript" referent="RBXAssetIntegration1_4">
+          <Properties>
             <string name="Name">Bell</string>
             <string name="Source">--!strict
 -- Display only: cooldown and noise decisions remain on the server.
@@ -1112,61 +1230,64 @@ end
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_3">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_5">
           <Properties>
             <string name="Name">CellarReveal</string>
             <string name="Source">--!strict
--- A bounded, gentle hint towards the awakening. Normal camera/input remain in control.
-local RunService=game:GetService("RunService")
+-- Deliberate, collision-checked reveal; fade masks the cut instead of spinning the player.
 local Players=game:GetService("Players")
-local Input=game:GetService("UserInputService")
+local RunService=game:GetService("RunService")
+local TweenService=game:GetService("TweenService")
 if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
 local player=Players.LocalPlayer
-local root=workspace:WaitForChild("LastOrdersPrototype"):WaitForChild("ChuggernaughtPlaceholder") :: BasePart
-local seen: number?=nil
-local untilTime,budget=0,0
-local connections: {RBXScriptConnection}={}
-local function cancel() untilTime=0 end
--- Deliberate looking cancels the hint; walking does not lock or fight the view.
-table.insert(connections,Input.InputChanged:Connect(function(input)
-    if input.UserInputType==Enum.UserInputType.MouseMovement and input.Delta.Magnitude&gt;2 then cancel()
-    elseif input.KeyCode==Enum.KeyCode.Thumbstick2 and input.Position.Magnitude&gt;.15 then cancel() end
-end))
-table.insert(connections,Input.TouchMoved:Connect(cancel))
-table.insert(connections,player.CharacterRemoving:Connect(cancel))
-RunService:BindToRenderStep("LastOrdersCellarReveal",Enum.RenderPriority.Camera.Value+1,function(dt)
-    if not root:IsDescendantOf(workspace) then cancel() return end
-    local started=root:GetAttribute("MonsterModeStarted")
-    local mode=root:GetAttribute("MonsterMode")
-    if mode~="Reveal" then cancel() return end
-    if typeof(started)=="number" and started~=seen then
-        seen=started untilTime=os.clock()+1.3 budget=math.rad(65)
-    end
+local monster=workspace:WaitForChild("LastOrdersPrototype"):WaitForChild("ChuggernaughtPlaceholder") :: BasePart
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="AwakeningView",false,25
+local fade=Instance.new("Frame") fade.Name,fade.Size,fade.BackgroundColor3,fade.BorderSizePixel="Fade",UDim2.fromScale(1,1),Color3.new(),0
+fade.BackgroundTransparency,fade.Parent=1,gui gui.Parent=player:WaitForChild("PlayerGui")
+local saved: CFrame?=nil
+local subject: Instance?=nil
+local eye=Vector3.zero
+local tween: Tween?=nil
+local function restore()
+    if not saved then return end
     local camera=workspace.CurrentCamera
-    local character=player.Character
-    local playerRoot=if character then character:FindFirstChild("HumanoidRootPart") else nil
-    if os.clock()&gt;=untilTime or budget&lt;=0 or not camera or camera.CameraType~=Enum.CameraType.Custom
-        or not playerRoot or not playerRoot:IsA("BasePart") or playerRoot.Position.Y&gt;=-6
-        or (playerRoot.Position-root.Position).Magnitude&gt;=80 then return end
-    local cf=camera.CFrame
-    local delta=root.Position+Vector3.new(0,2,0)-cf.Position
-    if delta.Magnitude&lt;.1 then return end
-    local angle=math.acos(math.clamp(cf.LookVector:Dot(delta.Unit),-1,1))
-    if angle&lt;.01 then return end
-    local remaining=untilTime-os.clock()
-    local rate=math.rad(55)*math.clamp(remaining/.35,0,1)
-    local turn=math.min(angle,math.min(dt,.05)*rate,budget)
-    camera.CFrame=cf:Lerp(CFrame.lookAt(cf.Position,cf.Position+delta),turn/angle)
-    budget-=turn
+    if camera then
+        local character=player.Character
+        local live=if character then character:FindFirstChildOfClass("Humanoid") else nil
+        camera.CFrame=saved camera.CameraSubject=live or subject camera.CameraType=Enum.CameraType.Custom
+    end
+    saved=nil
+    if tween then tween:Cancel() end
+    fade.BackgroundTransparency=0
+    tween=TweenService:Create(fade,TweenInfo.new(.2),{BackgroundTransparency=1}) tween:Play()
+end
+RunService:BindToRenderStep("LastOrdersCellarReveal",Enum.RenderPriority.Camera.Value+1,function()
+    local camera=workspace.CurrentCamera
+    if not camera then return end
+    if player:GetAttribute("LastOrdersRevealScene")~=true or not monster:IsDescendantOf(workspace) then restore() return end
+    if not saved then
+        saved,subject=camera.CFrame,camera.CameraSubject
+        local focus=monster.Position+Vector3.new(0,1.5,0)
+        local desired=monster.Position+monster.CFrame.LookVector*12+monster.CFrame.RightVector*4+Vector3.new(0,2.5,0)
+        local cast=RaycastParams.new() cast.FilterType=Enum.RaycastFilterType.Exclude
+        cast.FilterDescendantsInstances=if player.Character then {player.Character,monster} else {monster}
+        local hit=workspace:Blockcast(CFrame.new(focus),Vector3.one*.6,desired-focus,cast)
+        eye=if hit then hit.Position+hit.Normal*.6 else desired
+        if (eye-focus).Magnitude&lt;5 then eye=monster.Position+Vector3.new(-8,2,5) end
+    end
+    camera.CameraType=Enum.CameraType.Scriptable
+    local started=player:GetAttribute("LastOrdersSceneStarted")
+    local duration=player:GetAttribute("LastOrdersSceneDuration")
+    local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else 0
+    local seconds=if typeof(duration)=="number" then duration else 4.5
+    fade.BackgroundTransparency=math.min(math.clamp(elapsed/.2,0,1),math.clamp((seconds-elapsed)/.2,0,1))
+    camera.CFrame=CFrame.lookAt(eye,monster.Position+Vector3.new(0,1.5,0))
 end)
-script.Destroying:Connect(function()
-    RunService:UnbindFromRenderStep("LastOrdersCellarReveal")
-    for _,c in connections do c:Disconnect() end
-end)
+script.Destroying:Connect(function() restore() RunService:UnbindFromRenderStep("LastOrdersCellarReveal") gui:Destroy() end)
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_4">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_6">
           <Properties>
             <string name="Name">Chuggernaught</string>
             <string name="Source">--!strict
@@ -1183,9 +1304,9 @@ local function sound(name: string,path: string,volume: number,pitch: number): So
     s.Parent=root return s
 end
 -- Bundled Roblox sounds verified locally; no uploaded sound IDs or invented voice assets.
-local stepSound=sound("HeavyFootsteps","rbxasset://sounds/action_footsteps_plastic.mp3",0.65,0.62)
-local drinkSound=sound("TankardGlug","rbxasset://sounds/impact_water.mp3",0.35,0.65)
-local grabSound=sound("GrabThud","rbxasset://sounds/action_footsteps_plastic.mp3",0.6,0.5)
+local stepSound=sound("HeavyFootsteps","rbxasset://sounds/action_footsteps_plastic.mp3",0.48,0.62)
+local drinkSound=sound("TankardGlug","rbxasset://sounds/impact_water.mp3",0.42,0.65)
+local grabSound=sound("GrabThud","rbxasset://sounds/action_footsteps_plastic.mp3",0.5,0.5)
 local caption=Instance.new("BillboardGui")
 caption.Name,caption.Size,caption.StudsOffsetWorldSpace="ChuggernaughtCaption",UDim2.fromOffset(260,50),Vector3.new(0,5.1,0)
 caption.MaxDistance,caption.Adornee,caption.Parent=70,root,rig.model
@@ -1198,6 +1319,8 @@ local last=displayed
 local facing=Vector3.new(0,0,1)
 local phase,lastStep,lastGlug=0,-1,-1
 local previousMode=""
+local lastFootfall=-math.huge
+local mix=require(script.Parent.MonsterAudio).new(root,{stepSound,drinkSound,grabSound})
 local lastChest: Vector3?=nil
 local connection: RBXScriptConnection? = nil
 connection=RunService.RenderStepped:Connect(function(dt: number)
@@ -1205,6 +1328,7 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
         if connection then connection:Disconnect() end
         rig.destroy() stepSound:Destroy() drinkSound:Destroy() grabSound:Destroy() return
     end
+    mix(Players.LocalPlayer.Character,dt)
     local mode=root:GetAttribute("MonsterMode")
     if typeof(mode)~="string" then mode="Dormant" end
     local started=root:GetAttribute("MonsterModeStarted")
@@ -1254,7 +1378,9 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
     elseif mode=="Stunned" then chest=lastChest end
     rig.pose(Pose.frames(basis,phase,moving,mode,elapsed,duration,if typeof(chest)=="Vector3" then chest else nil),alpha,basis)
     local beat=math.floor(phase/math.pi)
-    if moving and beat~=lastStep and mode~="Dormant" then stepSound:Play() end
+    if moving and beat~=lastStep and mode~="Dormant" and os.clock()-lastFootfall&gt;=.32 then
+        lastFootfall=os.clock() stepSound:Play()
+    end
     lastStep=beat
     if mode=="Reveal" or mode=="Chug" then
         local glug=math.floor((elapsed-0.85)/0.5)
@@ -1269,7 +1395,7 @@ end)
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_5">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_7">
           <Properties>
             <string name="Name">ChuggernaughtPose</string>
             <string name="Source">--!strict
@@ -1365,7 +1491,7 @@ return Pose
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_6">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_8">
           <Properties>
             <string name="Name">ChuggernaughtRig</string>
             <string name="Source">--!strict
@@ -1504,7 +1630,7 @@ return Rig
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_7">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_9">
           <Properties>
             <string name="Name">GrabCamera</string>
             <string name="Source">--!strict
@@ -1579,7 +1705,117 @@ script.Destroying:Connect(function() restore() RunService:UnbindFromRenderStep("
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_8">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_10">
+          <Properties>
+            <string name="Name">HealthDial</string>
+            <string name="Source">--!strict
+-- Two separated semicircles. Depleted health is outlined, not merely recoloured.
+local UI=require(script.Parent.TavernUI)
+local Dial={}
+function Dial.new(gui: ScreenGui)
+    local frame=UI.frame(gui,"HealthBar") frame.Size=UDim2.fromOffset(56,56) frame.AnchorPoint=Vector2.new(.5,1)
+    local corner=frame:FindFirstChildOfClass("UICorner") if corner then corner.CornerRadius=UDim.new(.5,0) end
+    local halves: {{Frame}}={{},{}}
+    for half=1,2 do for i=1,22 do
+        local angle=math.rad((half-1)*180+7+(i-1)*166/21)
+        local segment=Instance.new("Frame") segment.Name="Half"..half.."Segment"..i
+        segment.AnchorPoint,segment.Size=Vector2.new(.5,.5),UDim2.fromOffset(4,5)
+        segment.Position,segment.Rotation=UDim2.fromOffset(28+math.sin(angle)*21,28-math.cos(angle)*21),math.deg(angle)
+        segment.BorderSizePixel,segment.Parent=0,frame
+        local stroke=Instance.new("UIStroke") stroke.Thickness,stroke.Color,stroke.Parent=1,UI.Muted,segment
+        table.insert(halves[half],segment)
+    end end
+    local count=Instance.new("TextLabel") count.Name,count.Size,count.BackgroundTransparency="HealthCount",UDim2.fromScale(1,1),1
+    count.FontFace,count.TextSize,count.TextColor3,count.Parent=UI.Body,18,UI.Ivory,frame
+    local controller={frame=frame}
+    function controller.update(health: number)
+        count.Text=tostring(health)
+        for half,segments in halves do for _,segment in segments do
+            local filled=half&lt;=health
+            segment.BackgroundTransparency=if filled then 0 else 1
+            segment.BackgroundColor3=UI.Crimson
+            local stroke=segment:FindFirstChildOfClass("UIStroke")
+            if stroke then stroke.Transparency=if filled then .8 else .3 end
+        end end
+    end
+    return controller
+end
+return Dial
+</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_11">
+          <Properties>
+            <string name="Name">HoldToSkip</string>
+            <string name="Source">--!strict
+local Input=game:GetService("UserInputService")
+local RunService=game:GetService("RunService")
+local UI=require(script.Parent.TavernUI)
+local Hold={}
+function Hold.new(gui: ScreenGui,player: Player)
+    local remote=game.ReplicatedStorage.HalloweenShared:WaitForChild("SceneRequest") :: RemoteEvent
+    local button=Instance.new("TextButton") button.Name="HoldToSkip" button.Text=""
+    button.Size,button.Position=UDim2.fromOffset(200,48),UDim2.new(1,-212,0,12)
+    button.BackgroundColor3,button.BackgroundTransparency,button.BorderSizePixel=UI.Ink,.04,0 button.Visible=false button.Parent=gui
+    local label=Instance.new("TextLabel") label.Name="Label" label.Size,label.Position=UDim2.new(1,-52,1,0),UDim2.fromOffset(48,0)
+    label.BackgroundTransparency,label.FontFace,label.TextSize,label.TextColor3=1,UI.Body,17,UI.Ivory
+    label.Text,label.Parent="Hold to skip",button
+    local segments: {Frame}={}
+    for i=1,32 do
+        local a=(i-1)/32*math.pi*2
+        local s=Instance.new("Frame") s.Name="Progress"..i s.AnchorPoint=Vector2.new(.5,.5)
+        s.Position,s.Size=UDim2.fromOffset(24+math.sin(a)*14,24-math.cos(a)*14),UDim2.fromOffset(3,4)
+        s.Rotation,s.BorderSizePixel,s.BackgroundColor3,s.Parent=math.deg(a),0,UI.Muted,button table.insert(segments,s)
+    end
+    local held: InputObject?=nil
+    local started=0
+    local heldScene=""
+    local sent=false
+    local connections: {RBXScriptConnection}={}
+    local function eligible(): boolean
+        return player:GetAttribute("LastOrdersSceneSkippable")==true and player:GetAttribute("LastOrdersScene")~=""
+    end
+    local function cancel()
+        if held then remote:FireServer("Cancel",heldScene) end
+        held=nil started=0 sent=false
+    end
+    local function begin(input: InputObject)
+        if held or not eligible() then return end
+        held=input started=os.clock() sent=false heldScene=player:GetAttribute("LastOrdersScene") :: string
+        remote:FireServer("Begin",heldScene)
+    end
+    table.insert(connections,button.InputBegan:Connect(function(input)
+        if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then begin(input) end
+    end))
+    table.insert(connections,Input.InputBegan:Connect(function(input,processed)
+        if not processed and (input.KeyCode==Enum.KeyCode.Space or input.KeyCode==Enum.KeyCode.ButtonB) then begin(input) end
+    end))
+    table.insert(connections,Input.InputEnded:Connect(function(input)
+        if input==held or (held and input.KeyCode==held.KeyCode and input.KeyCode~=Enum.KeyCode.Unknown) then cancel() end
+    end))
+    table.insert(connections,Input.InputChanged:Connect(function(input)
+        if input==held and input.UserInputState==Enum.UserInputState.Cancel then cancel() end
+        if input==held and input.UserInputType==Enum.UserInputType.Touch then
+            local pos,size=button.AbsolutePosition,button.AbsoluteSize
+            if input.Position.X&lt;pos.X or input.Position.X&gt;pos.X+size.X or input.Position.Y&lt;pos.Y or input.Position.Y&gt;pos.Y+size.Y then cancel() end
+        end
+    end))
+    table.insert(connections,Input.WindowFocusReleased:Connect(cancel))
+    table.insert(connections,player:GetAttributeChangedSignal("LastOrdersScene"):Connect(cancel))
+    table.insert(connections,RunService.RenderStepped:Connect(function()
+        button.Visible=eligible()
+        if not button.Visible then cancel() end
+        local progress=if held then math.clamp((os.clock()-started)/1.05,0,1) else 0
+        for i,s in segments do s.BackgroundColor3=if i&lt;=math.floor(progress*32) then UI.Brass else Color3.fromRGB(70,62,55) end
+        if held and progress&gt;=1 and not sent then sent=true remote:FireServer("Finish",heldScene) end
+    end))
+    return function() cancel() for _,c in connections do c:Disconnect() end button:Destroy() end
+end
+return Hold
+</string>
+          </Properties>
+        </Item>
+        <Item class="LocalScript" referent="RBXAssetIntegration1_12">
           <Properties>
             <string name="Name">Journey</string>
             <string name="Source">--!strict
@@ -1629,26 +1865,19 @@ local caption=Instance.new("TextLabel") caption.Name="SceneCaption"
 caption.Size,caption.Position=UDim2.fromScale(.86,.12),UDim2.fromScale(.07,.78)
 caption.BackgroundTransparency,caption.FontFace,caption.TextSize,caption.TextWrapped=1,UI.Body,21,true
 caption.TextColor3,caption.TextStrokeTransparency,caption.Visible,caption.Parent=UI.Ivory,.25,false,gui
-local skip=Instance.new("TextButton") skip.Name="SkipArrival" skip.Text="Skip intro  ·  Space / B"
-skip.Size,skip.Position=UDim2.fromOffset(220,44),UDim2.new(1,-236,0,16)
-skip.BackgroundColor3,skip.TextColor3,skip.FontFace,skip.TextSize=UI.Ink,UI.Ivory,UI.Body,17
-skip.Visible,skip.Parent=false,gui
-local function skipIntro()
-    if player:GetAttribute("LastOrdersArrivalScene")==true then game.ReplicatedStorage.HalloweenShared:WaitForChild("SkipArrival"):FireServer() end
-end
-skip.Activated:Connect(skipIntro)
-local skipInput=Input.InputBegan:Connect(function(input,processed)
-    if not processed and (input.KeyCode==Enum.KeyCode.Space or input.KeyCode==Enum.KeyCode.ButtonB) then skipIntro() end
-end)
+local cleanupSkip=require(script.Parent.HoldToSkip).new(gui,player)
 local previousType: Enum.CameraType?=nil
 local previousSubject: Instance?=nil
 local previousFrame=CFrame.identity
 local lastScene=""
 local sceneAt=0
+local arrivalEnd: CFrame?=nil
 local function restore()
     local camera=workspace.CurrentCamera
     if camera and previousType then
-        camera.CameraType=previousType camera.CameraSubject=previousSubject camera.CFrame=previousFrame
+        local character=player.Character
+        local live=if character then character:FindFirstChildOfClass("Humanoid") else nil
+        camera.CameraType=previousType camera.CameraSubject=live or previousSubject camera.CFrame=previousFrame
     end
     previousType=nil
 end
@@ -1661,21 +1890,30 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local arrival=player:GetAttribute("LastOrdersArrivalScene")==true
     card.Visible=stage==7
     local scene=if arrival then "Arrival" elseif entry then "Entry" elseif driving then "Drive" else ""
-    if scene~=lastScene then sceneAt=os.clock() lastScene=scene end
-    skip.Visible=arrival
+    if scene~=lastScene then sceneAt=os.clock() lastScene=scene arrivalEnd=nil end
     caption.Visible=scene~="" and stage~=7
     for _,bar in bars do bar.Visible=caption.Visible end
     if scene=="" then restore() fade.BackgroundTransparency=1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable
     if arrival then
-        local started=player:GetAttribute("LastOrdersArrivalStarted")
+        local started=player:GetAttribute("LastOrdersSceneStarted")
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
-        local t=math.clamp(elapsed/4,0,1)
-        local signView=CFrame.lookAt(Vector3.new(-8,12,110),Vector3.new(-.5,11,100))
-        local entranceView=CFrame.lookAt(Vector3.new(-24,13,115),Vector3.new(6,12,89))
-        camera.CFrame=signView:Lerp(entranceView,t*t*(3-2*t))
-        caption.Text="The Firefly Tavern. Halloween night.\nOne dare: get the lights working."
+        local t=math.clamp(elapsed/Config.ArrivalSceneSeconds,0,1)
+        if not arrivalEnd then
+            local character=player.Character
+            local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
+            if root and root:IsA("BasePart") then
+                local direction=Vector3.new(6-root.Position.X,0,88-root.Position.Z).Unit
+                arrivalEnd=CFrame.lookAt(root.Position-direction*10+Vector3.new(0,4,0),root.Position+direction*12)
+            else arrivalEnd=previousFrame end
+        end
+        local finish=arrivalEnd :: CFrame
+        local establish=CFrame.lookAt(finish.Position+Vector3.new(0,4.5,5),Vector3.new(14,24,89))
+        camera.CFrame=establish:Lerp(finish,t*t*(3-2*t))
+        previousFrame=finish
+        caption.Text=if t&lt;.4 then "The Firefly Tavern. Halloween night." elseif t&lt;.75 then "One dare: get the lights working." else "Find your way inside."
+
     elseif entry then
         local map=workspace:FindFirstChild("LastOrdersPrototype")
         local started=if map then map:GetAttribute("EntranceCollapseStarted") else nil
@@ -1700,65 +1938,170 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         if stage==7 then fade.BackgroundTransparency=0 end
     end
 end)
-script.Destroying:Connect(function() skipInput:Disconnect() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)
+script.Destroying:Connect(function() cleanupSkip() RunService:UnbindFromRenderStep("LastOrdersJourney") restore() gui:Destroy() end)
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_9">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_13">
           <Properties>
             <string name="Name">Main</string>
             <string name="Source">--!strict
+-- Compact objective strip, opt-in detail, and a separate short-lived feedback card.
 local Players=game:GetService("Players")
+local RunService=game:GetService("RunService")
+local Input=game:GetService("UserInputService")
 local Config=require(game.ReplicatedStorage:WaitForChild("HalloweenShared"):WaitForChild("Config"))
 local UI=require(script.Parent.TavernUI)
 local player=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn="LastOrdersHUD",false
-local panel=UI.frame(gui,"ObjectivePanel") panel.Position=UDim2.fromOffset(16,12)
-panel.Size,panel.AutomaticSize=UDim2.new(1,-32,0,0),Enum.AutomaticSize.Y
-local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(380,900),panel
-UI.stack(panel,16,7)
-UI.text(panel,"Eyebrow","LAST ORDERS",UI.Body,13,UI.Brass,1)
-local heading=UI.text(panel,"ObjectiveHeading","The Halloween dare",UI.Heading,28,UI.Ivory,2)
-local detail=UI.text(panel,"ObjectiveDetail","",UI.Body,18,UI.Ivory,3)
-local circuits=UI.text(panel,"Circuits","",UI.Body,16,UI.Brass,4)
-local rule=Instance.new("Frame") rule.Name,rule.Size="FeedbackRule",UDim2.new(1,0,0,1)
-rule.BackgroundColor3,rule.BackgroundTransparency,rule.BorderSizePixel=UI.Brass,.6,0 rule.LayoutOrder,rule.Parent=5,panel
-local feedback=UI.text(panel,"Feedback","",UI.Body,18,UI.Muted,6)
-local headings={[0]="The Halloween dare","Find another way out","Bring back the lights","Find the exit key","Unlock the exit","Run for the car","Leave the tavern","You survived"}
-local messageVersion=0
-local function message()
-    messageVersion+=1
-    local version=messageVersion
-    local value=player:GetAttribute("LastOrdersMessage")
-    local text=if typeof(value)=="string" then value else ""
-    feedback.Text=text feedback.Visible=text~="" rule.Visible=feedback.Visible
-    -- Leave longer notes up long enough to read; objectives remain after feedback fades.
-    if text~="" then task.delay(math.clamp(#text/14,8,22),function()
-        if version==messageVersion then feedback.Visible=false rule.Visible=false end
-    end) end
+local panel=UI.frame(gui,"ObjectivePanel") panel.Position,panel.Size=UDim2.fromOffset(76,8),UDim2.new(1,-88,0,48)
+local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(340,48),panel
+local heading=Instance.new("TextLabel") heading.Name="ObjectiveHeading"
+heading.Size,heading.Position=UDim2.new(1,-62,1,0),UDim2.fromOffset(12,0)
+heading.BackgroundTransparency,heading.FontFace,heading.TextSize,heading.TextColor3=1,UI.Heading,21,UI.Ivory
+heading.TextXAlignment,heading.TextWrapped,heading.Parent=Enum.TextXAlignment.Left,true,panel
+local toggle=Instance.new("TextButton") toggle.Name,toggle.Text="DetailsToggle","+"
+toggle.Size,toggle.Position=UDim2.fromOffset(44,44),UDim2.new(1,-46,0,2)
+toggle.BackgroundTransparency,toggle.FontFace,toggle.TextSize,toggle.TextColor3=1,UI.Body,26,UI.Brass toggle.Parent=panel
+local icon=UI.frame(gui,"ObjectiveIcon") icon.Size,icon.Position=UDim2.fromOffset(56,56),UDim2.fromOffset(76,8)
+local iconButton=Instance.new("TextButton") iconButton.Name,iconButton.Text,iconButton.Size="Objectives","",UDim2.fromScale(1,1)
+iconButton.BackgroundTransparency,iconButton.Parent=1,icon
+local page=Instance.new("Frame") page.Size,page.Position=UDim2.fromOffset(22,28),UDim2.fromOffset(17,14)
+page.BackgroundTransparency,page.Parent=1,iconButton
+local border=Instance.new("UIStroke") border.Color,border.Thickness,border.Parent=UI.Brass,2,page
+for i=1,3 do
+    local line=Instance.new("Frame") line.Size,line.Position=UDim2.fromOffset(13,2),UDim2.fromOffset(4,5+i*5)
+    line.BackgroundColor3,line.BorderSizePixel,line.Parent=UI.Ivory,0,page
+end
+local details=UI.frame(gui,"ObjectiveDetails") details.Size,details.AutomaticSize=UDim2.new(1,-24,0,0),Enum.AutomaticSize.Y
+details.Position=UDim2.fromOffset(12,76)
+local detailLimit=Instance.new("UISizeConstraint") detailLimit.MaxSize,detailLimit.Parent=Vector2.new(340,600),details
+UI.stack(details,12,6)
+local drawerHeading=UI.text(details,"ObjectiveHeading","",UI.Heading,24,UI.Brass,0)
+local detail=UI.text(details,"ObjectiveDetail","",UI.Body,18,UI.Ivory,1)
+local circuits=UI.text(details,"Circuits","",UI.Body,16,UI.Brass,2)
+local feedbackPanel=UI.frame(gui,"FeedbackCard") feedbackPanel.Size,feedbackPanel.AutomaticSize=UDim2.new(1,-24,0,0),Enum.AutomaticSize.Y
+local feedbackLimit=Instance.new("UISizeConstraint") feedbackLimit.MaxSize,feedbackLimit.Parent=Vector2.new(340,600),feedbackPanel
+UI.stack(feedbackPanel,12,0)
+local feedback=UI.text(feedbackPanel,"Feedback","",UI.Body,17,UI.Ivory,1)
+-- Notes are explicitly dismissed; reading them never freezes the hunt.
+local note=UI.frame(gui,"ReadingPanel") note.AnchorPoint,note.Position=Vector2.new(.5,.5),UDim2.fromScale(.5,.5)
+note.Size,note.AutomaticSize=UDim2.new(.88,0,0,0),Enum.AutomaticSize.Y note.Visible=false
+local noteLimit=Instance.new("UISizeConstraint") noteLimit.MaxSize,noteLimit.Parent=Vector2.new(480,700),note
+UI.stack(note,18,12)
+UI.text(note,"Heading","A note from the tavern",UI.Heading,26,UI.Brass,1)
+local noteText=UI.text(note,"Writing","",UI.Body,20,UI.Ivory,2)
+local close=Instance.new("TextButton") close.Name,close.Text,close.Size="CloseNote","Close",UDim2.new(1,0,0,44)
+close.FontFace,close.TextSize,close.TextColor3,close.BackgroundColor3=UI.Body,18,UI.Ivory,Color3.fromRGB(70,48,35)
+close.LayoutOrder,close.Parent=3,note
+local headings={[0]="Enter the tavern","Read the staff note","Restore power","Find the exit key","Unlock the exit","Run for the car","Leave the tavern","You survived"}
+local expanded=false
+local lastFeedback=""
+local expandUntil,feedbackUntil=0,0
+local oldStage: any=nil
+local wasHidden=true
+local noteSerial: any=nil
+local function hidden(): boolean
+    return player:GetAttribute("LastOrdersGameOver")==true or player:GetAttribute("LastOrdersDriving")==true
+        or player:GetAttribute("LastOrdersEntryScene")==true or player:GetAttribute("LastOrdersArrivalScene")==true
+        or player:GetAttribute("LastOrdersRevealScene")==true
 end
 local function update()
     local stage=player:GetAttribute("LastOrdersStage")
-    local valid=typeof(stage)=="number"
-    heading.Text=if valid then headings[stage] or "Last orders" else "The Firefly Tavern"
-    detail.Text=if valid then Config.Objectives[stage] or "" else "Waiting for the local prototype…"
-    circuits.Visible=stage==2
-    if stage==2 then
-        local progress=player:GetAttribute("CellarBreakerProgress")
-        local count=if typeof(progress)=="number" then progress else 0
-        circuits.Text="CIRCUITS "..count.." / 3  ·  "..(if count==3 then "MAIN LEVER READY" else "CELLAR → GUEST ROOMS → BAR")
+    if stage~=oldStage then oldStage=stage expanded=false expandUntil=os.clock()+4 note.Visible=false end
+    heading.Text=if typeof(stage)=="number" then headings[stage] or "Last orders" else "The Firefly Tavern"
+    detail.Text=if typeof(stage)=="number" then Config.Objectives[stage] or "" else "Waiting for the local prototype…"
+    local character=player.Character
+    local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
+    local map=workspace:FindFirstChild("LastOrdersPrototype")
+    local panelPart=if map then map:FindFirstChild("CellarFuseBox") else nil
+    circuits.Visible=stage==2 and root~=nil and root:IsA("BasePart") and panelPart~=nil and panelPart:IsA("BasePart") and (root.Position-panelPart.Position).Magnitude&lt;20
+    if circuits.Visible then
+        local value=player:GetAttribute("CellarBreakerProgress")
+        local count=if typeof(value)=="number" then value else 0
+        circuits.Text="CIRCUITS "..count.." / 3  ·  "..(if count==3 then "MAIN LEVER READY" else "TRY THE CIRCUITS")
     end
-    panel.Visible=player:GetAttribute("LastOrdersGameOver")~=true and player:GetAttribute("LastOrdersDriving")~=true
-        and player:GetAttribute("LastOrdersEntryScene")~=true and player:GetAttribute("LastOrdersArrivalScene")~=true
+    local phone=Input.TouchEnabled or (workspace.CurrentCamera~=nil and workspace.CurrentCamera.ViewportSize.X&lt;600)
+    local blocked=hidden()
+    if wasHidden and not blocked then
+        expandUntil=os.clock()+4
+        if lastFeedback~="" then feedbackUntil=os.clock()+5 end
+    end
+    wasHidden=blocked
+    panel.Visible=not blocked and not phone
+    icon.Visible=not blocked and phone
+    drawerHeading.Text,drawerHeading.Visible=heading.Text,phone
+    details.Visible=not blocked and (expanded or (not phone and (os.clock()&lt;expandUntil or circuits.Visible)))
+    toggle.Text=if expanded then "−" else "+"
+    local held=player:GetAttribute("LastOrdersHeld")==true
+    local protected=player:GetAttribute("LastOrdersProtected")==true
+    if held then note.Visible=false end
+    local health=player:GetAttribute("LastOrdersHealth")
+    local combat=if held then (if health==0 then "CAUGHT AGAIN" else "ONE HIT LEFT · GET READY TO RUN") elseif protected then "ONE HIT LEFT · GET AWAY!" else ""
+    feedback.Text=if combat~="" then combat else lastFeedback
+    feedbackPanel.Visible=not blocked and not note.Visible and (combat~="" or os.clock()&lt;feedbackUntil)
+    feedbackPanel.Position=UDim2.fromOffset(12,if details.Visible then 84+details.AbsoluteSize.Y else 76)
+    if blocked then note.Visible=false end
 end
-for _,name in {"LastOrdersArrivalScene","LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
+local function message()
+    local value=player:GetAttribute("LastOrdersMessage")
+    lastFeedback=if typeof(value)=="string" then value else ""
+    feedbackUntil=if lastFeedback~="" then os.clock()+5 else 0
+    update()
+end
+local function toggleDetails() expanded=not expanded expandUntil=0 update() end
+toggle.Activated:Connect(toggleDetails)
+iconButton.Activated:Connect(toggleDetails)
+close.Activated:Connect(function() note.Visible=false update() end)
+local function readNote()
+    local serial=player:GetAttribute("LastOrdersNoteSerial")
+    if serial==noteSerial then return end noteSerial=serial
+    local text=player:GetAttribute("LastOrdersNoteText")
+    if typeof(text)=="string" and text~="" then task.defer(function() noteText.Text=text note.Visible=true feedbackUntil=0 end) end
+end
+for _,name in {"LastOrdersHealth","LastOrdersHeld","LastOrdersProtected","LastOrdersArrivalScene","LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene","LastOrdersRevealScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
 player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(message)
-script.Destroying:Connect(function() messageVersion+=1 gui:Destroy() end)
+player:GetAttributeChangedSignal("LastOrdersNoteSerial"):Connect(readNote)
+local elapsed=0
+local connection=RunService.Heartbeat:Connect(function(dt) elapsed+=dt if elapsed&gt;.15 then elapsed=0 update() end end)
+script.Destroying:Connect(function() connection:Disconnect() gui:Destroy() end)
 update() message() gui.Parent=player:WaitForChild("PlayerGui")
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_10">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_14">
+          <Properties>
+            <string name="Name">MonsterAudio</string>
+            <string name="Source">--!strict
+-- A cheap listener-to-monster occlusion sample preserves spatial cues through the pub.
+local Audio={}
+function Audio.new(root: BasePart,sounds: {Sound})
+    local filters: {[Sound]: EqualizerSoundEffect}={}
+    local base: {[Sound]: number}={}
+    for _,sound in sounds do
+        base[sound]=sound.Volume
+        local eq=Instance.new("EqualizerSoundEffect") eq.Name="PubOcclusion" eq.Parent=sound filters[sound]=eq
+    end
+    local elapsed=0
+    return function(character: Model?,dt: number)
+        elapsed+=dt if elapsed&lt;.2 then return end elapsed=0
+        local listener=if character then character:FindFirstChild("Head") else nil
+        if not listener or not listener:IsA("BasePart") then return end
+        local cast=RaycastParams.new() cast.FilterType=Enum.RaycastFilterType.Exclude cast.FilterDescendantsInstances={root,character :: Model}
+        local blocked=workspace:Raycast(listener.Position,root.Position-listener.Position,cast)~=nil
+        local otherFloor=math.abs(listener.Position.Y-root.Position.Y)&gt;9
+        local gain=if otherFloor then .28 elseif blocked then .48 else 1
+        for sound,eq in filters do
+            sound.Volume=base[sound]*gain
+            eq.HighGain,eq.MidGain=if blocked then -16 else 0,if otherFloor then -8 elseif blocked then -3 else 0
+        end
+    end
+end
+return Audio
+</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_15">
           <Properties>
             <string name="Name">PropRenderer</string>
             <string name="Source">--!strict
@@ -1953,7 +2296,7 @@ return Renderer
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_11">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_16">
           <Properties>
             <string name="Name">SkyLightning</string>
             <string name="Source">--!strict
@@ -1997,7 +2340,7 @@ return Sky
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_12">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_17">
           <Properties>
             <string name="Name">Storm</string>
             <string name="Source">--!strict
@@ -2052,7 +2395,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     if coverTime&gt;=0.5 then
         coverTime=0 coverCast.FilterDescendantsInstances={character,folder}
         inside=workspace:Raycast(root.Position+Vector3.new(0,1,0),Vector3.new(0,100,0),coverCast)~=nil
-        rainSound.Volume=if inside then 0.025 else 0.12
+        rainSound.Volume=if inside then 0.035 else 0.16
     end
     if accumulator&gt;=1/30 then
         rain.step(root.Position,character,accumulator) accumulator=0
@@ -2068,14 +2411,14 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         flash.Brightness=if inside then 0 else 0.09
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
-            if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end
+            if alive then thunder.Volume=if inside then 0.1 else 0.22 thunder:Play() end
         end)
     end
 end)
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_13">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_18">
           <Properties>
             <string name="Name">StormRain</string>
             <string name="Source">--!strict
@@ -2121,7 +2464,7 @@ return Rain
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_14">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_19">
           <Properties>
             <string name="Name">Survival</string>
             <string name="Source">--!strict
@@ -2130,22 +2473,10 @@ local Players=game:GetService("Players")
 local StarterGui=game:GetService("StarterGui")
 if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
 local player=Players.LocalPlayer
-local UserInputService=game:GetService("UserInputService")
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersSurvival",false,20
 local UI=require(script.Parent.TavernUI)
-local bar=UI.frame(gui,"HealthBar")
-bar.AnchorPoint,bar.Position=Vector2.new(.5,1),UDim2.new(.5,0,1,-20)
-bar.Size=UDim2.fromOffset(244,62)
-local title=Instance.new("TextLabel") title.Name,title.Size,title.Position="Status",UDim2.new(1,-20,0,26),UDim2.fromOffset(10,5)
-title.BackgroundTransparency,title.FontFace,title.TextSize=1,UI.Body,15 title.Parent=bar
-local segments: {Frame}={}
-for i=1,2 do
-    local segment=Instance.new("Frame") segment.Name="Hit"..i
-    segment.Size,segment.Position=UDim2.new(.5,-15,0,9),UDim2.new((i-1)*.5,10,0,40)
-    segment.BorderSizePixel,segment.Parent=0,bar
-    local round=Instance.new("UICorner") round.CornerRadius,round.Parent=UDim.new(0,2),segment
-    table.insert(segments,segment)
-end
+local dial=require(script.Parent.HealthDial).new(gui)
+local bar=dial.frame
 local overlay=Instance.new("Frame") overlay.Name,overlay.Size="GameOver",UDim2.fromScale(1,1)
 overlay.BackgroundColor3,overlay.BackgroundTransparency,overlay.Visible=UI.Ink,.02,false overlay.BorderSizePixel=0
 UI.ending(overlay,true)
@@ -2159,24 +2490,17 @@ local function update()
     local health=if typeof(value)=="number" then math.clamp(value,0,2) else 2
     local held=player:GetAttribute("LastOrdersHeld")==true
     local gameOver=player:GetAttribute("LastOrdersGameOver")==true
-    local protected=player:GetAttribute("LastOrdersProtected")==true
-    title.Text=if held then (if health&gt;0 then "CAUGHT — ONE HIT LEFT" else "CAUGHT AGAIN")
-        elseif protected then "1/2 HEALTH — GET AWAY!" else "HEALTH "..health.."/2"
-    title.TextColor3=if health==2 then UI.Ivory else Color3.fromRGB(255,185,100)
-    for i,segment in segments do
-        segment.BackgroundColor3=if i&gt;health then Color3.fromRGB(60,47,48)
-            elseif health==2 then UI.Brass else Color3.fromRGB(231,159,70)
-    end
+    dial.update(health)
     local driving=player:GetAttribute("LastOrdersDriving")==true
-    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving and player:GetAttribute("LastOrdersArrivalScene")~=true and player:GetAttribute("LastOrdersEntryScene")~=true
-    bar.Position=UDim2.new(.5,0,1,if UserInputService.TouchEnabled then -90 else -20)
-    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true or player:GetAttribute("LastOrdersArrivalScene")==true
+    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving and player:GetAttribute("LastOrdersArrivalScene")~=true and player:GetAttribute("LastOrdersEntryScene")~=true and player:GetAttribute("LastOrdersRevealScene")~=true
+    bar.AnchorPoint,bar.Position=Vector2.zero,UDim2.fromOffset(12,8)
+    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true or player:GetAttribute("LastOrdersArrivalScene")==true or player:GetAttribute("LastOrdersRevealScene")==true
     if locked~=movementLocked then
         movementLocked=locked
         if locked then controls:Disable() else controls:Enable() end
     end
 end
-for _,name in {"LastOrdersArrivalScene","LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
+for _,name in {"LastOrdersRevealScene","LastOrdersArrivalScene","LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
     player:GetAttributeChangedSignal(name):Connect(update)
 end
 script.Destroying:Connect(function()
@@ -2188,7 +2512,7 @@ update()
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_15">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_20">
           <Properties>
             <string name="Name">TavernUI</string>
             <string name="Source">--!strict
@@ -2245,7 +2569,7 @@ return UI
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_16">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_21">
           <Properties>
             <string name="Name">WindowLightning</string>
             <string name="Source">--!strict
@@ -2627,7 +2951,7 @@ return table.freeze({
     Title = "The Chuggernaught: Last Orders",
     Objectives = table.freeze({
         [0] = "Halloween dare: enter The Firefly Tavern and get its lights working.",
-        "Read the warning at the bar.",
+        "Read the staff note at the bar.",
         "Restore power at the lit panel on the cellar's west wall.",
         "Find the brass exit key on a bedroom dresser or the downstairs office desk.",
         "Unlock the emergency exit with the key.",
@@ -2635,11 +2959,12 @@ return table.freeze({
         "Drive away from The Firefly Tavern.",
         "YOU SURVIVED LAST ORDERS!",
     }),
+    StaffNote = "The emergency exit is locked. Restore the lights at the cellar panel, then search the guest rooms and office for its key.",
     InteractionDistance = 12,
     MonsterSpeed = 9.5,
     InvestigateSpeed = 12,
     SearchSpeed = 14.5,
-    MonsterRevealSeconds = 3.5,
+    MonsterRevealSeconds = 4.5,
     MonsterChugSeconds = 2.8,
     MonsterDrinkInterval = 20,
     MonsterMaxDrinkBoosts = 3,
@@ -2657,6 +2982,7 @@ return table.freeze({
     FinaleSpeed = 20,
     DriveSeconds = 5,
     EntrySceneSeconds = 1,
+    ArrivalSceneSeconds = 10,
     SightDistance = 75,
     SightPeripheralDistance = 8,
     SightConeCosine = 0.35,
@@ -3451,11 +3777,6 @@ function Dressing.build(map: Folder)
     end end
     local loose=map.CellarDressing:FindFirstChild("LooseCellarCrate") :: BasePart
     add("ClosedCellarCrate",loose.CFrame*CFrame.new(0,-2,0),Vector3.new(3.5/2.18,4/1.635,3.5/1.649),{loose},loose,"Crate")
-    add("CellarSign",CFrame.new(44,10,9.1),Vector3.one*1.8)
-    -- The obsolete lodging sign is stored in the cellar, not advertising the new arrival.
-    add("RoomsAvailableSign",CFrame.new(71.3,-9,-54)*CFrame.Angles(0,-math.pi/2,0),Vector3.one*1.5)
-    -- Preserve the original blank sign artwork in storage; the branded live board uses readable lettering.
-    add("PubNameSign",CFrame.new(71.3,-7,-59)*CFrame.Angles(0,-math.pi/2,0),Vector3.new(2,1,1))
     local bell=map.Bell :: BasePart
     add("ServiceBell",CFrame.new(-20,4.62,17),nil,{bell},bell,"Bell")
     local key=map.OfficeKey :: BasePart
@@ -3658,20 +3979,11 @@ function Cellar.build(map: Folder)
     end
     local crate=solid("CellarCrateCollider",Vector3.new(3.5,4,3.5),Vector3.new(58,-13.5,-51)) crate.Transparency=1
     detail("LooseCellarCrate",crate.Size,crate.Position,Color3.fromRGB(89,55,34))
-    label("CellarReturnSign","STAIRS UP\nKEEP BOTH AISLES CLEAR",Vector3.new(36,-5,-25),15,2.5,0)
-    label("CellarAisleSign","STAIRS UP",Vector3.new(69,-8,-29),8,1.8,math.pi/2)
-    label("PowerDirectionSign","POWER PANEL  &lt;\nWEST WALL",Vector3.new(35,-8.5,-29),12,2.5,0)
-    label("MaintenanceSign","POWER PANEL\nTHREE SWITCHES + MAIN LEVER",Vector3.new(25.5,-3.5,-53),18,2,math.pi/2)
     local panel=solid("CellarPowerPanel",Vector3.new(0.8,7,20),Vector3.new(24.9,-10.2,-51))
     panel.Color,panel.Material=Color3.fromRGB(52,62,66),Enum.Material.Metal
     for _,z in {-61,-41} do
         detail("PanelSafetyTrim",Vector3.new(0.2,6.8,0.25),Vector3.new(25.4,-10.2,z),Color3.fromRGB(229,168,57))
     end
-    local note=label("CellarInstructions","RESTORE CIRCUITS IN ORDER\nCELLAR FIRST\nGUEST ROOMS BEFORE THE BAR\nMAIN SUPPLY LAST",Vector3.new(25.45,-6.7,-53),15,3.3,math.pi/2)
-    note.CanQuery=true
-    note.Parent=map
-    local read=Instance.new("ProximityPrompt") read.ActionText,read.ObjectText="Read instructions","Maintenance card"
-    read.MaxActivationDistance,read.RequiresLineOfSight,read.Parent=10,false,note
     local function station(name: string,text: string,z: number): Part
         local p=Instance.new("Part") p.Name,p.Size,p.Position=name,Vector3.new(0.8,1.8,2.4),Vector3.new(26,-11.6,z)
         p.Anchored,p.CanCollide,p.Color,p.Material=true,false,Color3.fromRGB(211,128,40),Enum.Material.Metal
@@ -3680,7 +3992,7 @@ function Cellar.build(map: Folder)
         -- Third-person camera occlusion must not conceal the controls; server eye rays still validate use.
         prompt.MaxActivationDistance,prompt.HoldDuration,prompt.RequiresLineOfSight=6,0.25,false
         prompt.Enabled,prompt.Parent=false,p
-        label("BreakerLabel",text,Vector3.new(26.5,-9.6,z),4.5,1.1,math.pi/2)
+        label("BreakerLabel",text,Vector3.new(26.5,-9.6,z),3.4,.6,math.pi/2)
         local handle=detail(name.."Handle",Vector3.new(0.7,1.4,0.5),Vector3.new(26.9,-11.8,z),Color3.fromRGB(239,186,70))
         handle.Material=Enum.Material.Metal
         local indicator=detail(name.."Indicator",Vector3.new(0.2,0.5,0.5),Vector3.new(26.6,-11.1,z+0.75),Color3.fromRGB(77,63,45))
@@ -3694,7 +4006,6 @@ function Cellar.build(map: Folder)
     main.Size,main.Color=Vector3.new(0.8,2.4,2.4),Color3.fromRGB(104,44,35)
     local mainHandle=decor:FindFirstChild("CellarFuseBoxHandle") :: BasePart
     mainHandle.Size,mainHandle.Color=Vector3.new(0.8,1.7,0.6),Color3.fromRGB(210,62,43)
-    label("MainSupplyStatus","NOT READY\n0/3 CIRCUITS",Vector3.new(26.6,-8,-43),4.5,1.4,math.pi/2)
     local mainPrompt=main:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
     mainPrompt.ActionText,mainPrompt.HoldDuration="Pull main lever",0.4
     local monster=Instance.new("Part") monster.Name,monster.Size,monster.Position="ChuggernaughtPlaceholder",Vector3.new(4,8,4),Cellar.MonsterHome
@@ -3726,7 +4037,6 @@ return Cellar
 local Sequence=require(script.Parent.BreakerSequence)
 local TweenService=game:GetService("TweenService")
 local Power={}
-Power.Instructions="CELLAR FIRST. GUEST ROOMS BEFORE THE BAR. MAIN SUPPLY LAST."
 local circuits={"Cellar","Guest","Bar"}
 function Power.new(map: Folder)
     local sequence=Sequence.new()
@@ -3749,9 +4059,9 @@ function Power.new(map: Folder)
         s.RollOffMinDistance,s.RollOffMaxDistance,s.Parent=7,70,parent return s
     end
     -- Existing bundled local placeholders; no asset uploads.
-    local click=sound("BreakerClunk",panel,"rbxasset://sounds/action_footsteps_plastic.mp3",0.5,0.6)
-    local thud=sound("BarrelShift",crate,"rbxasset://sounds/action_footsteps_plastic.mp3",0.7,0.4)
-    local glug=sound("CellarGlug",cue.Parent :: Instance,"rbxasset://sounds/impact_water.mp3",0.65,0.65)
+    local click=sound("BreakerClunk",panel,"rbxasset://sounds/action_footsteps_plastic.mp3",0.4,0.6)
+    local thud=sound("BarrelShift",crate,"rbxasset://sounds/action_footsteps_plastic.mp3",0.55,0.4)
+    local glug=sound("CellarGlug",cue.Parent :: Instance,"rbxasset://sounds/impact_water.mp3",0.5,0.65)
     local tween: Tween?=nil
     local wrong: string?=nil
     local controller={}
@@ -3766,10 +4076,6 @@ function Power.new(map: Folder)
         cue.Brightness=if sequence.powered() then 2.6 elseif progress&gt;0 then 1.2+progress*0.3 else 0
         panel:SetAttribute("BreakerProgress",progress)
         panel:SetAttribute("Powered",sequence.powered())
-        local status=if sequence.powered() then "POWER RESTORED" elseif progress==3 then "READY\nPULL MAIN LEVER" else "NOT READY\n"..progress.."/3 CIRCUITS"
-        for _,obj in (decor:WaitForChild("MainSupplyStatus")):GetDescendants() do
-            if obj:IsA("TextLabel") then obj.Text=status end
-        end
         for i,name in names do
             local prompt=(map:FindFirstChild(name) :: BasePart):FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
             prompt.ObjectText=if i==4 then (if progress==3 then "MAIN SUPPLY — READY" else "MAIN SUPPLY — "..progress.."/3 CIRCUITS")
@@ -3793,7 +4099,7 @@ function Power.new(map: Folder)
         if name=="CellarFuseBox" then
             if not sequence.pullMain() then
                 click.PlaybackSpeed=0.45 click:Play()
-                return false,"The main supply is not ready. "..Power.Instructions
+                return false,"The main supply is not ready. Set the three circuits first."
             end
             wrong=nil apply()
             return true,"The lights are back on. Something is waking up."
@@ -3809,7 +4115,7 @@ function Power.new(map: Folder)
         if not accepted then
             if tween then tween:Cancel() tween=nil end
             crate.CFrame=crateHome thud:Stop() glug:Stop()
-            return false,"Wrong circuit. Sequence reset. Cellar first; guest rooms before the bar."
+            return false,"Wrong circuit. Sequence reset. Try a different order."
         end
         local progress=sequence.progress()
         if progress==1 then return false,"Cellar circuit set. A light comes on behind the barrels."
@@ -4128,11 +4434,11 @@ function Journey.new(map: Folder,clock: (() -&gt; number)?)
         if p:IsA("BasePart") and (p.Name=="Tyre" or p.Name=="WheelHub") then wheels[p]=parked:ToObjectSpace(p.CFrame) end
     end
     local crash=Instance.new("Sound") crash.Name,crash.SoundId="EntranceCrash","rbxasset://sounds/impact_explosion_03.mp3"
-    crash.Volume,crash.PlaybackSpeed,crash.RollOffMaxDistance,crash.Parent=0.7,0.75,180,beam
+    crash.Volume,crash.PlaybackSpeed,crash.RollOffMaxDistance,crash.Parent=0.65,0.75,120,beam
     local doorSound=Instance.new("Sound") doorSound.Name,doorSound.SoundId="ExitClatter","rbxasset://sounds/impact_explosion_03.mp3"
-    doorSound.Volume,doorSound.PlaybackSpeed,doorSound.RollOffMaxDistance,doorSound.Parent=0.35,1.1,150,map.ExitDoor
+    doorSound.Volume,doorSound.PlaybackSpeed,doorSound.RollOffMaxDistance,doorSound.Parent=0.3,1.1,90,map.ExitDoor
     local engine=Instance.new("Sound") engine.Name,engine.SoundId="CarEngine","rbxasset://sounds/action_swim.mp3"
-    engine.Volume,engine.PlaybackSpeed,engine.Looped,engine.RollOffMaxDistance,engine.Parent=0.15,0.45,true,80,car.PrimaryPart
+    engine.Volume,engine.PlaybackSpeed,engine.Looped,engine.RollOffMaxDistance,engine.Parent=0.12,0.45,true,65,car.PrimaryPart
     local function lights(enabled: boolean)
         for _,p in car:GetChildren() do
             if p:IsA("BasePart") and (p.Name=="Headlight" or p.Name=="RearLamp") then
@@ -4196,6 +4502,7 @@ function Journey.new(map: Folder,clock: (() -&gt; number)?)
             if humanoid.Parent then humanoid.WalkSpeed,humanoid.JumpPower,humanoid.JumpHeight,humanoid.AutoRotate,humanoid.Sit=speed,jumpPower,jumpHeight,rotate,sit end
         end
     end
+    function controller.finishDrive() if driving then driveAt=time()-Config.DriveSeconds end end
     function controller.stepDrive(): boolean
         if not driving then return false end
         local elapsed=math.max(0,time()-driveAt)
@@ -4392,7 +4699,7 @@ local exitDoor = map:WaitForChild("ExitDoor") :: Part
 local spawn = map:WaitForChild("PrototypeSpawn") :: SpawnLocation
 local bell = map:WaitForChild("Bell") :: Part
 local bellSound=Instance.new("Sound") bellSound.Name,bellSound.SoundId="BellRing","rbxasset://sounds/volume_slider.ogg"
-bellSound.Volume,bellSound.PlaybackSpeed,bellSound.RollOffMinDistance,bellSound.RollOffMaxDistance=.8,1.35,10,90
+bellSound.Volume,bellSound.PlaybackSpeed,bellSound.RollOffMinDistance,bellSound.RollOffMaxDistance=.65,1.35,10,90
 bellSound.Parent=bell
 local lastBell=-math.huge
 local lights: {PointLight} = {}
@@ -4404,17 +4711,26 @@ end
 local state = RunState.new()
 local activePlayer: Player? = nil
 local graceUntil = 0
-local arrivalUntil=0
-local arrivalSeen=false
-local skipArrival=Instance.new("RemoteEvent") skipArrival.Name,skipArrival.Parent="SkipArrival",game.ReplicatedStorage.HalloweenShared
-skipArrival.OnServerEvent:Connect(function(player)
-    if player~=activePlayer or state.stage~=0 then return end
-    arrivalUntil=0 player:SetAttribute("LastOrdersArrivalScene",false)
+local SceneHistory=require(script.Parent.SceneHistory)
+local Director=require(script.Parent.SceneDirector)
+local scenes: any=nil
+local noteSerial=0
+local sceneRequest=Instance.new("RemoteEvent") sceneRequest.Name,sceneRequest.Parent="SceneRequest",game.ReplicatedStorage.HalloweenShared
+sceneRequest.OnServerEvent:Connect(function(player,action,name)
+    if player~=activePlayer or not scenes or typeof(action)~="string" or typeof(name)~="string" then return end
+    scenes.request(action,name)
 end)
+local function showNote(text: string)
+    if not activePlayer then return end
+    noteSerial+=1
+    activePlayer:SetAttribute("LastOrdersNoteText",text)
+    activePlayer:SetAttribute("LastOrdersNoteSerial",noteSerial)
+end
 local function updateVitals()
     local player=activePlayer
     if not player then return end
-    player:SetAttribute("LastOrdersArrivalScene",os.clock()&lt;arrivalUntil)
+    player:SetAttribute("LastOrdersArrivalScene",scenes~=nil and scenes.active("Arrival"))
+    player:SetAttribute("LastOrdersRevealScene",scenes~=nil and scenes.active("Awakening"))
     player:SetAttribute("LastOrdersDriving",state.stage&gt;=6)
     player:SetAttribute("LastOrdersEntryScene",journey.entryActive())
     player:SetAttribute("LastOrdersDriveStarted",journey.driveStarted())
@@ -4446,7 +4762,7 @@ local function update(message: string?)
     end
 end
 local function reset(message: string?)
-    arrivalUntil=0
+    if scenes then scenes.cancel() end
     hold.release()
     survival.reset()
     journey.reset()
@@ -4470,29 +4786,42 @@ replay.OnServerEvent:Connect(function(player)
     if player~=activePlayer or state.stage~=7 then return end
     reset(require(script.Parent.Journey).Intro)
     if player.Character then player.Character:PivotTo(spawn.CFrame+Vector3.new(0,4,0)) end
+    if scenes then scenes.start("Arrival",Config.ArrivalSceneSeconds) updateVitals() end
 end)
 local function join(player: Player)
     if activePlayer then
-        player:SetAttribute("LastOrdersMessage", "This prototype supports one player per server.")
+        player:Kick("This is a solo game. Please join another server for your own run.")
         return
     end
     activePlayer = player
-    arrivalSeen=false
+    scenes=nil
+    local flags=SceneHistory.load(player.UserId)
+    if activePlayer~=player or player.Parent~=Players then return end
+    scenes=Director.new(player,flags,function(name,skipped)
+        if name=="Awakening" then encounter.finishReveal() graceUntil=os.clock()+.8
+        elseif name=="Escape" and skipped then journey.finishDrive() end
+    end,function(seen) SceneHistory.save(player.UserId,seen) end)
     player.RespawnLocation = spawn
-    player.CharacterAdded:Connect(function(character)
+    local handledCharacter: Model?=nil
+    local function characterAdded(character: Model)
+        if handledCharacter==character then return end
+        handledCharacter=character
         player.RespawnLocation = spawn
         reset(require(script.Parent.Journey).Intro)
+        local humanoid=character:WaitForChild("Humanoid",10)
+        if humanoid and humanoid:IsA("Humanoid") then humanoid.Died:Connect(function()
+            if character==player.Character and scenes then scenes.cancel() updateVitals() end
+        end) end
         local root=character:WaitForChild("HumanoidRootPart",10)
         if root and character==player.Character then
             character:PivotTo(spawn.CFrame+Vector3.new(0,3,0))
-            if not arrivalSeen then
-                arrivalSeen=true arrivalUntil=os.clock()+4
-                player:SetAttribute("LastOrdersArrivalStarted",workspace:GetServerTimeNow())
-                updateVitals()
-            end
+            scenes.start("Arrival",Config.ArrivalSceneSeconds)
+            updateVitals()
         end
-    end)
+    end
+    player.CharacterAdded:Connect(characterAdded)
     reset(require(script.Parent.Journey).Intro)
+    if player.Character then task.spawn(characterAdded,player.Character) end
 end
 Players.PlayerAdded:Connect(join)
 Players.PlayerRemoving:Connect(function(player)
@@ -4503,7 +4832,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 for _, player in Players:GetPlayers() do join(player) end
 local stations = { FrontEntrance = 0, EscapeCar = 5, Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
-    CellarBreakerBar = 2, CellarInstructions = 0, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
+    CellarBreakerBar = 2, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
 for name, expected in stations do
     local station = map:FindFirstChild(name,true) :: Part
     local prompt = station:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
@@ -4512,7 +4841,7 @@ for name, expected in stations do
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health &lt;= 0 then return end
-        if survival.locked() or journey.entryActive() or os.clock()&lt;arrivalUntil or state.stage&gt;=6 then return end
+        if not scenes or survival.locked() or journey.entryActive() or (scenes and scenes.active()) or state.stage&gt;=6 then return end
         if (root.Position - station.Position).Magnitude &gt; Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -4531,15 +4860,12 @@ for name, expected in stations do
             return
         end
         if name == "Warning" and state.stage &gt; 1 then
-            update("NEVER LET HIM FINISH HIS DRINK.")
-            return
-        end
-        if name == "CellarInstructions" then
-            update(require(script.Parent.CellarPower).Instructions)
+            showNote(Config.StaffNote)
+            update(Config.StaffNote)
             return
         end
         if string.sub(name, 1, 13) == "CellarBreaker" then
-            if state.stage ~= 2 then update("Read the warning before restoring power.") return end
+            if state.stage ~= 2 then update("Read the staff note before restoring power.") return end
             local _, message = power.use(name)
             update(message)
             return
@@ -4569,6 +4895,7 @@ for name, expected in stations do
         RunState.advance(state, expected)
         if expected==5 then
             survival.finish() encounter.stop() journey.beginDrive(character,root,humanoid)
+            scenes.start("Escape",Config.DriveSeconds)
             update("You made it to the car. Get out of here!") return
         elseif expected==4 then
             journey.openExit() navigation.refresh()
@@ -4580,12 +4907,14 @@ for name, expected in stations do
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude &gt; 0.01 then monster.CFrame = CFrame.lookAt(monster.Position, monster.Position + flat.Unit) end
             encounter.wake()
+            scenes.start("Awakening",Config.MonsterRevealSeconds)
             graceUntil = os.clock() + Config.MonsterRevealSeconds
             update("POWER RESTORED! He's waking beyond the barrel rack. Get to the stairs!")
         elseif expected == 3 then
             update("You have the exit key. Get to the emergency exit!")
         elseif expected == 1 then
-            update("NEVER LET HIM FINISH HIS DRINK.")
+            showNote(Config.StaffNote)
+            update(Config.StaffNote)
         else
             update()
         end
@@ -4593,7 +4922,10 @@ for name, expected in stations do
 end
 RunService.Heartbeat:Connect(function(dt: number)
     local player = activePlayer
-    if not player or state.stage==7 then return end
+    if not player then return end
+    if scenes then scenes.step() end
+    updateVitals()
+    if state.stage==7 then return end
     local character = player.Character
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
@@ -4607,16 +4939,17 @@ RunService.Heartbeat:Connect(function(dt: number)
     end
     if state.stage==0 then
         updateVitals()
-        if os.clock()&lt;arrivalUntil then return end
+        if (scenes and scenes.active()) then return end
         if journey.crossed(root.Position) then
             RunState.advance(state,0) journey.collapse() navigation.refresh()
-            update("The entrance beam has fallen! Find another way out. Read the warning at the bar.")
+            update("The entrance beam has fallen! Find another way out. Read the staff note at the bar.")
         end
         return
     elseif state.stage==6 then
         if journey.stepDrive() then RunState.advance(state,6) update("You survived Last Orders. The dare is over.") end
         return
     elseif state.stage&lt;3 then updateVitals() return end
+    if scenes and scenes.active("Awakening") then return end
     hold.step()
     local event=survival.step()
     if event=="Restart" then
@@ -4709,6 +5042,9 @@ function Encounter.new(root: BasePart, clock: (() -&gt; number)?)
     function controller.rally()
         finale=true nextDrink=math.huge
         if mode=="Chug" then setMode("Search") end
+    end
+    function controller.finishReveal()
+        if mode=="Reveal" then nextDrink=time()+Config.MonsterDrinkInterval setMode("Patrol") end
     end
     function controller.stop() setMode("Stopped") end
     function controller.active(): boolean
@@ -5437,7 +5773,6 @@ function Map.build(): Folder
     end
     sign("HallLabel", "OFFICE  /  KITCHEN", Vector3.new(-8, 10, -38.9), 14).Orientation = Vector3.new(0, 180, 0)
     sign("SnugLabel", "THE SNUG", Vector3.new(-34, 10, -15.2), 12).Orientation = Vector3.new(0, 180, 0)
-    sign("CellarLabel", "CELLAR\nSTAIRS DOWN", Vector3.new(44, 6, 12), 8).Orientation = Vector3.new(0, 180, 0)
     require(script.Parent.CellarMap).build(folder)
     -- Low furniture leaves a generous route through each room.
     part("Bar", Vector3.new(18, 4, 4), Vector3.new(-27, 2.5, 17), wood)
@@ -5449,10 +5784,10 @@ function Map.build(): Folder
     end
     sign("PubName", "THE FIREFLY TAVERN", Vector3.new(-22, 11, 9), 23).Orientation = Vector3.new(0, 180, 0)
     -- Put the note on the customer-facing side, clear of the counter and bar top.
-    local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read note", Color3.fromRGB(230, 215, 170))
+    local warning = station("Warning", Vector3.new(-27, 3.2, 19.4), "Read staff note", Color3.fromRGB(230, 215, 170))
     warning.Size, warning.Material = Vector3.new(5, 1.8, 0.12), Enum.Material.SmoothPlastic
     local warningPrompt = warning:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
-    warningPrompt.ObjectText = "Warning note"
+    warningPrompt.ObjectText = "Staff note"
     -- Server distance and eye-level wall checks still apply; camera occlusion must not hide this prompt.
     warningPrompt.RequiresLineOfSight = false
     local paper = Instance.new("SurfaceGui")
@@ -5464,7 +5799,7 @@ function Map.build(): Folder
     writing.BackgroundTransparency = 1
     writing.TextColor3 = Color3.fromRGB(35, 22, 24)
     writing.Font, writing.TextScaled = Enum.Font.GothamBold, true
-    writing.Text = "NEVER LET HIM\nFINISH HIS DRINK."
+    writing.Text = "EMERGENCY EXIT LOCKED\nRESTORE LIGHTS · FIND THE KEY"
     writing.Parent = paper
     station("Bell", Vector3.new(-20, 5, 17), "Ring bell", Color3.fromRGB(210, 160, 65))
     local key = station("OfficeKey", Vector3.new(-37, 4, -33), "Take exit key", Color3.fromRGB(240, 195, 65))
@@ -5778,8 +6113,6 @@ function Expansion.build(map: Folder)
         object.Position += Vector3.new(0, 0, 48)
     end
     label("GUEST ROOMS — UPSTAIRS", Vector3.new(27, 10, 41), 0, 19)
-    label("BAR  /  CELLAR", Vector3.new(6, 7, 41), 0, 12)
-    label("ROOMS 1–8\nSTAIRS UP", Vector3.new(43, 6, 80), 0, 8)
     -- First-floor slab and broad landing. No slab is placed across the stair opening.
     local upper = solid("GuestFloor", Vector3.new(96, 1, 80), Vector3.new(0, 16, 0), Enum.Material.WoodPlanks)
     upper.Color = wood
@@ -6168,6 +6501,101 @@ return RunState
       </Item>
       <Item class="ModuleScript" referent="RBXAssetIntegration0_30">
         <Properties>
+          <string name="Name">SceneDirector</string>
+          <string name="Source">--!strict
+-- Authoritative first-view eligibility, scene completion and uninterrupted skip holds.
+local Director={}
+type Flags={[string]: boolean}
+function Director.new(player: Player,seen: Flags,onEnd: (string,boolean)-&gt;(),onSeen: (Flags)-&gt;(),clock: (() -&gt; number)?)
+    local time=clock or os.clock
+    local scene=""
+    local endsAt,holdAt=0,0
+    local holding=false
+    local function publish()
+        player:SetAttribute("LastOrdersScene",scene)
+        player:SetAttribute("LastOrdersSceneSkippable",scene~="" and seen[scene]==true)
+    end
+    local function finish(skipped: boolean)
+        local name=scene
+        if name=="" then return end
+        scene="" holding=false publish()
+        if not skipped and not seen[name] then seen[name]=true onSeen(table.clone(seen)) end
+        onEnd(name,skipped)
+    end
+    local controller={}
+    function controller.start(name: string,duration: number)
+        scene=name endsAt=time()+duration holding=false
+        player:SetAttribute("LastOrdersSceneStarted",workspace:GetServerTimeNow())
+        player:SetAttribute("LastOrdersSceneDuration",duration)
+        publish()
+    end
+    function controller.active(name: string?): boolean return scene~="" and (name==nil or scene==name) end
+    function controller.step() if scene~="" and time()&gt;=endsAt then finish(false) end end
+    function controller.request(action: string,expected: string)
+        if scene=="" or scene~=expected or not seen[scene] then return end
+        if action=="Begin" then
+            if not holding then holding=true holdAt=time() end
+        elseif action=="Cancel" then holding=false
+        elseif action=="Finish" and holding and time()-holdAt&gt;=1 then finish(true) end
+    end
+    function controller.cancel() scene="" holding=false publish() end
+    function controller.completed(name: string): boolean return seen[name]==true end
+    publish()
+    return controller
+end
+return Director
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_31">
+        <Properties>
+          <string name="Name">SceneHistory</string>
+          <string name="Source">--!strict
+-- Only completed cinematic flags persist. Studio never touches live data stores.
+local RunService=game:GetService("RunService")
+local DataStoreService=game:GetService("DataStoreService")
+local History={}
+local keys={Arrival=true,Awakening=true,Escape=true}
+local pending=0
+local store=if RunService:IsStudio() then nil else DataStoreService:GetDataStore("LastOrdersSceneHistory_v1")
+function History.merge(old: any,seen: {[string]: boolean}): {[string]: boolean}
+    local merged: {[string]: boolean}={}
+    for name in keys do if seen[name] or (typeof(old)=="table" and old[name]==true) then merged[name]=true end end
+    return merged
+end
+function History.load(userId: number): {[string]: boolean}
+    local result: {[string]: boolean}={}
+    if not store or userId&lt;=0 then return result end
+    local ok,value=pcall(function() return store:GetAsync(tostring(userId)) end)
+    if ok and typeof(value)=="table" then
+        result=History.merge(value,{})
+    elseif not ok then warn("Scene history unavailable; first-view rules used for this session") end
+    return result
+end
+function History.save(userId: number,seen: {[string]: boolean})
+    if not store or userId&lt;=0 then return end
+    local snapshot=table.clone(seen)
+    pending+=1
+    task.spawn(function()
+        local ok=pcall(function()
+            store:UpdateAsync(tostring(userId),function(old)
+                return History.merge(old,snapshot)
+            end)
+        end)
+        pending-=1
+        if not ok then warn("Completed scene flags could not be saved; session flags remain available") end
+    end)
+end
+if store then game:BindToClose(function()
+    local deadline=os.clock()+12
+    while pending&gt;0 and os.clock()&lt;deadline do task.wait(.1) end
+end) end
+return History
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_32">
+        <Properties>
           <string name="Name">StaffStairs</string>
           <string name="Source">--!strict
 -- Enclosed rear service stair: upstairs corridor -&gt; kitchen, with a walking return below.
@@ -6273,7 +6701,7 @@ return Stairs
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_31">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_33">
         <Properties>
           <string name="Name">StormWindows</string>
           <string name="Source">--!strict
@@ -6359,7 +6787,7 @@ return Windows
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_32">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_34">
         <Properties>
           <string name="Name">TavernArchitecture</string>
           <string name="Source">--!strict
@@ -6481,7 +6909,7 @@ return Architecture
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_33">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_35">
         <Properties>
           <string name="Name">TavernSigns</string>
           <string name="Source">--!strict

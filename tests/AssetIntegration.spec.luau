@@ -1,7 +1,7 @@
 --!strict
 -- Run in Studio Edit with fresh server module clones. Fixture removed on pass/failure.
 local server=game.ServerScriptService.HalloweenServer:Clone()
-server.Name="AssetIntegrationSpecServer" server.Parent=game.ServerScriptService
+server.Name="AssetIntegrationSpecServer" server.Main.Enabled=false server.Parent=game.ServerScriptService
 local map: Folder?=nil
 local ok,err=pcall(function()
     map=require(server.PrototypeMap).build()
@@ -24,7 +24,7 @@ local ok,err=pcall(function()
             end
         end
     end
-    assert(count==164 and types.InnSingleBed==8 and types.InnWardrobe==8 and types.DresserMirror==8)
+    assert(count==194 and types.InnSingleBed==8 and types.InnWardrobe==8 and types.DresserMirror==8)
     for _,n in rooms do assert(n==1,"At most one cobweb candidate per bedroom") end
     local key=fixture.OfficeKey :: BasePart
     local placement=require(server.KeyPlacement).new(fixture,key)

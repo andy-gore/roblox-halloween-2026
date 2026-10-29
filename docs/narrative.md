@@ -11,6 +11,27 @@
 
 ---
 
+## Approved cellar wayfinding cleanup — 29 October 2026
+
+Remove the cellar entrance direction sign and floor chevrons. Existing lighting, stairs and control labels provide orientation. This supersedes earlier arrow/card directions below.
+
+## Approved discovery-based circuit puzzle — 29 October 2026
+
+The cellar maintenance-card interaction and reading overlay are removed. Players discover the circuit order through the controls, indicator lights and reset feedback. Early-main and wrong-order feedback must not reveal the solution. This supersedes the earlier card-led puzzle instructions below; original references remain preserved.
+
+## Approved final clarity and health refinements — 29 October 2026
+
+- Remove the player-facing “Never let him finish his drink” instruction. The bar staff note explains that the emergency exit is locked, power should be restored and the key found. The original warning remains below as historical narrative only.
+- Keep the cellar free of large direction/status boards. Subtle floor chevrons, lit controls and stair edges guide attention; the small maintenance card contains the circuit-order instructions.
+- Use a compact red health circle at the top left beside the objective. Each separated half is one health point; depleted halves are outlined. Damage wording is temporary.
+
+## Approved mobile and scene refinement — 29 October 2026
+
+- On phones, show a notebook objective icon with readable instructions available when tapped, alongside the compact red health circle. Keep reading notes available on demand.
+- Extend the opening to establish the storm, working car, Firefly sign and entrance. First scene viewings are mandatory; completed scenes can be skipped by a continuous one-second hold with circular feedback.
+- Remember only completed arrival/awakening/escape scene flags per account across visits; this is a limited exception to the no-progression-persistence scope. Interrupted scenes remain unseen.
+- Frame the Chuggernaught visibly during the protected awakening shot and return control safely. This supersedes the earlier limited camera glance.
+
 ## Approved pub name — 28 October 2026
 
 The pub is now **The Firefly Tavern**. This name supersedes The Crooked Tankard in the historical text below. The game title remains **The Chuggernaught: Last Orders**; original text and artwork are preserved.

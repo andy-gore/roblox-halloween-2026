@@ -12,9 +12,9 @@ local function sound(name: string,path: string,volume: number,pitch: number): So
     s.Parent=root return s
 end
 -- Bundled Roblox sounds verified locally; no uploaded sound IDs or invented voice assets.
-local stepSound=sound("HeavyFootsteps","rbxasset://sounds/action_footsteps_plastic.mp3",0.65,0.62)
-local drinkSound=sound("TankardGlug","rbxasset://sounds/impact_water.mp3",0.35,0.65)
-local grabSound=sound("GrabThud","rbxasset://sounds/action_footsteps_plastic.mp3",0.6,0.5)
+local stepSound=sound("HeavyFootsteps","rbxasset://sounds/action_footsteps_plastic.mp3",0.48,0.62)
+local drinkSound=sound("TankardGlug","rbxasset://sounds/impact_water.mp3",0.42,0.65)
+local grabSound=sound("GrabThud","rbxasset://sounds/action_footsteps_plastic.mp3",0.5,0.5)
 local caption=Instance.new("BillboardGui")
 caption.Name,caption.Size,caption.StudsOffsetWorldSpace="ChuggernaughtCaption",UDim2.fromOffset(260,50),Vector3.new(0,5.1,0)
 caption.MaxDistance,caption.Adornee,caption.Parent=70,root,rig.model
@@ -27,6 +27,8 @@ local last=displayed
 local facing=Vector3.new(0,0,1)
 local phase,lastStep,lastGlug=0,-1,-1
 local previousMode=""
+local lastFootfall=-math.huge
+local mix=require(script.Parent.MonsterAudio).new(root,{stepSound,drinkSound,grabSound})
 local lastChest: Vector3?=nil
 local connection: RBXScriptConnection? = nil
 connection=RunService.RenderStepped:Connect(function(dt: number)
@@ -34,6 +36,7 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
         if connection then connection:Disconnect() end
         rig.destroy() stepSound:Destroy() drinkSound:Destroy() grabSound:Destroy() return
     end
+    mix(Players.LocalPlayer.Character,dt)
     local mode=root:GetAttribute("MonsterMode")
     if typeof(mode)~="string" then mode="Dormant" end
     local started=root:GetAttribute("MonsterModeStarted")
@@ -83,7 +86,9 @@ connection=RunService.RenderStepped:Connect(function(dt: number)
     elseif mode=="Stunned" then chest=lastChest end
     rig.pose(Pose.frames(basis,phase,moving,mode,elapsed,duration,if typeof(chest)=="Vector3" then chest else nil),alpha,basis)
     local beat=math.floor(phase/math.pi)
-    if moving and beat~=lastStep and mode~="Dormant" then stepSound:Play() end
+    if moving and beat~=lastStep and mode~="Dormant" and os.clock()-lastFootfall>=.32 then
+        lastFootfall=os.clock() stepSound:Play()
+    end
     lastStep=beat
     if mode=="Reveal" or mode=="Chug" then
         local glug=math.floor((elapsed-0.85)/0.5)

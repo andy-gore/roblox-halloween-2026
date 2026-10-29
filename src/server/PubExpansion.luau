@@ -57,8 +57,6 @@ function Expansion.build(map: Folder)
         object.Position += Vector3.new(0, 0, 48)
     end
     label("GUEST ROOMS — UPSTAIRS", Vector3.new(27, 10, 41), 0, 19)
-    label("BAR  /  CELLAR", Vector3.new(6, 7, 41), 0, 12)
-    label("ROOMS 1–8\nSTAIRS UP", Vector3.new(43, 6, 80), 0, 8)
     -- First-floor slab and broad landing. No slab is placed across the stair opening.
     local upper = solid("GuestFloor", Vector3.new(96, 1, 80), Vector3.new(0, 16, 0), Enum.Material.WoodPlanks)
     upper.Color = wood

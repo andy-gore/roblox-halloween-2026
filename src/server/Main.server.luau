@@ -44,7 +44,7 @@ local exitDoor = map:WaitForChild("ExitDoor") :: Part
 local spawn = map:WaitForChild("PrototypeSpawn") :: SpawnLocation
 local bell = map:WaitForChild("Bell") :: Part
 local bellSound=Instance.new("Sound") bellSound.Name,bellSound.SoundId="BellRing","rbxasset://sounds/volume_slider.ogg"
-bellSound.Volume,bellSound.PlaybackSpeed,bellSound.RollOffMinDistance,bellSound.RollOffMaxDistance=.8,1.35,10,90
+bellSound.Volume,bellSound.PlaybackSpeed,bellSound.RollOffMinDistance,bellSound.RollOffMaxDistance=.65,1.35,10,90
 bellSound.Parent=bell
 local lastBell=-math.huge
 local lights: {PointLight} = {}
@@ -56,17 +56,26 @@ end
 local state = RunState.new()
 local activePlayer: Player? = nil
 local graceUntil = 0
-local arrivalUntil=0
-local arrivalSeen=false
-local skipArrival=Instance.new("RemoteEvent") skipArrival.Name,skipArrival.Parent="SkipArrival",game.ReplicatedStorage.HalloweenShared
-skipArrival.OnServerEvent:Connect(function(player)
-    if player~=activePlayer or state.stage~=0 then return end
-    arrivalUntil=0 player:SetAttribute("LastOrdersArrivalScene",false)
+local SceneHistory=require(script.Parent.SceneHistory)
+local Director=require(script.Parent.SceneDirector)
+local scenes: any=nil
+local noteSerial=0
+local sceneRequest=Instance.new("RemoteEvent") sceneRequest.Name,sceneRequest.Parent="SceneRequest",game.ReplicatedStorage.HalloweenShared
+sceneRequest.OnServerEvent:Connect(function(player,action,name)
+    if player~=activePlayer or not scenes or typeof(action)~="string" or typeof(name)~="string" then return end
+    scenes.request(action,name)
 end)
+local function showNote(text: string)
+    if not activePlayer then return end
+    noteSerial+=1
+    activePlayer:SetAttribute("LastOrdersNoteText",text)
+    activePlayer:SetAttribute("LastOrdersNoteSerial",noteSerial)
+end
 local function updateVitals()
     local player=activePlayer
     if not player then return end
-    player:SetAttribute("LastOrdersArrivalScene",os.clock()<arrivalUntil)
+    player:SetAttribute("LastOrdersArrivalScene",scenes~=nil and scenes.active("Arrival"))
+    player:SetAttribute("LastOrdersRevealScene",scenes~=nil and scenes.active("Awakening"))
     player:SetAttribute("LastOrdersDriving",state.stage>=6)
     player:SetAttribute("LastOrdersEntryScene",journey.entryActive())
     player:SetAttribute("LastOrdersDriveStarted",journey.driveStarted())
@@ -98,7 +107,7 @@ local function update(message: string?)
     end
 end
 local function reset(message: string?)
-    arrivalUntil=0
+    if scenes then scenes.cancel() end
     hold.release()
     survival.reset()
     journey.reset()
@@ -122,29 +131,42 @@ replay.OnServerEvent:Connect(function(player)
     if player~=activePlayer or state.stage~=7 then return end
     reset(require(script.Parent.Journey).Intro)
     if player.Character then player.Character:PivotTo(spawn.CFrame+Vector3.new(0,4,0)) end
+    if scenes then scenes.start("Arrival",Config.ArrivalSceneSeconds) updateVitals() end
 end)
 local function join(player: Player)
     if activePlayer then
-        player:SetAttribute("LastOrdersMessage", "This prototype supports one player per server.")
+        player:Kick("This is a solo game. Please join another server for your own run.")
         return
     end
     activePlayer = player
-    arrivalSeen=false
+    scenes=nil
+    local flags=SceneHistory.load(player.UserId)
+    if activePlayer~=player or player.Parent~=Players then return end
+    scenes=Director.new(player,flags,function(name,skipped)
+        if name=="Awakening" then encounter.finishReveal() graceUntil=os.clock()+.8
+        elseif name=="Escape" and skipped then journey.finishDrive() end
+    end,function(seen) SceneHistory.save(player.UserId,seen) end)
     player.RespawnLocation = spawn
-    player.CharacterAdded:Connect(function(character)
+    local handledCharacter: Model?=nil
+    local function characterAdded(character: Model)
+        if handledCharacter==character then return end
+        handledCharacter=character
         player.RespawnLocation = spawn
         reset(require(script.Parent.Journey).Intro)
+        local humanoid=character:WaitForChild("Humanoid",10)
+        if humanoid and humanoid:IsA("Humanoid") then humanoid.Died:Connect(function()
+            if character==player.Character and scenes then scenes.cancel() updateVitals() end
+        end) end
         local root=character:WaitForChild("HumanoidRootPart",10)
         if root and character==player.Character then
             character:PivotTo(spawn.CFrame+Vector3.new(0,3,0))
-            if not arrivalSeen then
-                arrivalSeen=true arrivalUntil=os.clock()+4
-                player:SetAttribute("LastOrdersArrivalStarted",workspace:GetServerTimeNow())
-                updateVitals()
-            end
+            scenes.start("Arrival",Config.ArrivalSceneSeconds)
+            updateVitals()
         end
-    end)
+    end
+    player.CharacterAdded:Connect(characterAdded)
     reset(require(script.Parent.Journey).Intro)
+    if player.Character then task.spawn(characterAdded,player.Character) end
 end
 Players.PlayerAdded:Connect(join)
 Players.PlayerRemoving:Connect(function(player)
@@ -155,7 +177,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 for _, player in Players:GetPlayers() do join(player) end
 local stations = { FrontEntrance = 0, EscapeCar = 5, Warning = 1, CellarFuseBox = 2, CellarBreakerCellar = 2, CellarBreakerGuest = 2,
-    CellarBreakerBar = 2, CellarInstructions = 0, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
+    CellarBreakerBar = 2, OfficeKey = 3, Bell = 0, EmergencyExit = 4 }
 for name, expected in stations do
     local station = map:FindFirstChild(name,true) :: Part
     local prompt = station:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
@@ -164,7 +186,7 @@ for name, expected in stations do
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
-        if survival.locked() or journey.entryActive() or os.clock()<arrivalUntil or state.stage>=6 then return end
+        if not scenes or survival.locked() or journey.entryActive() or (scenes and scenes.active()) or state.stage>=6 then return end
         if (root.Position - station.Position).Magnitude > Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -183,15 +205,12 @@ for name, expected in stations do
             return
         end
         if name == "Warning" and state.stage > 1 then
-            update("NEVER LET HIM FINISH HIS DRINK.")
-            return
-        end
-        if name == "CellarInstructions" then
-            update(require(script.Parent.CellarPower).Instructions)
+            showNote(Config.StaffNote)
+            update(Config.StaffNote)
             return
         end
         if string.sub(name, 1, 13) == "CellarBreaker" then
-            if state.stage ~= 2 then update("Read the warning before restoring power.") return end
+            if state.stage ~= 2 then update("Read the staff note before restoring power.") return end
             local _, message = power.use(name)
             update(message)
             return
@@ -221,6 +240,7 @@ for name, expected in stations do
         RunState.advance(state, expected)
         if expected==5 then
             survival.finish() encounter.stop() journey.beginDrive(character,root,humanoid)
+            scenes.start("Escape",Config.DriveSeconds)
             update("You made it to the car. Get out of here!") return
         elseif expected==4 then
             journey.openExit() navigation.refresh()
@@ -232,12 +252,14 @@ for name, expected in stations do
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude > 0.01 then monster.CFrame = CFrame.lookAt(monster.Position, monster.Position + flat.Unit) end
             encounter.wake()
+            scenes.start("Awakening",Config.MonsterRevealSeconds)
             graceUntil = os.clock() + Config.MonsterRevealSeconds
             update("POWER RESTORED! He's waking beyond the barrel rack. Get to the stairs!")
         elseif expected == 3 then
             update("You have the exit key. Get to the emergency exit!")
         elseif expected == 1 then
-            update("NEVER LET HIM FINISH HIS DRINK.")
+            showNote(Config.StaffNote)
+            update(Config.StaffNote)
         else
             update()
         end
@@ -245,7 +267,10 @@ for name, expected in stations do
 end
 RunService.Heartbeat:Connect(function(dt: number)
     local player = activePlayer
-    if not player or state.stage==7 then return end
+    if not player then return end
+    if scenes then scenes.step() end
+    updateVitals()
+    if state.stage==7 then return end
     local character = player.Character
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
@@ -259,16 +284,17 @@ RunService.Heartbeat:Connect(function(dt: number)
     end
     if state.stage==0 then
         updateVitals()
-        if os.clock()<arrivalUntil then return end
+        if (scenes and scenes.active()) then return end
         if journey.crossed(root.Position) then
             RunState.advance(state,0) journey.collapse() navigation.refresh()
-            update("The entrance beam has fallen! Find another way out. Read the warning at the bar.")
+            update("The entrance beam has fallen! Find another way out. Read the staff note at the bar.")
         end
         return
     elseif state.stage==6 then
         if journey.stepDrive() then RunState.advance(state,6) update("You survived Last Orders. The dare is over.") end
         return
     elseif state.stage<3 then updateVitals() return end
+    if scenes and scenes.active("Awakening") then return end
     hold.step()
     local event=survival.step()
     if event=="Restart" then

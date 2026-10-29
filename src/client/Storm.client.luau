@@ -50,7 +50,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     if coverTime>=0.5 then
         coverTime=0 coverCast.FilterDescendantsInstances={character,folder}
         inside=workspace:Raycast(root.Position+Vector3.new(0,1,0),Vector3.new(0,100,0),coverCast)~=nil
-        rainSound.Volume=if inside then 0.025 else 0.12
+        rainSound.Volume=if inside then 0.035 else 0.16
     end
     if accumulator>=1/30 then
         rain.step(root.Position,character,accumulator) accumulator=0
@@ -66,7 +66,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         flash.Brightness=if inside then 0 else 0.09
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
-            if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end
+            if alive then thunder.Volume=if inside then 0.1 else 0.22 thunder:Play() end
         end)
     end
 end)

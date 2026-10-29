@@ -27,6 +27,9 @@ function Encounter.new(root: BasePart, clock: (() -> number)?)
         finale=true nextDrink=math.huge
         if mode=="Chug" then setMode("Search") end
     end
+    function controller.finishReveal()
+        if mode=="Reveal" then nextDrink=time()+Config.MonsterDrinkInterval setMode("Patrol") end
+    end
     function controller.stop() setMode("Stopped") end
     function controller.active(): boolean
         return mode~="Dormant" and mode~="Reveal" and mode~="Stopped"

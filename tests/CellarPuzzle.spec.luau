@@ -14,7 +14,8 @@ local ok,err=pcall(function()
     local fuse=map.CellarFuseBox
     assert((fuse.Position-monster.Position).Magnitude>30,"Monster reveal must be separated from the panel")
     assert(map.CellarFloor.Size.X>=48 and map.CellarFloor.Size.Z>=70)
-    assert(map.CellarInstructions:FindFirstChildOfClass("ProximityPrompt"))
+    assert(not map:FindFirstChild("CellarLabel"),"No cellar entrance direction sign")
+    assert(not map:FindFirstChild("CellarInstructions"),"No reading overlay should obstruct the controls")
     assert(not select(1,power.use("CellarFuseBox")) and panel:GetAttribute("BreakerProgress")==0)
     power.available(true)
     for _,name in {"CellarBreakerCellar","CellarBreakerGuest","CellarBreakerBar"} do

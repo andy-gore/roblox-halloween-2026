@@ -1,48 +1,51 @@
 --!strict
--- A bounded, gentle hint towards the awakening. Normal camera/input remain in control.
-local RunService=game:GetService("RunService")
+-- Deliberate, collision-checked reveal; fade masks the cut instead of spinning the player.
 local Players=game:GetService("Players")
-local Input=game:GetService("UserInputService")
+local RunService=game:GetService("RunService")
+local TweenService=game:GetService("TweenService")
 if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
 local player=Players.LocalPlayer
-local root=workspace:WaitForChild("LastOrdersPrototype"):WaitForChild("ChuggernaughtPlaceholder") :: BasePart
-local seen: number?=nil
-local untilTime,budget=0,0
-local connections: {RBXScriptConnection}={}
-local function cancel() untilTime=0 end
--- Deliberate looking cancels the hint; walking does not lock or fight the view.
-table.insert(connections,Input.InputChanged:Connect(function(input)
-    if input.UserInputType==Enum.UserInputType.MouseMovement and input.Delta.Magnitude>2 then cancel()
-    elseif input.KeyCode==Enum.KeyCode.Thumbstick2 and input.Position.Magnitude>.15 then cancel() end
-end))
-table.insert(connections,Input.TouchMoved:Connect(cancel))
-table.insert(connections,player.CharacterRemoving:Connect(cancel))
-RunService:BindToRenderStep("LastOrdersCellarReveal",Enum.RenderPriority.Camera.Value+1,function(dt)
-    if not root:IsDescendantOf(workspace) then cancel() return end
-    local started=root:GetAttribute("MonsterModeStarted")
-    local mode=root:GetAttribute("MonsterMode")
-    if mode~="Reveal" then cancel() return end
-    if typeof(started)=="number" and started~=seen then
-        seen=started untilTime=os.clock()+1.3 budget=math.rad(65)
-    end
+local monster=workspace:WaitForChild("LastOrdersPrototype"):WaitForChild("ChuggernaughtPlaceholder") :: BasePart
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="AwakeningView",false,25
+local fade=Instance.new("Frame") fade.Name,fade.Size,fade.BackgroundColor3,fade.BorderSizePixel="Fade",UDim2.fromScale(1,1),Color3.new(),0
+fade.BackgroundTransparency,fade.Parent=1,gui gui.Parent=player:WaitForChild("PlayerGui")
+local saved: CFrame?=nil
+local subject: Instance?=nil
+local eye=Vector3.zero
+local tween: Tween?=nil
+local function restore()
+    if not saved then return end
     local camera=workspace.CurrentCamera
-    local character=player.Character
-    local playerRoot=if character then character:FindFirstChild("HumanoidRootPart") else nil
-    if os.clock()>=untilTime or budget<=0 or not camera or camera.CameraType~=Enum.CameraType.Custom
-        or not playerRoot or not playerRoot:IsA("BasePart") or playerRoot.Position.Y>=-6
-        or (playerRoot.Position-root.Position).Magnitude>=80 then return end
-    local cf=camera.CFrame
-    local delta=root.Position+Vector3.new(0,2,0)-cf.Position
-    if delta.Magnitude<.1 then return end
-    local angle=math.acos(math.clamp(cf.LookVector:Dot(delta.Unit),-1,1))
-    if angle<.01 then return end
-    local remaining=untilTime-os.clock()
-    local rate=math.rad(55)*math.clamp(remaining/.35,0,1)
-    local turn=math.min(angle,math.min(dt,.05)*rate,budget)
-    camera.CFrame=cf:Lerp(CFrame.lookAt(cf.Position,cf.Position+delta),turn/angle)
-    budget-=turn
+    if camera then
+        local character=player.Character
+        local live=if character then character:FindFirstChildOfClass("Humanoid") else nil
+        camera.CFrame=saved camera.CameraSubject=live or subject camera.CameraType=Enum.CameraType.Custom
+    end
+    saved=nil
+    if tween then tween:Cancel() end
+    fade.BackgroundTransparency=0
+    tween=TweenService:Create(fade,TweenInfo.new(.2),{BackgroundTransparency=1}) tween:Play()
+end
+RunService:BindToRenderStep("LastOrdersCellarReveal",Enum.RenderPriority.Camera.Value+1,function()
+    local camera=workspace.CurrentCamera
+    if not camera then return end
+    if player:GetAttribute("LastOrdersRevealScene")~=true or not monster:IsDescendantOf(workspace) then restore() return end
+    if not saved then
+        saved,subject=camera.CFrame,camera.CameraSubject
+        local focus=monster.Position+Vector3.new(0,1.5,0)
+        local desired=monster.Position+monster.CFrame.LookVector*12+monster.CFrame.RightVector*4+Vector3.new(0,2.5,0)
+        local cast=RaycastParams.new() cast.FilterType=Enum.RaycastFilterType.Exclude
+        cast.FilterDescendantsInstances=if player.Character then {player.Character,monster} else {monster}
+        local hit=workspace:Blockcast(CFrame.new(focus),Vector3.one*.6,desired-focus,cast)
+        eye=if hit then hit.Position+hit.Normal*.6 else desired
+        if (eye-focus).Magnitude<5 then eye=monster.Position+Vector3.new(-8,2,5) end
+    end
+    camera.CameraType=Enum.CameraType.Scriptable
+    local started=player:GetAttribute("LastOrdersSceneStarted")
+    local duration=player:GetAttribute("LastOrdersSceneDuration")
+    local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else 0
+    local seconds=if typeof(duration)=="number" then duration else 4.5
+    fade.BackgroundTransparency=math.min(math.clamp(elapsed/.2,0,1),math.clamp((seconds-elapsed)/.2,0,1))
+    camera.CFrame=CFrame.lookAt(eye,monster.Position+Vector3.new(0,1.5,0))
 end)
-script.Destroying:Connect(function()
-    RunService:UnbindFromRenderStep("LastOrdersCellarReveal")
-    for _,c in connections do c:Disconnect() end
-end)
+script.Destroying:Connect(function() restore() RunService:UnbindFromRenderStep("LastOrdersCellarReveal") gui:Destroy() end)

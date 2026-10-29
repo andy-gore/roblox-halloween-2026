@@ -26,11 +26,11 @@ function Journey.new(map: Folder,clock: (() -> number)?)
         if p:IsA("BasePart") and (p.Name=="Tyre" or p.Name=="WheelHub") then wheels[p]=parked:ToObjectSpace(p.CFrame) end
     end
     local crash=Instance.new("Sound") crash.Name,crash.SoundId="EntranceCrash","rbxasset://sounds/impact_explosion_03.mp3"
-    crash.Volume,crash.PlaybackSpeed,crash.RollOffMaxDistance,crash.Parent=0.7,0.75,180,beam
+    crash.Volume,crash.PlaybackSpeed,crash.RollOffMaxDistance,crash.Parent=0.65,0.75,120,beam
     local doorSound=Instance.new("Sound") doorSound.Name,doorSound.SoundId="ExitClatter","rbxasset://sounds/impact_explosion_03.mp3"
-    doorSound.Volume,doorSound.PlaybackSpeed,doorSound.RollOffMaxDistance,doorSound.Parent=0.35,1.1,150,map.ExitDoor
+    doorSound.Volume,doorSound.PlaybackSpeed,doorSound.RollOffMaxDistance,doorSound.Parent=0.3,1.1,90,map.ExitDoor
     local engine=Instance.new("Sound") engine.Name,engine.SoundId="CarEngine","rbxasset://sounds/action_swim.mp3"
-    engine.Volume,engine.PlaybackSpeed,engine.Looped,engine.RollOffMaxDistance,engine.Parent=0.15,0.45,true,80,car.PrimaryPart
+    engine.Volume,engine.PlaybackSpeed,engine.Looped,engine.RollOffMaxDistance,engine.Parent=0.12,0.45,true,65,car.PrimaryPart
     local function lights(enabled: boolean)
         for _,p in car:GetChildren() do
             if p:IsA("BasePart") and (p.Name=="Headlight" or p.Name=="RearLamp") then
@@ -94,6 +94,7 @@ function Journey.new(map: Folder,clock: (() -> number)?)
             if humanoid.Parent then humanoid.WalkSpeed,humanoid.JumpPower,humanoid.JumpHeight,humanoid.AutoRotate,humanoid.Sit=speed,jumpPower,jumpHeight,rotate,sit end
         end
     end
+    function controller.finishDrive() if driving then driveAt=time()-Config.DriveSeconds end end
     function controller.stepDrive(): boolean
         if not driving then return false end
         local elapsed=math.max(0,time()-driveAt)

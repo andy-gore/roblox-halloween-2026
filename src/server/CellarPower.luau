@@ -3,7 +3,6 @@
 local Sequence=require(script.Parent.BreakerSequence)
 local TweenService=game:GetService("TweenService")
 local Power={}
-Power.Instructions="CELLAR FIRST. GUEST ROOMS BEFORE THE BAR. MAIN SUPPLY LAST."
 local circuits={"Cellar","Guest","Bar"}
 function Power.new(map: Folder)
     local sequence=Sequence.new()
@@ -26,9 +25,9 @@ function Power.new(map: Folder)
         s.RollOffMinDistance,s.RollOffMaxDistance,s.Parent=7,70,parent return s
     end
     -- Existing bundled local placeholders; no asset uploads.
-    local click=sound("BreakerClunk",panel,"rbxasset://sounds/action_footsteps_plastic.mp3",0.5,0.6)
-    local thud=sound("BarrelShift",crate,"rbxasset://sounds/action_footsteps_plastic.mp3",0.7,0.4)
-    local glug=sound("CellarGlug",cue.Parent :: Instance,"rbxasset://sounds/impact_water.mp3",0.65,0.65)
+    local click=sound("BreakerClunk",panel,"rbxasset://sounds/action_footsteps_plastic.mp3",0.4,0.6)
+    local thud=sound("BarrelShift",crate,"rbxasset://sounds/action_footsteps_plastic.mp3",0.55,0.4)
+    local glug=sound("CellarGlug",cue.Parent :: Instance,"rbxasset://sounds/impact_water.mp3",0.5,0.65)
     local tween: Tween?=nil
     local wrong: string?=nil
     local controller={}
@@ -43,10 +42,6 @@ function Power.new(map: Folder)
         cue.Brightness=if sequence.powered() then 2.6 elseif progress>0 then 1.2+progress*0.3 else 0
         panel:SetAttribute("BreakerProgress",progress)
         panel:SetAttribute("Powered",sequence.powered())
-        local status=if sequence.powered() then "POWER RESTORED" elseif progress==3 then "READY\nPULL MAIN LEVER" else "NOT READY\n"..progress.."/3 CIRCUITS"
-        for _,obj in (decor:WaitForChild("MainSupplyStatus")):GetDescendants() do
-            if obj:IsA("TextLabel") then obj.Text=status end
-        end
         for i,name in names do
             local prompt=(map:FindFirstChild(name) :: BasePart):FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
             prompt.ObjectText=if i==4 then (if progress==3 then "MAIN SUPPLY — READY" else "MAIN SUPPLY — "..progress.."/3 CIRCUITS")
@@ -70,7 +65,7 @@ function Power.new(map: Folder)
         if name=="CellarFuseBox" then
             if not sequence.pullMain() then
                 click.PlaybackSpeed=0.45 click:Play()
-                return false,"The main supply is not ready. "..Power.Instructions
+                return false,"The main supply is not ready. Set the three circuits first."
             end
             wrong=nil apply()
             return true,"The lights are back on. Something is waking up."
@@ -86,7 +81,7 @@ function Power.new(map: Folder)
         if not accepted then
             if tween then tween:Cancel() tween=nil end
             crate.CFrame=crateHome thud:Stop() glug:Stop()
-            return false,"Wrong circuit. Sequence reset. Cellar first; guest rooms before the bar."
+            return false,"Wrong circuit. Sequence reset. Try a different order."
         end
         local progress=sequence.progress()
         if progress==1 then return false,"Cellar circuit set. A light comes on behind the barrels."

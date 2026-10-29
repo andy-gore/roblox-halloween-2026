@@ -48,3 +48,14 @@ In Studio: Assistant → … → Manage MCP Servers → Enable Studio as MCP ser
 - https://luau.org/getting-started/
 - https://github.com/luau-lang/luau/releases
 - https://create.roblox.com/docs/studio/mcp
+
+
+## Single-player release capacity
+
+The local server code accepts one active player and rejects extra joins. Also configure the **published starting place** in Creator Dashboard → Configurations → Places → starting place → Access → Maximum Visitor Count: **1**. This administrative change has not been applied by the local code task. Review/restart existing servers when rolling out the capacity change. Test with a second account/friend so each gets an independent solo run. This does not enable paid private servers.
+
+The connected Studio place reported a 60-player capacity during the 29 October playtest. That observation is not verification of the current live dashboard setting.
+
+## Scene-seen data
+
+Published servers use `LastOrdersSceneHistory_v1`, keyed by user ID, to store three completed-scene booleans. No health, key, puzzle state or other progression is saved. Failed loads use mandatory-first-view rules; writes merge flags rather than replacing unrelated completion flags. Test cross-visit behaviour in a separate published test experience. Studio code deliberately bypasses data stores even if API access is enabled.
