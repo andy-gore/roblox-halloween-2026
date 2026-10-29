@@ -42,15 +42,15 @@ local function update()
             elseif health==2 then UI.Brass else Color3.fromRGB(231,159,70)
     end
     local driving=player:GetAttribute("LastOrdersDriving")==true
-    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving
+    overlay.Visible,bar.Visible=gameOver,not gameOver and not driving and player:GetAttribute("LastOrdersArrivalScene")~=true and player:GetAttribute("LastOrdersEntryScene")~=true
     bar.Position=UDim2.new(.5,0,1,if UserInputService.TouchEnabled then -90 else -20)
-    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true
+    local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true or player:GetAttribute("LastOrdersArrivalScene")==true
     if locked~=movementLocked then
         movementLocked=locked
         if locked then controls:Disable() else controls:Enable() end
     end
 end
-for _,name in {"LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
+for _,name in {"LastOrdersArrivalScene","LastOrdersDriving","LastOrdersEntryScene","LastOrdersHealth","LastOrdersHeld","LastOrdersGameOver","LastOrdersProtected"} do
     player:GetAttributeChangedSignal(name):Connect(update)
 end
 script.Destroying:Connect(function()

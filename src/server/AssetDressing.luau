@@ -167,6 +167,7 @@ function Dressing.build(map: Folder)
         web:SetAttribute("CobwebCandidate",true)
     end
     require(script.Parent.StormWindows).build(map,add)
+    require(script.Parent.AtmosphereDressing).build(map,add)
     Dressing.reroll(map)
     folder:SetAttribute("PlacementCount",number)
 end

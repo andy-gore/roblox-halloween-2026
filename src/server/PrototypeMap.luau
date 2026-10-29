@@ -138,6 +138,7 @@ function Map.build(): Folder
     require(script.Parent.AssetDressing).build(folder)
     require(script.Parent.InteriorFinish).build(folder)
     require(script.Parent.TavernSigns).build(folder)
+    require(script.Parent.PubBoundary).build(folder)
     return folder
 end
 return Map

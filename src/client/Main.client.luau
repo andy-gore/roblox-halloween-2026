@@ -40,9 +40,9 @@ local function update()
         circuits.Text="CIRCUITS "..count.." / 3  ·  "..(if count==3 then "MAIN LEVER READY" else "CELLAR → GUEST ROOMS → BAR")
     end
     panel.Visible=player:GetAttribute("LastOrdersGameOver")~=true and player:GetAttribute("LastOrdersDriving")~=true
-        and player:GetAttribute("LastOrdersEntryScene")~=true
+        and player:GetAttribute("LastOrdersEntryScene")~=true and player:GetAttribute("LastOrdersArrivalScene")~=true
 end
-for _,name in {"LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
+for _,name in {"LastOrdersArrivalScene","LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
 player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(message)
 script.Destroying:Connect(function() messageVersion+=1 gui:Destroy() end)
 update() message() gui.Parent=player:WaitForChild("PlayerGui")

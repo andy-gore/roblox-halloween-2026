@@ -1,0 +1,440 @@
+{
+  "TwinBeerPump": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      2.6,
+      1.97,
+      1.0098
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2999999523162842,
+      -0.5198041796684265,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.2999999523162842,
+      0.49000000953674316,
+      1.9700000286102295
+    ],
+    "triangles": 1260,
+    "mesh_objects": 13
+  },
+  "BarDripTray": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      2.8,
+      0.195,
+      1.17
+    ],
+    "bounds_min_blender_xyz": [
+      -1.399999976158142,
+      -0.5850000381469727,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.399999976158142,
+      0.5850000381469727,
+      0.19499999284744263
+    ],
+    "triangles": 880,
+    "mesh_objects": 20
+  },
+  "PewterTankardRack": {
+    "group": "bar",
+    "origin": "bottom centre; wall back Blender Y=0.12",
+    "roblox_xyz_studs": [
+      3.4,
+      2.16,
+      0.93
+    ],
+    "bounds_min_blender_xyz": [
+      -1.7000000476837158,
+      -0.8100000023841858,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.7000000476837158,
+      0.12000000476837158,
+      2.1600000858306885
+    ],
+    "triangles": 3628,
+    "mesh_objects": 17
+  },
+  "CoasterStack": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      0.9452,
+      0.2938,
+      0.9452
+    ],
+    "bounds_min_blender_xyz": [
+      -0.4725925624370575,
+      -0.4725925624370575,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.4725925624370575,
+      0.4725925624370575,
+      0.2937942445278168
+    ],
+    "triangles": 552,
+    "mesh_objects": 7
+  },
+  "SinglePewterMug": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      0.715,
+      0.55,
+      0.46
+    ],
+    "bounds_min_blender_xyz": [
+      -0.23000000417232513,
+      -0.23000000417232513,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.48499998450279236,
+      0.23000000417232513,
+      0.550000011920929
+    ],
+    "triangles": 568,
+    "mesh_objects": 2
+  },
+  "StoppedPubClock": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.16",
+    "clock_note": "Decorative stopped hands; no narrative time claim",
+    "roblox_xyz_studs": [
+      2.3,
+      2.3,
+      0.36
+    ],
+    "bounds_min_blender_xyz": [
+      -1.149999976158142,
+      -0.20000000298023224,
+      -4.589695734580346e-09
+    ],
+    "bounds_max_blender_xyz": [
+      1.149999976158142,
+      0.1600000411272049,
+      2.299999952316284
+    ],
+    "triangles": 4036,
+    "mesh_objects": 70
+  },
+  "FramedCountryside": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.10",
+    "art_note": "Original geometric countryside study; proposed dressing, not canonical artwork",
+    "roblox_xyz_studs": [
+      3.5,
+      2.25,
+      0.296
+    ],
+    "bounds_min_blender_xyz": [
+      -1.75,
+      -0.19599999487400055,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.75,
+      0.10000000149011612,
+      2.25
+    ],
+    "triangles": 182,
+    "mesh_objects": 10
+  },
+  "FramedWoodland": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.10",
+    "art_note": "Original geometric countryside study; proposed dressing, not canonical artwork",
+    "roblox_xyz_studs": [
+      2.0,
+      2.8,
+      0.296
+    ],
+    "bounds_min_blender_xyz": [
+      -1.0,
+      -0.19599999487400055,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.0,
+      0.10000000149011612,
+      2.799999952316284
+    ],
+    "triangles": 182,
+    "mesh_objects": 10
+  },
+  "PubDartboard": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.20",
+    "gameplay": "Static decorative board; no playable darts",
+    "roblox_xyz_studs": [
+      2.6,
+      2.6,
+      0.3675
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2999999523162842,
+      -0.16750000417232513,
+      -4.8082529069404245e-09
+    ],
+    "bounds_max_blender_xyz": [
+      1.2999999523162842,
+      0.20000006258487701,
+      2.5999999046325684
+    ],
+    "triangles": 7856,
+    "mesh_objects": 129
+  },
+  "RainStreakPaneNarrow": {
+    "group": "storm",
+    "origin": "bottom centre; front -Y",
+    "runtime": "Translucent GLB reference only; use native glass and thin transparent streak strips for current upload-free renderer",
+    "roblox_xyz_studs": [
+      2.4,
+      4.4,
+      0.038
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2000000476837158,
+      -0.03199999779462814,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.2000000476837158,
+      0.006000000052154064,
+      4.400000095367432
+    ],
+    "triangles": 4476,
+    "mesh_objects": 37
+  },
+  "RainStreakPaneWide": {
+    "group": "storm",
+    "origin": "bottom centre; front -Y",
+    "runtime": "Translucent GLB reference only; use native glass and thin transparent streak strips for current upload-free renderer",
+    "roblox_xyz_studs": [
+      4.8,
+      4.4,
+      0.038
+    ],
+    "bounds_min_blender_xyz": [
+      -2.4000000953674316,
+      -0.03199999779462814,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      2.4000000953674316,
+      0.006000000052154064,
+      4.400000095367432
+    ],
+    "triangles": 7948,
+    "mesh_objects": 65
+  },
+  "SmallPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      2.2933,
+      0.0121,
+      1.3375
+    ],
+    "bounds_min_blender_xyz": [
+      -1.138325572013855,
+      -0.7111791372299194,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      1.1549999713897705,
+      0.6263678073883057,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  },
+  "DoorwayPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      4.3782,
+      0.0121,
+      1.6462
+    ],
+    "bounds_min_blender_xyz": [
+      -2.1731669902801514,
+      -0.8752973675727844,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      2.2049999237060547,
+      0.7709142565727234,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  },
+  "CourtyardPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      5.8376,
+      0.0121,
+      3.2924
+    ],
+    "bounds_min_blender_xyz": [
+      -2.8975560665130615,
+      -1.7505947351455688,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      2.940000057220459,
+      1.5418285131454468,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  },
+  "DrainpipeStraight": {
+    "group": "courtyard",
+    "origin": "bottom wall centre; front -Y",
+    "mount": "Pipe radius 0.10; wall brackets extend to Blender Y=0.08",
+    "roblox_xyz_studs": [
+      0.33,
+      5.0,
+      0.402
+    ],
+    "bounds_min_blender_xyz": [
+      -0.16500000655651093,
+      -0.32199999690055847,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.16500000655651093,
+      0.07999999821186066,
+      5.0
+    ],
+    "triangles": 676,
+    "mesh_objects": 5
+  },
+  "DrainpipeOffset": {
+    "group": "courtyard",
+    "origin": "bottom wall centre; front -Y",
+    "mount": "Pipe radius 0.10; wall brackets extend to Blender Y=0.08",
+    "roblox_xyz_studs": [
+      0.33,
+      1.3,
+      0.7166
+    ],
+    "bounds_min_blender_xyz": [
+      -0.16500000655651093,
+      -0.6366025805473328,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.16500000655651093,
+      0.07999999821186066,
+      1.2999999523162842
+    ],
+    "triangles": 368,
+    "mesh_objects": 3
+  },
+  "DrainpipeShoe": {
+    "group": "courtyard",
+    "origin": "bottom wall centre; front -Y",
+    "mount": "Pipe radius 0.10; wall brackets extend to Blender Y=0.08",
+    "roblox_xyz_studs": [
+      0.33,
+      0.9666,
+      0.81
+    ],
+    "bounds_min_blender_xyz": [
+      -0.16500000655651093,
+      -0.7300000190734863,
+      0.03339743614196777
+    ],
+    "bounds_max_blender_xyz": [
+      0.16500000655651093,
+      0.07999999821186066,
+      1.0
+    ],
+    "triangles": 368,
+    "mesh_objects": 3
+  },
+  "GalvanisedBin": {
+    "group": "courtyard",
+    "origin": "ground centre",
+    "roblox_xyz_studs": [
+      1.75,
+      2.1547,
+      1.46
+    ],
+    "bounds_min_blender_xyz": [
+      -0.875,
+      -0.7300000190734863,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.875,
+      0.7300000190734863,
+      2.1547489166259766
+    ],
+    "triangles": 1332,
+    "mesh_objects": 21
+  },
+  "BrokenCourtyardPlanter": {
+    "group": "courtyard",
+    "origin": "ground centre",
+    "roblox_xyz_studs": [
+      1.9869,
+      1.3634,
+      1.36
+    ],
+    "bounds_min_blender_xyz": [
+      -0.6800000071525574,
+      -0.6800000071525574,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.3068835735321045,
+      0.6800000071525574,
+      1.3634140491485596
+    ],
+    "triangles": 536,
+    "mesh_objects": 29
+  },
+  "CourtyardWallLantern": {
+    "group": "courtyard",
+    "origin": "bottom centre; wall back Blender Y=0.12",
+    "light_blender_xyz": [
+      0,
+      -0.6,
+      1.12
+    ],
+    "runtime": "One native warm PointLight; no light or switching behaviour baked in",
+    "roblox_xyz_studs": [
+      1.4991,
+      1.8058,
+      1.4991
+    ],
+    "bounds_min_blender_xyz": [
+      -0.7495331168174744,
+      -1.3495330810546875,
+      0.4950000047683716
+    ],
+    "bounds_max_blender_xyz": [
+      0.7495331168174744,
+      0.14953309297561646,
+      2.3008315563201904
+    ],
+    "triangles": 684,
+    "mesh_objects": 15
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "TwinBeerPump": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      2.6,
+      1.97,
+      1.0098
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2999999523162842,
+      -0.5198041796684265,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.2999999523162842,
+      0.49000000953674316,
+      1.9700000286102295
+    ],
+    "triangles": 1260,
+    "mesh_objects": 13
+  },
+  "BarDripTray": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      2.8,
+      0.195,
+      1.17
+    ],
+    "bounds_min_blender_xyz": [
+      -1.399999976158142,
+      -0.5850000381469727,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.399999976158142,
+      0.5850000381469727,
+      0.19499999284744263
+    ],
+    "triangles": 880,
+    "mesh_objects": 20
+  },
+  "PewterTankardRack": {
+    "group": "bar",
+    "origin": "bottom centre; wall back Blender Y=0.12",
+    "roblox_xyz_studs": [
+      3.4,
+      2.16,
+      0.93
+    ],
+    "bounds_min_blender_xyz": [
+      -1.7000000476837158,
+      -0.8100000023841858,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.7000000476837158,
+      0.12000000476837158,
+      2.1600000858306885
+    ],
+    "triangles": 3628,
+    "mesh_objects": 17
+  },
+  "CoasterStack": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      0.9452,
+      0.2938,
+      0.9452
+    ],
+    "bounds_min_blender_xyz": [
+      -0.4725925624370575,
+      -0.4725925624370575,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.4725925624370575,
+      0.4725925624370575,
+      0.2937942445278168
+    ],
+    "triangles": 552,
+    "mesh_objects": 7
+  },
+  "SinglePewterMug": {
+    "group": "bar",
+    "origin": "countertop centre",
+    "roblox_xyz_studs": [
+      0.715,
+      0.55,
+      0.46
+    ],
+    "bounds_min_blender_xyz": [
+      -0.23000000417232513,
+      -0.23000000417232513,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      0.48499998450279236,
+      0.23000000417232513,
+      0.550000011920929
+    ],
+    "triangles": 568,
+    "mesh_objects": 2
+  }
+}

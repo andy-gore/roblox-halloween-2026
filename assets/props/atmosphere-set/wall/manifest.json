@@ -1,0 +1,90 @@
+{
+  "StoppedPubClock": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.16",
+    "clock_note": "Decorative stopped hands; no narrative time claim",
+    "roblox_xyz_studs": [
+      2.3,
+      2.3,
+      0.36
+    ],
+    "bounds_min_blender_xyz": [
+      -1.149999976158142,
+      -0.20000000298023224,
+      -4.589695734580346e-09
+    ],
+    "bounds_max_blender_xyz": [
+      1.149999976158142,
+      0.1600000411272049,
+      2.299999952316284
+    ],
+    "triangles": 4036,
+    "mesh_objects": 70
+  },
+  "FramedCountryside": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.10",
+    "art_note": "Original geometric countryside study; proposed dressing, not canonical artwork",
+    "roblox_xyz_studs": [
+      3.5,
+      2.25,
+      0.296
+    ],
+    "bounds_min_blender_xyz": [
+      -1.75,
+      -0.19599999487400055,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.75,
+      0.10000000149011612,
+      2.25
+    ],
+    "triangles": 182,
+    "mesh_objects": 10
+  },
+  "FramedWoodland": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.10",
+    "art_note": "Original geometric countryside study; proposed dressing, not canonical artwork",
+    "roblox_xyz_studs": [
+      2.0,
+      2.8,
+      0.296
+    ],
+    "bounds_min_blender_xyz": [
+      -1.0,
+      -0.19599999487400055,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.0,
+      0.10000000149011612,
+      2.799999952316284
+    ],
+    "triangles": 182,
+    "mesh_objects": 10
+  },
+  "PubDartboard": {
+    "group": "wall",
+    "origin": "bottom centre; wall back Blender Y=0.20",
+    "gameplay": "Static decorative board; no playable darts",
+    "roblox_xyz_studs": [
+      2.6,
+      2.6,
+      0.3675
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2999999523162842,
+      -0.16750000417232513,
+      -4.8082529069404245e-09
+    ],
+    "bounds_max_blender_xyz": [
+      1.2999999523162842,
+      0.20000006258487701,
+      2.5999999046325684
+    ],
+    "triangles": 7856,
+    "mesh_objects": 129
+  }
+}

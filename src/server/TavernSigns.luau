@@ -11,13 +11,14 @@ local function shape(parent: Instance,name: string,pos: UDim2,size: UDim2,color:
     local round=Instance.new("UICorner") round.CornerRadius=UDim.new(.5,0) round.Parent=f
     return f
 end
-local function firefly(surface: SurfaceGui)
+local function firefly(surface: SurfaceGui,fascia: boolean?)
     local art=Instance.new("Frame") art.Name="FireflyIllustration"
-    art.Position,art.Size,art.BackgroundTransparency=UDim2.fromScale(.1,.17),UDim2.fromScale(.28,.66),1 art.Parent=surface
+    art.Position,art.Size,art.BackgroundTransparency=UDim2.fromScale(if fascia then .04 else .1,.18),UDim2.fromScale(if fascia then .12 else .28,.64),1 art.Parent=surface
+    local ratio=Instance.new("UIAspectRatioConstraint") ratio.AspectRatio,ratio.DominantAxis,ratio.Parent=1,Enum.DominantAxis.Height,art
     -- Symmetric engraved wings, dark thorax and a luminous golden abdomen.
     for _,side in {-1,1} do
         local wing=shape(art,"EngravedWing",UDim2.fromScale(.5+side*.2,.4),UDim2.fromScale(.27,.57),brass,side*28)
-        local line=Instance.new("UIStroke") line.Color,line.Thickness,line.Parent=ivory,1,wing
+        local line=Instance.new("UIStroke") line.Color,line.Thickness,line.Parent=ivory,2,wing
         shape(art,"Antenna",UDim2.fromScale(.5+side*.09,.08),UDim2.fromScale(.025,.18),brass,side*35)
     end
     shape(art,"AbdomenGlow",UDim2.fromScale(.5,.78),UDim2.fromScale(.24,.28),Color3.fromRGB(224,193,94))
@@ -92,8 +93,16 @@ function Signs.build(map: Folder)
                 end
             end
             if board.Name=="SignBoard" then
-                label.Position,label.Size=UDim2.fromScale(.42,.25),UDim2.fromScale(.49,.5)
+                label.Text="THE FIREFLY\nTAVERN"
+                label.Position,label.Size=UDim2.fromScale(.43,.25),UDim2.fromScale(.46,.45)
                 firefly(gui)
+                local closed=Instance.new("TextLabel") closed.Name="ClosedCaption"
+                closed.BackgroundTransparency,closed.FontFace,closed.TextColor3=1,Font.new("rbxasset://fonts/families/Nunito.json"),brass
+                closed.Text,closed.TextScaled,closed.Size,closed.Position="CLOSED",true,UDim2.fromScale(.28,.1),UDim2.fromScale(.52,.76)
+                closed.ZIndex,closed.Parent=2,gui
+            elseif board.Name=="FrontPubName" then
+                label.Position,label.Size=UDim2.fromScale(.15,.27),UDim2.fromScale(.76,.46)
+                firefly(gui,true)
             elseif not short then
                 label.Position,label.Size=UDim2.fromScale(.085,.23),UDim2.fromScale(.83,.54)
             end

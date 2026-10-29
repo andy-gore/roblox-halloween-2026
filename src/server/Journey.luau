@@ -17,6 +17,7 @@ function Journey.new(map: Folder,clock: (() -> number)?)
     local opened,collapsed=false,false
     local entryUntil,driveAt=0,0
     local driving=false
+    local entryAt=0
     local tween: Tween?=nil
     local driver: BasePart?=nil
     local restoreDriver: (() -> ())?=nil
@@ -53,7 +54,8 @@ function Journey.new(map: Folder,clock: (() -> number)?)
     end
     function controller.collapse()
         if collapsed then return end
-        collapsed=true entryUntil=time()+Config.EntrySceneSeconds
+        collapsed=true entryAt=time() entryUntil=entryAt+Config.EntrySceneSeconds
+        map:SetAttribute("EntranceCollapseStarted",workspace:GetServerTimeNow())
         blocker.CanCollide=true map:SetAttribute("EntranceCollapsed",true)
         crash:Play()
         tween=TweenService:Create(beam,TweenInfo.new(0.75,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{CFrame=CFrame.new(offset+Vector3.new(6,4.2,88))*CFrame.Angles(0,0,0.2)})

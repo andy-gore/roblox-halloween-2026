@@ -1,0 +1,112 @@
+{
+  "RainStreakPaneNarrow": {
+    "group": "storm",
+    "origin": "bottom centre; front -Y",
+    "runtime": "Translucent GLB reference only; use native glass and thin transparent streak strips for current upload-free renderer",
+    "roblox_xyz_studs": [
+      2.4,
+      4.4,
+      0.038
+    ],
+    "bounds_min_blender_xyz": [
+      -1.2000000476837158,
+      -0.03199999779462814,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      1.2000000476837158,
+      0.006000000052154064,
+      4.400000095367432
+    ],
+    "triangles": 4476,
+    "mesh_objects": 37
+  },
+  "RainStreakPaneWide": {
+    "group": "storm",
+    "origin": "bottom centre; front -Y",
+    "runtime": "Translucent GLB reference only; use native glass and thin transparent streak strips for current upload-free renderer",
+    "roblox_xyz_studs": [
+      4.8,
+      4.4,
+      0.038
+    ],
+    "bounds_min_blender_xyz": [
+      -2.4000000953674316,
+      -0.03199999779462814,
+      0.0
+    ],
+    "bounds_max_blender_xyz": [
+      2.4000000953674316,
+      0.006000000052154064,
+      4.400000095367432
+    ],
+    "triangles": 7948,
+    "mesh_objects": 65
+  },
+  "SmallPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      2.2933,
+      0.0121,
+      1.3375
+    ],
+    "bounds_min_blender_xyz": [
+      -1.138325572013855,
+      -0.7111791372299194,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      1.1549999713897705,
+      0.6263678073883057,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  },
+  "DoorwayPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      4.3782,
+      0.0121,
+      1.6462
+    ],
+    "bounds_min_blender_xyz": [
+      -2.1731669902801514,
+      -0.8752973675727844,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      2.2049999237060547,
+      0.7709142565727234,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  },
+  "CourtyardPuddle": {
+    "group": "storm",
+    "origin": "ground centre; place slightly above ground",
+    "runtime": "Transparent low-profile mesh; non-colliding and non-queryable; native material/reflection tuning required",
+    "roblox_xyz_studs": [
+      5.8376,
+      0.0121,
+      3.2924
+    ],
+    "bounds_min_blender_xyz": [
+      -2.8975560665130615,
+      -1.7505947351455688,
+      0.011937819421291351
+    ],
+    "bounds_max_blender_xyz": [
+      2.940000057220459,
+      1.5418285131454468,
+      0.024062179028987885
+    ],
+    "triangles": 608,
+    "mesh_objects": 3
+  }
+}

@@ -43,6 +43,10 @@ local hunt = require(script.Parent.MonsterHunt).new({
 local exitDoor = map:WaitForChild("ExitDoor") :: Part
 local spawn = map:WaitForChild("PrototypeSpawn") :: SpawnLocation
 local bell = map:WaitForChild("Bell") :: Part
+local bellSound=Instance.new("Sound") bellSound.Name,bellSound.SoundId="BellRing","rbxasset://sounds/volume_slider.ogg"
+bellSound.Volume,bellSound.PlaybackSpeed,bellSound.RollOffMinDistance,bellSound.RollOffMaxDistance=.8,1.35,10,90
+bellSound.Parent=bell
+local lastBell=-math.huge
 local lights: {PointLight} = {}
 for _, object in map:GetDescendants() do
     if object:IsA("PointLight") and object.Name == "PowerLight" then
@@ -52,9 +56,17 @@ end
 local state = RunState.new()
 local activePlayer: Player? = nil
 local graceUntil = 0
+local arrivalUntil=0
+local arrivalSeen=false
+local skipArrival=Instance.new("RemoteEvent") skipArrival.Name,skipArrival.Parent="SkipArrival",game.ReplicatedStorage.HalloweenShared
+skipArrival.OnServerEvent:Connect(function(player)
+    if player~=activePlayer or state.stage~=0 then return end
+    arrivalUntil=0 player:SetAttribute("LastOrdersArrivalScene",false)
+end)
 local function updateVitals()
     local player=activePlayer
     if not player then return end
+    player:SetAttribute("LastOrdersArrivalScene",os.clock()<arrivalUntil)
     player:SetAttribute("LastOrdersDriving",state.stage>=6)
     player:SetAttribute("LastOrdersEntryScene",journey.entryActive())
     player:SetAttribute("LastOrdersDriveStarted",journey.driveStarted())
@@ -86,6 +98,7 @@ local function update(message: string?)
     end
 end
 local function reset(message: string?)
+    arrivalUntil=0
     hold.release()
     survival.reset()
     journey.reset()
@@ -99,6 +112,7 @@ local function reset(message: string?)
     hunt.reset()
     grab.reset()
     bell:SetAttribute("ReadyAt", 0)
+    bellSound:Stop() lastBell=-math.huge
     monster.CFrame = home
     monster:SetAttribute("MonsterBehaviour", "Dormant")
     update(message)
@@ -115,12 +129,20 @@ local function join(player: Player)
         return
     end
     activePlayer = player
+    arrivalSeen=false
     player.RespawnLocation = spawn
     player.CharacterAdded:Connect(function(character)
         player.RespawnLocation = spawn
         reset(require(script.Parent.Journey).Intro)
         local root=character:WaitForChild("HumanoidRootPart",10)
-        if root and character==player.Character then character:PivotTo(spawn.CFrame+Vector3.new(0,3,0)) end
+        if root and character==player.Character then
+            character:PivotTo(spawn.CFrame+Vector3.new(0,3,0))
+            if not arrivalSeen then
+                arrivalSeen=true arrivalUntil=os.clock()+4
+                player:SetAttribute("LastOrdersArrivalStarted",workspace:GetServerTimeNow())
+                updateVitals()
+            end
+        end
     end)
     reset(require(script.Parent.Journey).Intro)
 end
@@ -142,7 +164,7 @@ for name, expected in stations do
         local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
         local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
         if player ~= activePlayer or not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
-        if survival.locked() or journey.entryActive() or state.stage>=6 then return end
+        if survival.locked() or journey.entryActive() or os.clock()<arrivalUntil or state.stage>=6 then return end
         if (root.Position - station.Position).Magnitude > Config.InteractionDistance then return end
         local sight = RaycastParams.new()
         sight.FilterType = Enum.RaycastFilterType.Exclude
@@ -175,9 +197,11 @@ for name, expected in stations do
             return
         end
         if name == "Bell" then
-            if state.stage < 3 or state.stage >= 5 then return end
+            if os.clock()-lastBell<.25 then return end
+            lastBell=os.clock() bellSound:Play()
+            if state.stage<3 then update("The bell rings through the empty tavern.") return end
             if not hunt.ringBell(Vector3.new(-20, 0.5, 23)) then
-                update("Give the bell a moment: " .. math.ceil(hunt.bellCooldown()) .. "s.")
+                update("The bell rang. He will not fall for another distraction for " .. math.ceil(hunt.bellCooldown()) .. "s.")
                 return
             end
             bell:SetAttribute("ReadyAt", workspace:GetServerTimeNow() + Config.BellCooldownSeconds)
@@ -226,7 +250,16 @@ RunService.Heartbeat:Connect(function(dt: number)
     local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
     local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
     if not character or not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then return end
+    if state.stage<6 and not survival.locked() and (root.Position.Y< -45 or math.abs(root.Position.X)>216 or math.abs(root.Position.Z)>176) then
+        character:PivotTo(if state.stage==0 then spawn.CFrame+Vector3.new(0,3,0) else CFrame.new(6,4,82))
+        root.AssemblyLinearVelocity,root.AssemblyAngularVelocity=Vector3.zero,Vector3.zero
+        graceUntil=os.clock()+3
+        update("Back on safe ground. Your progress is preserved.")
+        return
+    end
     if state.stage==0 then
+        updateVitals()
+        if os.clock()<arrivalUntil then return end
         if journey.crossed(root.Position) then
             RunState.advance(state,0) journey.collapse() navigation.refresh()
             update("The entrance beam has fallen! Find another way out. Read the warning at the bar.")

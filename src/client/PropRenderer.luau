@@ -59,6 +59,8 @@ function Renderer.new(map: Folder)
             local built=part :: MeshPart
             built.Name,built.Size,built.Color=group.name,vector(group.size),Color3.new(1,1,1)
             built.DoubleSided,built.Material=true,Enum.Material.SmoothPlastic
+            built.Transparency=group.transparency or 0
+            built.CastShadow=(group.transparency or 0)==0
         end)
         if not ok then
             pcall(function() mesh:Destroy() end)
@@ -105,7 +107,7 @@ function Renderer.new(map: Folder)
                 offset=CFrame.new(0,-press,0)*offset
             end
             piece.part.CFrame=origin*offset
-            piece.part.Transparency=if visible then 0 else 1
+            piece.part.Transparency=if visible then piece.data.transparency or 0 else 1
         end
     end
     task.spawn(function()
@@ -123,7 +125,12 @@ function Renderer.new(map: Folder)
                 table.insert(byAsset[name],marker)
             end
         end
-        local names={} for name in byAsset do table.insert(names,name) end table.sort(names)
+        local names={} for name in byAsset do table.insert(names,name) end
+        -- Build large scratch meshes first; later small templates need less peak memory.
+        table.sort(names,function(a,b)
+            local left,right=#require(Data:WaitForChild(a)),#require(Data:WaitForChild(b))
+            return if left==right then a<b else left>right
+        end)
         local failures,loaded=0,0
         for _,name in names do
             if not alive then return end
@@ -141,7 +148,7 @@ function Renderer.new(map: Folder)
                     local entry={marker=marker,scale=scale,target=target,mode=marker:GetAttribute("Mode"),pieces={},cooldown=require(Shared.Config).BellCooldownSeconds}
                     for _,piece in built do
                         local part=piece.template:Clone() part.Name=name.."_"..piece.data.name
-                        part.Size=vector(piece.data.size)*scale configure(part,marker:GetAttribute("CobwebCandidate")==true)
+                        part.Size=vector(piece.data.size)*scale configure(part,marker:GetAttribute("CobwebCandidate")==true or (piece.data.transparency or 0)>0)
                         part:SetAttribute("SourceAsset",name) part:SetAttribute("Placement",marker.Name)
                         table.insert(entry.pieces,{part=part,data=piece.data})
                     end
