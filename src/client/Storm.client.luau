@@ -22,8 +22,9 @@ local eq=Instance.new("EqualizerSoundEffect") eq.HighGain,eq.MidGain,eq.LowGain=
 rainSound:Play()
 local flash=Instance.new("ColorCorrectionEffect") flash.Name="LastOrdersLightning" flash.Parent=game:GetService("Lighting")
 local windowLightning=require(script.Parent.WindowLightning).new(map,folder)
+local skyLightning=require(script.Parent.SkyLightning).new(folder)
 local random=Random.new()
-local nextThunder=os.clock()+random:NextNumber(20,30)
+local nextThunder=os.clock()+random:NextNumber(6,11)
 local inside=true
 local accumulator,coverTime=0,0
 local coverCast=RaycastParams.new() coverCast.FilterType=Enum.RaycastFilterType.Exclude
@@ -40,7 +41,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     if not map:IsDescendantOf(workspace) then
         alive=false
         if connection then connection:Disconnect() end
-        folder:Destroy() rainSound:Destroy() thunder:Destroy() flash:Destroy() return
+        skyLightning.destroy() folder:Destroy() rainSound:Destroy() thunder:Destroy() flash:Destroy() return
     end
     local character=player.Character
     local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
@@ -59,9 +60,10 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         for _,p in hazards do p.Material=if on then Enum.Material.Neon else Enum.Material.Glass p.Transparency=if on then 0 else 0.5 end
     end
     if os.clock()>=nextThunder then
-        nextThunder=os.clock()+random:NextNumber(35,55)
+        nextThunder=os.clock()+random:NextNumber(22,40)
+        skyLightning.flash()
         windowLightning.flash()
-        flash.Brightness=if inside then 0 else 0.055
+        flash.Brightness=if inside then 0 else 0.09
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
             if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end

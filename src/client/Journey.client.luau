@@ -7,12 +7,14 @@ local player=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersJourney",false,30
 local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
 fade.Parent=gui
-local title=Instance.new("TextLabel") title.Size,title.Position=UDim2.fromScale(0.9,0.35),UDim2.fromScale(0.05,0.25)
-title.BackgroundTransparency,title.Font,title.TextSize,title.TextWrapped=1,Enum.Font.GothamBold,30,true
-title.TextColor3,title.Text,title.Visible=Color3.fromRGB(245,220,180),"YOU SURVIVED LAST ORDERS!\n\nThe dare is over. Never again.",false title.Parent=fade
-local replay=Instance.new("TextButton") replay.Size,replay.Position=UDim2.fromOffset(200,52),UDim2.fromScale(0.5,0.7)
-replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),"Play again",Enum.Font.GothamBold,22
-replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
+local UI=require(script.Parent.TavernUI)
+local card=UI.ending(fade,false) card.Visible=false
+local replay=Instance.new("TextButton") replay.Name="Replay"
+replay.Size,replay.Text,replay.FontFace,replay.TextSize=UDim2.new(1,0,0,52),"Play again",UI.Body,20
+replay.BackgroundColor3,replay.TextColor3,replay.AutoButtonColor=Color3.fromRGB(70,48,35),UI.Ivory,true
+replay.BorderSizePixel,replay.LayoutOrder,replay.Parent=0,6,card
+local corner=Instance.new("UICorner") corner.CornerRadius,corner.Parent=UDim.new(0,4),replay
+local stroke=Instance.new("UIStroke") stroke.Color,stroke.Transparency,stroke.Parent=UI.Brass,.4,replay
 gui.Parent=player:WaitForChild("PlayerGui")
 replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
 local function faceEntrance()
@@ -48,7 +50,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local entry=player:GetAttribute("LastOrdersEntryScene")==true
     local driving=player:GetAttribute("LastOrdersDriving")==true
     local stage=player:GetAttribute("LastOrdersStage")
-    title.Visible,replay.Visible=stage==7,stage==7
+    card.Visible=stage==7
     if not entry and not driving then restore() fade.BackgroundTransparency=1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable

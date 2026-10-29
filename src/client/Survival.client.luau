@@ -4,25 +4,26 @@ local Players=game:GetService("Players")
 local StarterGui=game:GetService("StarterGui")
 if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
 local player=Players.LocalPlayer
+local UserInputService=game:GetService("UserInputService")
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersSurvival",false,20
-local bar=Instance.new("Frame") bar.Name,bar.AnchorPoint,bar.Position="HealthBar",Vector2.new(0.5,1),UDim2.fromScale(0.5,0.97)
-bar.Size,bar.BackgroundColor3,bar.BackgroundTransparency=UDim2.fromOffset(260,65),Color3.fromRGB(24,20,28),0.1
-bar.Parent=gui
-local title=Instance.new("TextLabel") title.Name,title.Size,title.Position="Status",UDim2.fromScale(0.96,0.45),UDim2.fromScale(0.02,0.05)
-title.BackgroundTransparency,title.Font,title.TextSize=1,Enum.Font.GothamBold,16 title.Parent=bar
+local UI=require(script.Parent.TavernUI)
+local bar=UI.frame(gui,"HealthBar")
+bar.AnchorPoint,bar.Position=Vector2.new(.5,1),UDim2.new(.5,0,1,-20)
+bar.Size=UDim2.fromOffset(244,62)
+local title=Instance.new("TextLabel") title.Name,title.Size,title.Position="Status",UDim2.new(1,-20,0,26),UDim2.fromOffset(10,5)
+title.BackgroundTransparency,title.FontFace,title.TextSize=1,UI.Body,15 title.Parent=bar
 local segments: {Frame}={}
 for i=1,2 do
     local segment=Instance.new("Frame") segment.Name="Hit"..i
-    segment.Size,segment.Position=UDim2.fromScale(0.46,0.26),UDim2.fromScale(0.025+(i-1)*0.49,0.61)
+    segment.Size,segment.Position=UDim2.new(.5,-15,0,9),UDim2.new((i-1)*.5,10,0,40)
     segment.BorderSizePixel,segment.Parent=0,bar
+    local round=Instance.new("UICorner") round.CornerRadius,round.Parent=UDim.new(0,2),segment
     table.insert(segments,segment)
 end
 local overlay=Instance.new("Frame") overlay.Name,overlay.Size="GameOver",UDim2.fromScale(1,1)
-overlay.BackgroundColor3,overlay.BackgroundTransparency,overlay.Visible=Color3.fromRGB(14,11,18),0.08,false
+overlay.BackgroundColor3,overlay.BackgroundTransparency,overlay.Visible=UI.Ink,.02,false overlay.BorderSizePixel=0
+UI.ending(overlay,true)
 overlay.Parent=gui
-local ending=Instance.new("TextLabel") ending.Size,ending.Position=UDim2.fromScale(0.9,0.4),UDim2.fromScale(0.05,0.3)
-ending.BackgroundTransparency,ending.Font,ending.TextSize,ending.TextWrapped=1,Enum.Font.GothamBold,28,true
-ending.TextColor3,ending.Text,ending.Parent=Color3.fromRGB(255,224,170),"YOU WERE CAUGHT\nTwo hits. Last orders!\n\nRestarting…",overlay
 gui.Parent=player:WaitForChild("PlayerGui")
 local controls=require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
 local movementLocked=false
@@ -35,13 +36,14 @@ local function update()
     local protected=player:GetAttribute("LastOrdersProtected")==true
     title.Text=if held then (if health>0 then "CAUGHT — ONE HIT LEFT" else "CAUGHT AGAIN")
         elseif protected then "1/2 HEALTH — GET AWAY!" else "HEALTH "..health.."/2"
-    title.TextColor3=if health==2 then Color3.fromRGB(220,230,185) else Color3.fromRGB(255,185,100)
+    title.TextColor3=if health==2 then UI.Ivory else Color3.fromRGB(255,185,100)
     for i,segment in segments do
         segment.BackgroundColor3=if i>health then Color3.fromRGB(60,47,48)
-            elseif health==2 then Color3.fromRGB(155,185,110) else Color3.fromRGB(231,159,70)
+            elseif health==2 then UI.Brass else Color3.fromRGB(231,159,70)
     end
     local driving=player:GetAttribute("LastOrdersDriving")==true
     overlay.Visible,bar.Visible=gameOver,not gameOver and not driving
+    bar.Position=UDim2.new(.5,0,1,if UserInputService.TouchEnabled then -90 else -20)
     local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true
     if locked~=movementLocked then
         movementLocked=locked

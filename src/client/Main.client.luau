@@ -1,35 +1,48 @@
 --!strict
-local Players = game:GetService("Players")
-local Config = require(game:GetService("ReplicatedStorage"):WaitForChild("HalloweenShared"):WaitForChild("Config"))
-local player = Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "LastOrdersHUD"
-gui.ResetOnSpawn = false
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(0.9, 0, 0, 130)
-label.Position = UDim2.fromScale(0.05, 0.02)
-label.BackgroundColor3 = Color3.fromRGB(24, 20, 28)
-label.BackgroundTransparency = 0.15
-label.TextColor3 = Color3.fromRGB(255, 224, 170)
-label.Font = Enum.Font.GothamMedium
-label.TextSize = 18
-label.TextWrapped = true
-label.Parent = gui
+local Players=game:GetService("Players")
+local Config=require(game.ReplicatedStorage:WaitForChild("HalloweenShared"):WaitForChild("Config"))
+local UI=require(script.Parent.TavernUI)
+local player=Players.LocalPlayer
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn="LastOrdersHUD",false
+local panel=UI.frame(gui,"ObjectivePanel") panel.Position=UDim2.fromOffset(16,12)
+panel.Size,panel.AutomaticSize=UDim2.new(1,-32,0,0),Enum.AutomaticSize.Y
+local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(380,900),panel
+UI.stack(panel,16,7)
+UI.text(panel,"Eyebrow","LAST ORDERS",UI.Body,13,UI.Brass,1)
+local heading=UI.text(panel,"ObjectiveHeading","The Halloween dare",UI.Heading,28,UI.Ivory,2)
+local detail=UI.text(panel,"ObjectiveDetail","",UI.Body,18,UI.Ivory,3)
+local circuits=UI.text(panel,"Circuits","",UI.Body,16,UI.Brass,4)
+local rule=Instance.new("Frame") rule.Name,rule.Size="FeedbackRule",UDim2.new(1,0,0,1)
+rule.BackgroundColor3,rule.BackgroundTransparency,rule.BorderSizePixel=UI.Brass,.6,0 rule.LayoutOrder,rule.Parent=5,panel
+local feedback=UI.text(panel,"Feedback","",UI.Body,18,UI.Muted,6)
+local headings={[0]="The Halloween dare","Find another way out","Bring back the lights","Find the exit key","Unlock the exit","Run for the car","Leave the tavern","You survived"}
+local messageVersion=0
+local function message()
+    messageVersion+=1
+    local version=messageVersion
+    local value=player:GetAttribute("LastOrdersMessage")
+    local text=if typeof(value)=="string" then value else ""
+    feedback.Text=text feedback.Visible=text~="" rule.Visible=feedback.Visible
+    -- Leave longer notes up long enough to read; objectives remain after feedback fades.
+    if text~="" then task.delay(math.clamp(#text/14,8,22),function()
+        if version==messageVersion then feedback.Visible=false rule.Visible=false end
+    end) end
+end
 local function update()
-    local stage = player:GetAttribute("LastOrdersStage")
-    local objective = if typeof(stage) == "number" then Config.Objectives[stage] else "Waiting for the local prototype…"
-    local message = player:GetAttribute("LastOrdersMessage")
-    label.Size=UDim2.new(0.9,0,0,if stage==2 then 180 else 130)
+    local stage=player:GetAttribute("LastOrdersStage")
+    local valid=typeof(stage)=="number"
+    heading.Text=if valid then headings[stage] or "Last orders" else "The Firefly Tavern"
+    detail.Text=if valid then Config.Objectives[stage] or "" else "Waiting for the local prototype…"
+    circuits.Visible=stage==2
     if stage==2 then
         local progress=player:GetAttribute("CellarBreakerProgress")
-        if typeof(progress)=="number" then
-            objective=(objective or "").."\nCircuits: "..progress.."/3. "..(if progress==3 then "MAIN LEVER READY." else "Read the card, then flip the switches.")
-        end
+        local count=if typeof(progress)=="number" then progress else 0
+        circuits.Text="CIRCUITS "..count.." / 3  ·  "..(if count==3 then "MAIN LEVER READY" else "CELLAR → GUEST ROOMS → BAR")
     end
-    label.Text = Config.Title .. "\n" .. (objective or "") .. "\n" .. (if typeof(message) == "string" then message else "")
+    panel.Visible=player:GetAttribute("LastOrdersGameOver")~=true and player:GetAttribute("LastOrdersDriving")~=true
+        and player:GetAttribute("LastOrdersEntryScene")~=true
 end
-player:GetAttributeChangedSignal("LastOrdersStage"):Connect(update)
-player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(update)
-player:GetAttributeChangedSignal("CellarBreakerProgress"):Connect(update)
-update()
-gui.Parent = player:WaitForChild("PlayerGui")
+for _,name in {"LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
+player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(message)
+script.Destroying:Connect(function() messageVersion+=1 gui:Destroy() end)
+update() message() gui.Parent=player:WaitForChild("PlayerGui")

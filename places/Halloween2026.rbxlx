@@ -1564,12 +1564,14 @@ local player=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersJourney",false,30
 local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
 fade.Parent=gui
-local title=Instance.new("TextLabel") title.Size,title.Position=UDim2.fromScale(0.9,0.35),UDim2.fromScale(0.05,0.25)
-title.BackgroundTransparency,title.Font,title.TextSize,title.TextWrapped=1,Enum.Font.GothamBold,30,true
-title.TextColor3,title.Text,title.Visible=Color3.fromRGB(245,220,180),"YOU SURVIVED LAST ORDERS!\n\nThe dare is over. Never again.",false title.Parent=fade
-local replay=Instance.new("TextButton") replay.Size,replay.Position=UDim2.fromOffset(200,52),UDim2.fromScale(0.5,0.7)
-replay.AnchorPoint,replay.Text,replay.Font,replay.TextSize=Vector2.new(0.5,0.5),"Play again",Enum.Font.GothamBold,22
-replay.BackgroundColor3,replay.TextColor3,replay.Visible=Color3.fromRGB(70,48,35),Color3.fromRGB(255,235,200),false replay.Parent=fade
+local UI=require(script.Parent.TavernUI)
+local card=UI.ending(fade,false) card.Visible=false
+local replay=Instance.new("TextButton") replay.Name="Replay"
+replay.Size,replay.Text,replay.FontFace,replay.TextSize=UDim2.new(1,0,0,52),"Play again",UI.Body,20
+replay.BackgroundColor3,replay.TextColor3,replay.AutoButtonColor=Color3.fromRGB(70,48,35),UI.Ivory,true
+replay.BorderSizePixel,replay.LayoutOrder,replay.Parent=0,6,card
+local corner=Instance.new("UICorner") corner.CornerRadius,corner.Parent=UDim.new(0,4),replay
+local stroke=Instance.new("UIStroke") stroke.Color,stroke.Transparency,stroke.Parent=UI.Brass,.4,replay
 gui.Parent=player:WaitForChild("PlayerGui")
 replay.Activated:Connect(function() game.ReplicatedStorage.HalloweenShared:WaitForChild("RestartJourney"):FireServer() end)
 local function faceEntrance()
@@ -1605,7 +1607,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local entry=player:GetAttribute("LastOrdersEntryScene")==true
     local driving=player:GetAttribute("LastOrdersDriving")==true
     local stage=player:GetAttribute("LastOrdersStage")
-    title.Visible,replay.Visible=stage==7,stage==7
+    card.Visible=stage==7
     if not entry and not driving then restore() fade.BackgroundTransparency=1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable
@@ -1630,40 +1632,53 @@ script.Destroying:Connect(function() RunService:UnbindFromRenderStep("LastOrders
           <Properties>
             <string name="Name">Main</string>
             <string name="Source">--!strict
-local Players = game:GetService("Players")
-local Config = require(game:GetService("ReplicatedStorage"):WaitForChild("HalloweenShared"):WaitForChild("Config"))
-local player = Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "LastOrdersHUD"
-gui.ResetOnSpawn = false
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(0.9, 0, 0, 130)
-label.Position = UDim2.fromScale(0.05, 0.02)
-label.BackgroundColor3 = Color3.fromRGB(24, 20, 28)
-label.BackgroundTransparency = 0.15
-label.TextColor3 = Color3.fromRGB(255, 224, 170)
-label.Font = Enum.Font.GothamMedium
-label.TextSize = 18
-label.TextWrapped = true
-label.Parent = gui
+local Players=game:GetService("Players")
+local Config=require(game.ReplicatedStorage:WaitForChild("HalloweenShared"):WaitForChild("Config"))
+local UI=require(script.Parent.TavernUI)
+local player=Players.LocalPlayer
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn="LastOrdersHUD",false
+local panel=UI.frame(gui,"ObjectivePanel") panel.Position=UDim2.fromOffset(16,12)
+panel.Size,panel.AutomaticSize=UDim2.new(1,-32,0,0),Enum.AutomaticSize.Y
+local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(380,900),panel
+UI.stack(panel,16,7)
+UI.text(panel,"Eyebrow","LAST ORDERS",UI.Body,13,UI.Brass,1)
+local heading=UI.text(panel,"ObjectiveHeading","The Halloween dare",UI.Heading,28,UI.Ivory,2)
+local detail=UI.text(panel,"ObjectiveDetail","",UI.Body,18,UI.Ivory,3)
+local circuits=UI.text(panel,"Circuits","",UI.Body,16,UI.Brass,4)
+local rule=Instance.new("Frame") rule.Name,rule.Size="FeedbackRule",UDim2.new(1,0,0,1)
+rule.BackgroundColor3,rule.BackgroundTransparency,rule.BorderSizePixel=UI.Brass,.6,0 rule.LayoutOrder,rule.Parent=5,panel
+local feedback=UI.text(panel,"Feedback","",UI.Body,18,UI.Muted,6)
+local headings={[0]="The Halloween dare","Find another way out","Bring back the lights","Find the exit key","Unlock the exit","Run for the car","Leave the tavern","You survived"}
+local messageVersion=0
+local function message()
+    messageVersion+=1
+    local version=messageVersion
+    local value=player:GetAttribute("LastOrdersMessage")
+    local text=if typeof(value)=="string" then value else ""
+    feedback.Text=text feedback.Visible=text~="" rule.Visible=feedback.Visible
+    -- Leave longer notes up long enough to read; objectives remain after feedback fades.
+    if text~="" then task.delay(math.clamp(#text/14,8,22),function()
+        if version==messageVersion then feedback.Visible=false rule.Visible=false end
+    end) end
+end
 local function update()
-    local stage = player:GetAttribute("LastOrdersStage")
-    local objective = if typeof(stage) == "number" then Config.Objectives[stage] else "Waiting for the local prototype…"
-    local message = player:GetAttribute("LastOrdersMessage")
-    label.Size=UDim2.new(0.9,0,0,if stage==2 then 180 else 130)
+    local stage=player:GetAttribute("LastOrdersStage")
+    local valid=typeof(stage)=="number"
+    heading.Text=if valid then headings[stage] or "Last orders" else "The Firefly Tavern"
+    detail.Text=if valid then Config.Objectives[stage] or "" else "Waiting for the local prototype…"
+    circuits.Visible=stage==2
     if stage==2 then
         local progress=player:GetAttribute("CellarBreakerProgress")
-        if typeof(progress)=="number" then
-            objective=(objective or "").."\nCircuits: "..progress.."/3. "..(if progress==3 then "MAIN LEVER READY." else "Read the card, then flip the switches.")
-        end
+        local count=if typeof(progress)=="number" then progress else 0
+        circuits.Text="CIRCUITS "..count.." / 3  ·  "..(if count==3 then "MAIN LEVER READY" else "CELLAR → GUEST ROOMS → BAR")
     end
-    label.Text = Config.Title .. "\n" .. (objective or "") .. "\n" .. (if typeof(message) == "string" then message else "")
+    panel.Visible=player:GetAttribute("LastOrdersGameOver")~=true and player:GetAttribute("LastOrdersDriving")~=true
+        and player:GetAttribute("LastOrdersEntryScene")~=true
 end
-player:GetAttributeChangedSignal("LastOrdersStage"):Connect(update)
-player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(update)
-player:GetAttributeChangedSignal("CellarBreakerProgress"):Connect(update)
-update()
-gui.Parent = player:WaitForChild("PlayerGui")
+for _,name in {"LastOrdersStage","CellarBreakerProgress","LastOrdersGameOver","LastOrdersDriving","LastOrdersEntryScene"} do player:GetAttributeChangedSignal(name):Connect(update) end
+player:GetAttributeChangedSignal("LastOrdersMessage"):Connect(message)
+script.Destroying:Connect(function() messageVersion+=1 gui:Destroy() end)
+update() message() gui.Parent=player:WaitForChild("PlayerGui")
 </string>
           </Properties>
         </Item>
@@ -1855,7 +1870,51 @@ return Renderer
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_11">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_11">
+          <Properties>
+            <string name="Name">SkyLightning</string>
+            <string name="Source">--!strict
+-- One brief distant bolt per storm event. Outdoor fill restores after the flash/cleanup.
+local TweenService=game:GetService("TweenService")
+local Lighting=game:GetService("Lighting")
+local Sky={}
+function Sky.new(folder: Folder)
+    local ambient=Lighting.OutdoorAmbient
+    local tween: Tween?=nil
+    local random=Random.new()
+    local controller={}
+    function controller.flash()
+        if tween then tween:Cancel() end
+        Lighting.OutdoorAmbient=Color3.fromRGB(165,184,224)
+        tween=TweenService:Create(Lighting,TweenInfo.new(.38),{OutdoorAmbient=ambient}) tween:Play()
+        local origin=Vector3.new(random:NextNumber(-100,100),130,random:NextNumber(-90,30))
+        local previous=origin
+        local function segment(a: Vector3,b: Vector3,width: number)
+            local p=Instance.new("Part") p.Name="DistantLightningBolt" p.Size=Vector3.new(width,width,(b-a).Magnitude)
+            p.CFrame,p.Anchored,p.Material=CFrame.lookAt((a+b)/2,b),true,Enum.Material.Neon
+            p.CanCollide,p.CanQuery,p.CanTouch=false,false,false
+            p.Color,p.Parent=Color3.fromRGB(210,228,255),folder
+            TweenService:Create(p,TweenInfo.new(.35),{Transparency=1}):Play()
+            task.delay(.45,function() p:Destroy() end)
+        end
+        for i=1,5 do
+            local point=origin+Vector3.new(random:NextNumber(-8,8),-i*12,random:NextNumber(-4,4))
+            segment(previous,point,.32)
+            if i==3 then segment(point,point+Vector3.new(16,-16,3),.16) end
+            previous=point
+        end
+    end
+    function controller.destroy()
+        if tween then tween:Cancel() end
+        Lighting.OutdoorAmbient=ambient
+    end
+    return controller
+end
+return Sky
+</string>
+          </Properties>
+        </Item>
+        <Item class="LocalScript" referent="RBXAssetIntegration1_12">
           <Properties>
             <string name="Name">Storm</string>
             <string name="Source">--!strict
@@ -1882,8 +1941,9 @@ local eq=Instance.new("EqualizerSoundEffect") eq.HighGain,eq.MidGain,eq.LowGain=
 rainSound:Play()
 local flash=Instance.new("ColorCorrectionEffect") flash.Name="LastOrdersLightning" flash.Parent=game:GetService("Lighting")
 local windowLightning=require(script.Parent.WindowLightning).new(map,folder)
+local skyLightning=require(script.Parent.SkyLightning).new(folder)
 local random=Random.new()
-local nextThunder=os.clock()+random:NextNumber(20,30)
+local nextThunder=os.clock()+random:NextNumber(6,11)
 local inside=true
 local accumulator,coverTime=0,0
 local coverCast=RaycastParams.new() coverCast.FilterType=Enum.RaycastFilterType.Exclude
@@ -1900,7 +1960,7 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
     if not map:IsDescendantOf(workspace) then
         alive=false
         if connection then connection:Disconnect() end
-        folder:Destroy() rainSound:Destroy() thunder:Destroy() flash:Destroy() return
+        skyLightning.destroy() folder:Destroy() rainSound:Destroy() thunder:Destroy() flash:Destroy() return
     end
     local character=player.Character
     local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
@@ -1919,9 +1979,10 @@ connection=RunService.Heartbeat:Connect(function(dt: number)
         for _,p in hazards do p.Material=if on then Enum.Material.Neon else Enum.Material.Glass p.Transparency=if on then 0 else 0.5 end
     end
     if os.clock()&gt;=nextThunder then
-        nextThunder=os.clock()+random:NextNumber(35,55)
+        nextThunder=os.clock()+random:NextNumber(22,40)
+        skyLightning.flash()
         windowLightning.flash()
-        flash.Brightness=if inside then 0 else 0.055
+        flash.Brightness=if inside then 0 else 0.09
         TweenService:Create(flash,TweenInfo.new(0.3),{Brightness=0}):Play()
         task.delay(random:NextNumber(0.8,1.7),function()
             if alive then thunder.Volume=if inside then 0.07 else 0.12 thunder:Play() end
@@ -1931,7 +1992,7 @@ end)
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_12">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_13">
           <Properties>
             <string name="Name">StormRain</string>
             <string name="Source">--!strict
@@ -1977,7 +2038,7 @@ return Rain
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_13">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_14">
           <Properties>
             <string name="Name">Survival</string>
             <string name="Source">--!strict
@@ -1986,25 +2047,26 @@ local Players=game:GetService("Players")
 local StarterGui=game:GetService("StarterGui")
 if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
 local player=Players.LocalPlayer
+local UserInputService=game:GetService("UserInputService")
 local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersSurvival",false,20
-local bar=Instance.new("Frame") bar.Name,bar.AnchorPoint,bar.Position="HealthBar",Vector2.new(0.5,1),UDim2.fromScale(0.5,0.97)
-bar.Size,bar.BackgroundColor3,bar.BackgroundTransparency=UDim2.fromOffset(260,65),Color3.fromRGB(24,20,28),0.1
-bar.Parent=gui
-local title=Instance.new("TextLabel") title.Name,title.Size,title.Position="Status",UDim2.fromScale(0.96,0.45),UDim2.fromScale(0.02,0.05)
-title.BackgroundTransparency,title.Font,title.TextSize=1,Enum.Font.GothamBold,16 title.Parent=bar
+local UI=require(script.Parent.TavernUI)
+local bar=UI.frame(gui,"HealthBar")
+bar.AnchorPoint,bar.Position=Vector2.new(.5,1),UDim2.new(.5,0,1,-20)
+bar.Size=UDim2.fromOffset(244,62)
+local title=Instance.new("TextLabel") title.Name,title.Size,title.Position="Status",UDim2.new(1,-20,0,26),UDim2.fromOffset(10,5)
+title.BackgroundTransparency,title.FontFace,title.TextSize=1,UI.Body,15 title.Parent=bar
 local segments: {Frame}={}
 for i=1,2 do
     local segment=Instance.new("Frame") segment.Name="Hit"..i
-    segment.Size,segment.Position=UDim2.fromScale(0.46,0.26),UDim2.fromScale(0.025+(i-1)*0.49,0.61)
+    segment.Size,segment.Position=UDim2.new(.5,-15,0,9),UDim2.new((i-1)*.5,10,0,40)
     segment.BorderSizePixel,segment.Parent=0,bar
+    local round=Instance.new("UICorner") round.CornerRadius,round.Parent=UDim.new(0,2),segment
     table.insert(segments,segment)
 end
 local overlay=Instance.new("Frame") overlay.Name,overlay.Size="GameOver",UDim2.fromScale(1,1)
-overlay.BackgroundColor3,overlay.BackgroundTransparency,overlay.Visible=Color3.fromRGB(14,11,18),0.08,false
+overlay.BackgroundColor3,overlay.BackgroundTransparency,overlay.Visible=UI.Ink,.02,false overlay.BorderSizePixel=0
+UI.ending(overlay,true)
 overlay.Parent=gui
-local ending=Instance.new("TextLabel") ending.Size,ending.Position=UDim2.fromScale(0.9,0.4),UDim2.fromScale(0.05,0.3)
-ending.BackgroundTransparency,ending.Font,ending.TextSize,ending.TextWrapped=1,Enum.Font.GothamBold,28,true
-ending.TextColor3,ending.Text,ending.Parent=Color3.fromRGB(255,224,170),"YOU WERE CAUGHT\nTwo hits. Last orders!\n\nRestarting…",overlay
 gui.Parent=player:WaitForChild("PlayerGui")
 local controls=require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
 local movementLocked=false
@@ -2017,13 +2079,14 @@ local function update()
     local protected=player:GetAttribute("LastOrdersProtected")==true
     title.Text=if held then (if health&gt;0 then "CAUGHT — ONE HIT LEFT" else "CAUGHT AGAIN")
         elseif protected then "1/2 HEALTH — GET AWAY!" else "HEALTH "..health.."/2"
-    title.TextColor3=if health==2 then Color3.fromRGB(220,230,185) else Color3.fromRGB(255,185,100)
+    title.TextColor3=if health==2 then UI.Ivory else Color3.fromRGB(255,185,100)
     for i,segment in segments do
         segment.BackgroundColor3=if i&gt;health then Color3.fromRGB(60,47,48)
-            elseif health==2 then Color3.fromRGB(155,185,110) else Color3.fromRGB(231,159,70)
+            elseif health==2 then UI.Brass else Color3.fromRGB(231,159,70)
     end
     local driving=player:GetAttribute("LastOrdersDriving")==true
     overlay.Visible,bar.Visible=gameOver,not gameOver and not driving
+    bar.Position=UDim2.new(.5,0,1,if UserInputService.TouchEnabled then -90 else -20)
     local locked=held or gameOver or driving or player:GetAttribute("LastOrdersEntryScene")==true
     if locked~=movementLocked then
         movementLocked=locked
@@ -2042,7 +2105,64 @@ update()
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_14">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_15">
+          <Properties>
+            <string name="Name">TavernUI</string>
+            <string name="Source">--!strict
+-- Shared presentation primitives; gameplay and restart timing remain server-owned.
+local UI={}
+UI.Ink=Color3.fromRGB(23,19,22)
+UI.Ivory=Color3.fromRGB(240,223,188)
+UI.Brass=Color3.fromRGB(188,161,106)
+UI.Muted=Color3.fromRGB(188,177,159)
+UI.Crimson=Color3.fromRGB(196,59,71)
+UI.Heading=Font.new("rbxasset://fonts/families/Fondamento.json")
+UI.Body=Font.new("rbxasset://fonts/families/Nunito.json")
+UI.Defeat=Font.new("rbxasset://fonts/families/Creepster.json")
+function UI.frame(parent: Instance,name: string): Frame
+    local frame=Instance.new("Frame") frame.Name,frame.BackgroundColor3,frame.BorderSizePixel=name,UI.Ink,0
+    frame.BackgroundTransparency=.03 frame.Parent=parent
+    local stroke=Instance.new("UIStroke") stroke.Color,stroke.Transparency,stroke.Thickness,stroke.Parent=UI.Brass,.45,1,frame
+    local corner=Instance.new("UICorner") corner.CornerRadius,corner.Parent=UDim.new(0,5),frame
+    return frame
+end
+function UI.stack(frame: Frame,padding: number,gap: number)
+    local inset=Instance.new("UIPadding")
+    inset.PaddingLeft,inset.PaddingRight=UDim.new(0,padding),UDim.new(0,padding)
+    inset.PaddingTop,inset.PaddingBottom=UDim.new(0,padding),UDim.new(0,padding) inset.Parent=frame
+    local layout=Instance.new("UIListLayout") layout.SortOrder,layout.Padding=Enum.SortOrder.LayoutOrder,UDim.new(0,gap) layout.Parent=frame
+end
+function UI.text(parent: Instance,name: string,text: string,font: Font,size: number,color: Color3,order: number): TextLabel
+    local label=Instance.new("TextLabel") label.Name,label.Text=name,text
+    label.Size,label.AutomaticSize=UDim2.new(1,0,0,0),Enum.AutomaticSize.Y
+    label.BackgroundTransparency,label.FontFace,label.TextSize,label.TextColor3=1,font,size,color
+    label.TextWrapped,label.TextXAlignment,label.TextYAlignment=true,Enum.TextXAlignment.Left,Enum.TextYAlignment.Top
+    label.LayoutOrder,label.Parent=order,parent
+    return label
+end
+function UI.rule(parent: Instance,order: number)
+    local line=Instance.new("Frame") line.Name,line.Size="BrassRule",UDim2.new(1,0,0,1)
+    line.BackgroundColor3,line.BackgroundTransparency,line.BorderSizePixel=UI.Brass,.6,0 line.LayoutOrder,line.Parent=order,parent
+end
+function UI.ending(parent: Instance,defeat: boolean): Frame
+    local card=UI.frame(parent,if defeat then "DefeatCard" else "VictoryCard")
+    card.Size,card.AutomaticSize=UDim2.new(.88,0,0,0),Enum.AutomaticSize.Y
+    card.AnchorPoint,card.Position=Vector2.new(.5,.5),UDim2.fromScale(.5,.5)
+    local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(520,1000),card
+    UI.stack(card,22,12)
+    local eyebrow=UI.text(card,"Eyebrow",if defeat then "YOU WERE" else "THE CHUGGERNAUGHT · LAST ORDERS",UI.Body,15,UI.Brass,1)
+    local title=UI.text(card,"Headline",if defeat then "CAUGHT" else "You survived",if defeat then UI.Defeat else UI.Heading,if defeat then 64 else 44,if defeat then UI.Crimson else UI.Ivory,2)
+    UI.rule(card,3)
+    local detail=UI.text(card,"Detail",if defeat then "Two hits. Last orders!" else "The Firefly Tavern is behind you.\nThe dare is over. Never again.",UI.Body,20,UI.Ivory,4)
+    local status=UI.text(card,"Status",if defeat then "Restarting…" else "YOU SURVIVED LAST ORDERS!",UI.Body,15,UI.Muted,5)
+    for _,label in {eyebrow,title,detail,status} do label.TextXAlignment=Enum.TextXAlignment.Center end
+    return card
+end
+return UI
+</string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_16">
           <Properties>
             <string name="Name">WindowLightning</string>
             <string name="Source">--!strict
@@ -3497,6 +3617,78 @@ return Car
       </Item>
       <Item class="ModuleScript" referent="RBXAssetIntegration0_7">
         <Properties>
+          <string name="Name">ExteriorFinish</string>
+          <string name="Source">--!strict
+-- Added surface depth on the disposable facade; doors, windows and routes remain clear.
+local Props=require(script.Parent.PubProps)
+local Finish={}
+function Finish.build(map: Folder)
+    local decor=Instance.new("Folder") decor.Name="ExteriorFinishes"
+    local oak=Color3.fromRGB(47,33,28)
+    local stone=Color3.fromRGB(98,95,98)
+    local function p(name: string,size: Vector3,position: Vector3,color: Color3,material: Enum.Material?): Part
+        return Props.part(decor,name,size,CFrame.new(position),color,material)
+    end
+    local function beam(a: Vector3,b: Vector3,width: number)
+        return Props.part(decor,"CarvedFacadeBrace",Vector3.new(width,width,(b-a).Magnitude),CFrame.lookAt((a+b)/2,b),oak)
+    end
+    -- Individual masonry blocks break up the broad flat plaster at ground level.
+    for _,span in {{-8,0},{12,48}} do
+        for row=0,1 do
+            local x=span[1]
+            while x&lt;span[2] do
+                local width=math.min(if row==0 then 3 else 2.5,span[2]-x)
+                p("WeatheredPlinthStone",Vector3.new(width-.06,.65,.38),Vector3.new(x+width/2,.85+row*.7,88.63),stone,Enum.Material.Cobblestone)
+                x+=width
+            end
+        end
+    end
+    for _,x in {-7.4,47.4} do
+        for row=0,26 do
+            p("CornerQuoin",Vector3.new(if row%2==0 then 1.5 else 1.1,.9,.5),Vector3.new(x,2.5+row,88.85),if row%3==0 then Color3.fromRGB(116,110,108) else stone,Enum.Material.Slate)
+        end
+    end
+    -- Diagonal carpentry sits in the plaster bays between the existing windows.
+    for _,span in {{16.4,20.5},{29.5,35.5}} do
+        beam(Vector3.new(span[1],18,88.95),Vector3.new(span[2],28.5,88.95),.4)
+    end
+    for _,y in {3.1,14.7,29.2} do
+        for _,span in {{-4,8},{30,36}} do p("FacadeStringCourse",Vector3.new(span[2],.18,.45),Vector3.new(span[1],y,88.9),oak) end
+    end
+    -- Recessed entrance surround and a shallow slate canopy shelter the doorway.
+    for _,x in {.2,11.8} do
+        p("CarvedDoorPost",Vector3.new(.45,10.7,.8),Vector3.new(x,5.85,89.15),oak)
+        p("DoorPostCapital",Vector3.new(.8,.5,1),Vector3.new(x,10.8,89.2),stone,Enum.Material.Slate)
+    end
+    p("PorchLintel",Vector3.new(13,.5,1),Vector3.new(6,11.2,89.2),oak)
+    local canopy=p("SlateEntranceCanopy",Vector3.new(14,.28,3.2),Vector3.new(6,11.65,90),Color3.fromRGB(48,48,60),Enum.Material.Slate)
+    canopy.CFrame*=CFrame.Angles(math.rad(8),0,0)
+    for _,x in {-.4,12.4} do beam(Vector3.new(x,9.7,89.2),Vector3.new(x,11.2,91.1),.22) end
+    -- Stone sills and lintels give the front windows depth without covering the glass.
+    for _,row in {{-2,7,5},{25,7,7},{40,7,7},{6,23,6},{25,23,6},{40,23,6}} do
+        p("FrontWindowSill",Vector3.new(row[3]+.9,.3,.85),Vector3.new(row[1],row[2]-4.05,89.1),stone,Enum.Material.Slate)
+    end
+    -- Patched plaster and subtle water marks stay away from signs and glazing.
+    for _,x in {17.4,31.6,45.5} do
+        p("RainWeathering",Vector3.new(.14,3,.03),Vector3.new(x,7.5,88.54),Color3.fromRGB(74,70,77),Enum.Material.Plaster)
+        p("RainWeathering",Vector3.new(.08,1.7,.03),Vector3.new(x+.28,6.7,88.54),Color3.fromRGB(82,77,80),Enum.Material.Plaster)
+    end
+    -- Low shrubs flank the frontage; the entrance and courtyard are kept open.
+    for _,x in {-10,51} do
+        p("StonePlantTrough",Vector3.new(3.2,1.2,2),Vector3.new(x,.95,90.8),stone,Enum.Material.Slate)
+        for i=1,3 do
+            local shrub=p("DryShrub",Vector3.new(.9,1.3,.9),Vector3.new(x-1+i*.5,2,90.8),Color3.fromRGB(60,66,48),Enum.Material.Grass)
+            shrub.Shape=Enum.PartType.Ball
+        end
+    end
+    decor.Parent=map
+end
+return Finish
+</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_8">
+        <Properties>
           <string name="Name">InteriorFinish</string>
           <string name="Source">--!strict
 -- Cosmetic finishes only: no collision, ray queries or changes to objective surfaces.
@@ -3581,7 +3773,7 @@ return Finish
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_8">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
         <Properties>
           <string name="Name">Journey</string>
           <string name="Source">--!strict
@@ -3712,7 +3904,7 @@ return Journey
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_9">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_10">
         <Properties>
           <string name="Name">JourneyMap</string>
           <string name="Source">--!strict
@@ -3796,7 +3988,7 @@ return Map
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_10">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_11">
         <Properties>
           <string name="Name">KeyPlacement</string>
           <string name="Source">--!strict
@@ -3824,7 +4016,7 @@ return KeyPlacement
 </string>
         </Properties>
       </Item>
-      <Item class="Script" referent="RBXAssetIntegration0_11">
+      <Item class="Script" referent="RBXAssetIntegration0_12">
         <Properties>
           <string name="Name">Main</string>
           <token name="RunContext">0</token>
@@ -4127,7 +4319,7 @@ print("Last Orders prototype ready")
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_12">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
         <Properties>
           <string name="Name">MonsterEncounter</string>
           <string name="Source">--!strict
@@ -4205,7 +4397,7 @@ return Encounter
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_13">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
         <Properties>
           <string name="Name">MonsterGrab</string>
           <string name="Source">--!strict
@@ -4239,7 +4431,7 @@ return Grab
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_14">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
         <Properties>
           <string name="Name">MonsterHunt</string>
           <string name="Source">--!strict
@@ -4367,7 +4559,7 @@ return Hunt
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_15">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
         <Properties>
           <string name="Name">MonsterNavigation</string>
           <string name="Source">--!strict
@@ -4552,7 +4744,7 @@ return Navigation
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_16">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
         <Properties>
           <string name="Name">MonsterRoutes</string>
           <string name="Source">--!strict
@@ -4618,7 +4810,7 @@ return Routes
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_17">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
         <Properties>
           <string name="Name">MonsterSenses</string>
           <string name="Source">--!strict
@@ -4666,7 +4858,7 @@ return Senses
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_18">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
         <Properties>
           <string name="Name">PlayerHold</string>
           <string name="Source">--!strict
@@ -4751,7 +4943,7 @@ return Hold
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_19">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
         <Properties>
           <string name="Name">PlayerSurvival</string>
           <string name="Source">--!strict
@@ -4804,7 +4996,7 @@ return Survival
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_20">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
         <Properties>
           <string name="Name">PrototypeMap</string>
           <string name="Source">--!strict
@@ -4941,6 +5133,7 @@ function Map.build(): Folder
     require(script.Parent.PubDressing).build(folder)
     folder.Parent = workspace
     require(script.Parent.PubExterior).build(folder)
+    require(script.Parent.ExteriorFinish).build(folder)
     require(script.Parent.JourneyMap).build(folder)
     require(script.Parent.AssetDressing).build(folder)
     require(script.Parent.InteriorFinish).build(folder)
@@ -4951,7 +5144,7 @@ return Map
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_21">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
         <Properties>
           <string name="Name">PubAtmosphere</string>
           <string name="Source">--!strict
@@ -4980,7 +5173,7 @@ return Atmosphere
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_22">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
         <Properties>
           <string name="Name">PubDressing</string>
           <string name="Source">--!strict
@@ -5133,7 +5326,7 @@ return Dressing
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_23">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
         <Properties>
           <string name="Name">PubExpansion</string>
           <string name="Source">--!strict
@@ -5347,7 +5540,7 @@ return Expansion
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_24">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
         <Properties>
           <string name="Name">PubExterior</string>
           <string name="Source">--!strict
@@ -5497,7 +5690,7 @@ return Exterior
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_25">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_26">
         <Properties>
           <string name="Name">PubProps</string>
           <string name="Source">--!strict
@@ -5563,7 +5756,7 @@ return Props
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_26">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_27">
         <Properties>
           <string name="Name">RunState</string>
           <string name="Source">--!strict
@@ -5583,7 +5776,7 @@ return RunState
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_27">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_28">
         <Properties>
           <string name="Name">StaffStairs</string>
           <string name="Source">--!strict
@@ -5690,7 +5883,7 @@ return Stairs
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_28">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_29">
         <Properties>
           <string name="Name">StormWindows</string>
           <string name="Source">--!strict
@@ -5776,7 +5969,7 @@ return Windows
 </string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="RBXAssetIntegration0_29">
+      <Item class="ModuleScript" referent="RBXAssetIntegration0_30">
         <Properties>
           <string name="Name">TavernSigns</string>
           <string name="Source">--!strict
