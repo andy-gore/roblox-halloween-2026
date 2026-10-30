@@ -42,3 +42,16 @@ Latest cellar feedback: remove the maintenance card/reading overlay completely. 
 - [x] Repair missing avatar face/head content locally when loading fails. Studio reproduced an authenticated mesh-load failure with normal head transparency. A bundled classic head/face fallback preserves server avatar, joints and accessories; actual affected-device review remains required.
 
 Latest verification supersedes earlier cellar descriptions: no entrance sign, floor chevrons or maintenance card remain; the four small control labels and existing lighting remain.
+
+## Next presentation polish — approved for backlog, 29 October 2026
+
+- [x] Cohesive title/loading, defeat and escape screens: shared gothic typography, local Firefly crest, brief run-state loading card and fading title over the existing opening. Matching compact ending cards retain server restart timing and replay. Uses local UI shapes/fonts rather than uploaded artwork/textures; gameplay HUD retained. Phone-size bounds/text checks passed; visual acceptance remains with Andrew.
+- [ ] Interior storytelling: small guest-register, faded-photo, luggage, folded-bedding and damaged-frame asset set. Give rooms distinct details while preserving clear walking routes and the uncluttered cellar.
+- [ ] Feedback polish: power-start/key-pickup sounds and refined monster idle, searching and turning animations. Assess current assets before creating replacements.
+- [ ] Lighting review: every room before/after power, window lightning and escape-route visibility on low phone graphics. Reuse existing assets where possible.
+- [ ] Marketing presentation: retain reviewed v2 icon/art, create private-playtest promotional material and capture three genuine gameplay screenshots (entrance, monster encounter, upstairs search). Generated illustrations must not be labelled screenshots.
+- [ ] Private-build acceptance: update yesterday's private copy with the current release candidate, then complete desktop and actual-iPhone runs, across-visit scene-history and independent solo-session checks.
+
+## Private release marketing pack
+
+- [x] Create a matching private-playtest invitation image and concise invitation/listing copy. Saved in assets/marketing/private-playtest; existing v2 icon/clean thumbnail retained. No distribution, upload or publication performed.

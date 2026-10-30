@@ -10,6 +10,8 @@ local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="
 local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
 fade.Parent=gui
 local UI=require(script.Parent.TavernUI)
+local title=UI.title(gui) title.Visible=false
+local titleGroup=Instance.new("CanvasGroup") titleGroup.Name="ArrivalTitle" titleGroup.Size=UDim2.fromScale(1,1) titleGroup.BackgroundTransparency=1 titleGroup.Parent=gui title.Parent=titleGroup
 local card=UI.ending(fade,false) card.Visible=false
 local replay=Instance.new("TextButton") replay.Name="Replay"
 replay.Size,replay.Text,replay.FontFace,replay.TextSize=UDim2.new(1,0,0,52),"Play again",UI.Body,20
@@ -69,17 +71,20 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local stage=player:GetAttribute("LastOrdersStage")
     local arrival=player:GetAttribute("LastOrdersArrivalScene")==true
     card.Visible=stage==7
+    if stage==7 then fade.BackgroundColor3=UI.Ink end
     local scene=if arrival then "Arrival" elseif entry then "Entry" elseif driving then "Drive" else ""
     if scene~=lastScene then sceneAt=os.clock() lastScene=scene arrivalEnd=nil end
     caption.Visible=scene~="" and stage~=7
     for _,bar in bars do bar.Visible=caption.Visible end
-    if scene=="" then restore() fade.BackgroundTransparency=1 return end
+    if scene=="" then title.Visible=false restore() fade.BackgroundTransparency=if stage==7 then 0 else 1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable
     if arrival then
         local started=player:GetAttribute("LastOrdersSceneStarted")
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
         local t=math.clamp(elapsed/Config.ArrivalSceneSeconds,0,1)
+        title.Visible=elapsed<4.5
+        titleGroup.GroupTransparency=math.clamp(math.max(1-elapsed/.45,(elapsed-3.6)/.9),0,1)
         if not arrivalEnd then
             local character=player.Character
             local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
@@ -95,6 +100,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         caption.Text=if t<.4 then "The Firefly Tavern. Halloween night." elseif t<.75 then "One dare: get the lights working." else "Find your way inside."
 
     elseif entry then
+        title.Visible=false
         local map=workspace:FindFirstChild("LastOrdersPrototype")
         local started=if map then map:GetAttribute("EntranceCollapseStarted") else nil
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
@@ -102,6 +108,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         camera.CFrame=previousFrame:Lerp(CFrame.lookAt(previousFrame.Position,Vector3.new(6,5,88)),math.sin(t*math.pi)^2*.8)
         caption.Text="The entrance is blocked. Find another way out."
     else
+        title.Visible=false
         -- Locate by model name so the camera also follows a translated test fixture.
         local car=workspace:FindFirstChild("BrokenDownCar",true)
         if car and car:IsA("Model") then

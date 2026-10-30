@@ -382,3 +382,12 @@ Removed CellarLabel and cellar floor chevrons. Fresh CellarPuzzle fixture passed
 The current client head mesh reported AssetFetchStatus.Failure despite normal original visibility. A client-only bundled classic head/face fallback appeared, followed the real head within 0.001 studs, and left HumanoidRootPart unanchored. AvatarFace.spec.client.luau passed full-head/face-only fallback, follow/first-person opacity, clear and original-transparency restoration checks. Only failed content is substituted; successful head assets retain their avatar appearance. This repairs appearance locally, not the external asset permission. Real affected-phone appearance and dynamic-head recovery remain human acceptance checks.
 
 Both Rojo builds and whitespace checks passed. The saved local place receives managed code only; Studio is left in Edit. No uploads, publication or live capacity changes.
+
+
+## Title and ending presentation — 30 October 2026
+
+TavernUI now supplies a local Firefly crest, shared title card and matching compact endings. Loading.client shows a brief card only while player character/run state arrives, then fades away; this is not an asset-loading percentage or a replacement for Roblox's initial loading screen. The title fades over the first 4.5 seconds of the existing arrival scene without adding a start gate, changing server timing or changing skip rules. Victory now retains an opaque backdrop even after Driving clears.
+
+Live Studio client fixtures at 320×568, 749×329 and 389×702 passed card bounds and TextFits checks for title/defeat/victory (including a 52-pixel replay button). Victory height was at most 294 pixels. Loading removal, arrival title visibility/fade timing, victory backdrop and return-to-game cleanup passed through temporary client-only attributes; server state was unchanged and Play stopped. Output had existing external-asset authentication warnings, with no presentation script errors observed. These checks do not replace rendered visual/phone review.
+
+Both Rojo builds, diff whitespace and local-place XML checks passed. Managed sources backed up before Studio Edit update and code-only place merge; authored map preserved. No publication/upload performed.

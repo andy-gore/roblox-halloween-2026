@@ -1830,6 +1830,8 @@ local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="
 local fade=Instance.new("Frame") fade.Size,fade.BackgroundColor3,fade.BackgroundTransparency=UDim2.fromScale(1,1),Color3.new(),1
 fade.Parent=gui
 local UI=require(script.Parent.TavernUI)
+local title=UI.title(gui) title.Visible=false
+local titleGroup=Instance.new("CanvasGroup") titleGroup.Name="ArrivalTitle" titleGroup.Size=UDim2.fromScale(1,1) titleGroup.BackgroundTransparency=1 titleGroup.Parent=gui title.Parent=titleGroup
 local card=UI.ending(fade,false) card.Visible=false
 local replay=Instance.new("TextButton") replay.Name="Replay"
 replay.Size,replay.Text,replay.FontFace,replay.TextSize=UDim2.new(1,0,0,52),"Play again",UI.Body,20
@@ -1889,17 +1891,20 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
     local stage=player:GetAttribute("LastOrdersStage")
     local arrival=player:GetAttribute("LastOrdersArrivalScene")==true
     card.Visible=stage==7
+    if stage==7 then fade.BackgroundColor3=UI.Ink end
     local scene=if arrival then "Arrival" elseif entry then "Entry" elseif driving then "Drive" else ""
     if scene~=lastScene then sceneAt=os.clock() lastScene=scene arrivalEnd=nil end
     caption.Visible=scene~="" and stage~=7
     for _,bar in bars do bar.Visible=caption.Visible end
-    if scene=="" then restore() fade.BackgroundTransparency=1 return end
+    if scene=="" then title.Visible=false restore() fade.BackgroundTransparency=if stage==7 then 0 else 1 return end
     if not previousType then previousType,previousSubject,previousFrame=camera.CameraType,camera.CameraSubject,camera.CFrame end
     camera.CameraType=Enum.CameraType.Scriptable
     if arrival then
         local started=player:GetAttribute("LastOrdersSceneStarted")
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
         local t=math.clamp(elapsed/Config.ArrivalSceneSeconds,0,1)
+        title.Visible=elapsed&lt;4.5
+        titleGroup.GroupTransparency=math.clamp(math.max(1-elapsed/.45,(elapsed-3.6)/.9),0,1)
         if not arrivalEnd then
             local character=player.Character
             local root=if character then character:FindFirstChild("HumanoidRootPart") else nil
@@ -1915,6 +1920,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         caption.Text=if t&lt;.4 then "The Firefly Tavern. Halloween night." elseif t&lt;.75 then "One dare: get the lights working." else "Find your way inside."
 
     elseif entry then
+        title.Visible=false
         local map=workspace:FindFirstChild("LastOrdersPrototype")
         local started=if map then map:GetAttribute("EntranceCollapseStarted") else nil
         local elapsed=if typeof(started)=="number" then workspace:GetServerTimeNow()-started else os.clock()-sceneAt
@@ -1922,6 +1928,7 @@ RunService:BindToRenderStep("LastOrdersJourney",Enum.RenderPriority.Camera.Value
         camera.CFrame=previousFrame:Lerp(CFrame.lookAt(previousFrame.Position,Vector3.new(6,5,88)),math.sin(t*math.pi)^2*.8)
         caption.Text="The entrance is blocked. Find another way out."
     else
+        title.Visible=false
         -- Locate by model name so the camera also follows a translated test fixture.
         local car=workspace:FindFirstChild("BrokenDownCar",true)
         if car and car:IsA("Model") then
@@ -1943,6 +1950,31 @@ script.Destroying:Connect(function() cleanupSkip() RunService:UnbindFromRenderSt
           </Properties>
         </Item>
         <Item class="LocalScript" referent="RBXAssetIntegration1_13">
+          <Properties>
+            <string name="Name">Loading</string>
+            <string name="Source">--!strict
+-- Brief presentation while replicated run state arrives; no extra start gate or fake progress.
+local Players=game:GetService("Players")
+local TweenService=game:GetService("TweenService")
+if workspace:GetAttribute("LastOrdersGreybox")~=true then return end
+local player=Players.LocalPlayer
+local UI=require(script.Parent.TavernUI)
+local gui=Instance.new("ScreenGui") gui.Name,gui.ResetOnSpawn,gui.DisplayOrder="LastOrdersLoading",false,80
+local group=Instance.new("CanvasGroup") group.Size,group.BackgroundColor3=UDim2.fromScale(1,1),UI.Ink group.Parent=gui
+local card=UI.title(group)
+local status=UI.text(card,"LoadingStatus","Preparing the tavern…",UI.Body,16,UI.Muted,5)
+status.TextXAlignment=Enum.TextXAlignment.Center
+gui.Parent=player:WaitForChild("PlayerGui")
+while player:GetAttribute("LastOrdersStage")==nil or not player.Character do
+    task.wait(.1)
+    if not gui.Parent then return end
+end
+local fade=TweenService:Create(group,TweenInfo.new(.35),{GroupTransparency=1})
+fade:Play() fade.Completed:Wait() gui:Destroy()
+</string>
+          </Properties>
+        </Item>
+        <Item class="LocalScript" referent="RBXAssetIntegration1_14">
           <Properties>
             <string name="Name">Main</string>
             <string name="Source">--!strict
@@ -2069,7 +2101,7 @@ update() message() gui.Parent=player:WaitForChild("PlayerGui")
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_14">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_15">
           <Properties>
             <string name="Name">MonsterAudio</string>
             <string name="Source">--!strict
@@ -2101,7 +2133,7 @@ return Audio
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_15">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_16">
           <Properties>
             <string name="Name">PropRenderer</string>
             <string name="Source">--!strict
@@ -2296,7 +2328,7 @@ return Renderer
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_16">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_17">
           <Properties>
             <string name="Name">SkyLightning</string>
             <string name="Source">--!strict
@@ -2340,7 +2372,7 @@ return Sky
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_17">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_18">
           <Properties>
             <string name="Name">Storm</string>
             <string name="Source">--!strict
@@ -2418,7 +2450,7 @@ end)
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_18">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_19">
           <Properties>
             <string name="Name">StormRain</string>
             <string name="Source">--!strict
@@ -2464,7 +2496,7 @@ return Rain
 </string>
           </Properties>
         </Item>
-        <Item class="LocalScript" referent="RBXAssetIntegration1_19">
+        <Item class="LocalScript" referent="RBXAssetIntegration1_20">
           <Properties>
             <string name="Name">Survival</string>
             <string name="Source">--!strict
@@ -2512,7 +2544,7 @@ update()
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_20">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_21">
           <Properties>
             <string name="Name">TavernUI</string>
             <string name="Source">--!strict
@@ -2551,17 +2583,51 @@ function UI.rule(parent: Instance,order: number)
     local line=Instance.new("Frame") line.Name,line.Size="BrassRule",UDim2.new(1,0,0,1)
     line.BackgroundColor3,line.BackgroundTransparency,line.BorderSizePixel=UI.Brass,.6,0 line.LayoutOrder,line.Parent=order,parent
 end
+-- Vector-like local crest: no image download or asset permission dependency.
+function UI.crest(parent: Instance,size: number,order: number): Frame
+    local holder=Instance.new("Frame") holder.Name="FireflyCrest"
+    holder.Size,holder.BackgroundTransparency,holder.LayoutOrder=UDim2.new(1,0,0,size),1,order
+    holder.Parent=parent
+    local function shape(name: string,x: number,y: number,w: number,h: number,rotation: number,color: Color3)
+        local f=Instance.new("Frame") f.Name=name f.AnchorPoint=Vector2.new(.5,.5)
+        f.Position,f.Size=UDim2.new(.5,x*size,0,y*size),UDim2.fromOffset(w*size,h*size)
+        f.Rotation,f.BackgroundColor3,f.BorderSizePixel=rotation,color,0
+        local c=Instance.new("UICorner") c.CornerRadius,c.Parent=UDim.new(1,0),f f.Parent=holder
+    end
+    for _,side in {-1,1} do
+        shape("Wing",side*.18,.37,.32,.12,side*-30,UI.Brass)
+        shape("Wing",side*.16,.52,.27,.10,side*30,UI.Brass)
+    end
+    shape("Body",0,.52,.09,.34,0,UI.Brass)
+    shape("Light",0,.64,.08,.12,0,UI.Ivory)
+    shape("Head",0,.29,.12,.12,0,UI.Ivory)
+    return holder
+end
+function UI.title(parent: Instance): Frame
+    local card=UI.frame(parent,"TitleCard")
+    card.Size,card.AutomaticSize=UDim2.new(.88,0,0,0),Enum.AutomaticSize.Y
+    card.AnchorPoint,card.Position=Vector2.new(.5,.5),UDim2.fromScale(.5,.43)
+    local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(480,1000),card
+    UI.stack(card,18,5) UI.crest(card,52,0)
+    local a=UI.text(card,"Title","THE CHUGGERNAUGHT",UI.Heading,30,UI.Ivory,1)
+    local b=UI.text(card,"Subtitle","LAST ORDERS",UI.Heading,23,UI.Brass,2)
+    UI.rule(card,3)
+    local c=UI.text(card,"Location","THE FIREFLY TAVERN",UI.Body,14,UI.Muted,4)
+    for _,label in {a,b,c} do label.TextXAlignment=Enum.TextXAlignment.Center end
+    return card
+end
 function UI.ending(parent: Instance,defeat: boolean): Frame
     local card=UI.frame(parent,if defeat then "DefeatCard" else "VictoryCard")
     card.Size,card.AutomaticSize=UDim2.new(.88,0,0,0),Enum.AutomaticSize.Y
     card.AnchorPoint,card.Position=Vector2.new(.5,.5),UDim2.fromScale(.5,.5)
     local limit=Instance.new("UISizeConstraint") limit.MaxSize,limit.Parent=Vector2.new(520,1000),card
-    UI.stack(card,22,12)
+    UI.stack(card,18,7)
+    UI.crest(card,48,0)
     local eyebrow=UI.text(card,"Eyebrow",if defeat then "YOU WERE" else "THE CHUGGERNAUGHT · LAST ORDERS",UI.Body,15,UI.Brass,1)
-    local title=UI.text(card,"Headline",if defeat then "CAUGHT" else "You survived",if defeat then UI.Defeat else UI.Heading,if defeat then 64 else 44,if defeat then UI.Crimson else UI.Ivory,2)
+    local title=UI.text(card,"Headline",if defeat then "CAUGHT" else "You survived",if defeat then UI.Defeat else UI.Heading,if defeat then 44 else 34,if defeat then UI.Crimson else UI.Ivory,2)
     UI.rule(card,3)
-    local detail=UI.text(card,"Detail",if defeat then "Two hits. Last orders!" else "The Firefly Tavern is behind you.\nThe dare is over. Never again.",UI.Body,20,UI.Ivory,4)
-    local status=UI.text(card,"Status",if defeat then "Restarting…" else "YOU SURVIVED LAST ORDERS!",UI.Body,15,UI.Muted,5)
+    local detail=UI.text(card,"Detail",if defeat then "The Chuggernaught caught you." else "The Firefly Tavern is behind you.\nThe dare is over. Never again.",UI.Body,18,UI.Ivory,4)
+    local status=UI.text(card,"Status",if defeat then "Restarting…" else "RESTORE THE LIGHTS. FIND THE KEY. ESCAPE.",UI.Body,15,UI.Muted,5)
     for _,label in {eyebrow,title,detail,status} do label.TextXAlignment=Enum.TextXAlignment.Center end
     return card
 end
@@ -2569,7 +2635,7 @@ return UI
 </string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="RBXAssetIntegration1_21">
+        <Item class="ModuleScript" referent="RBXAssetIntegration1_22">
           <Properties>
             <string name="Name">WindowLightning</string>
             <string name="Source">--!strict
